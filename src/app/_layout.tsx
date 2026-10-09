@@ -1,11 +1,16 @@
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppProvider, useApp } from '../state/AppProvider';
 import { colors, type } from '../theme';
 import { Notice } from '../components/ui';
+import { SplashVideo } from '../components/SplashVideo';
+
+// Keep the native splash up until the launch video has drawn its first frame (native only).
+if (Platform.OS !== 'web') void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function Gate() {
   const { status, error } = useApp();
@@ -37,11 +42,14 @@ function Gate() {
 }
 
 export default function RootLayout() {
+  // The launch video plays on every cold start on a device; the web preview skips it.
+  const [splashDone, setSplashDone] = useState(Platform.OS === 'web');
   return (
     <SafeAreaProvider>
       <AppProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="dark" hidden={!splashDone} />
         <Gate />
+        {splashDone ? null : <SplashVideo onDone={() => setSplashDone(true)} />}
       </AppProvider>
     </SafeAreaProvider>
   );
