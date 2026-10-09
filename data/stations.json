@@ -1,0 +1,1557 @@
+[
+  {
+    "id": "APMC",
+    "name": "APMC",
+    "aliases": [
+      "APMC Vasna",
+      "Vasna"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 1
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "JVRJ",
+    "name": "Jivraj Park",
+    "aliases": [
+      "Jivraj"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 2
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "RNMS",
+    "name": "Rajiv Nagar",
+    "aliases": [
+      "Rajivnagar"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 3
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SRYS",
+    "name": "Shreyas",
+    "aliases": [
+      "Shreyas Crossing"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 4
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "PLDI",
+    "name": "Paldi",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 5
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GRMS",
+    "name": "Gandhigram",
+    "aliases": [
+      "Gandhi Gram"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 6
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "OHCI",
+    "name": "Old High Court",
+    "aliases": [
+      "High Court",
+      "Old HC"
+    ],
+    "corridorIds": [
+      "ns",
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ns": 7,
+      "ew": 8
+    },
+    "isInterchange": true,
+    "interchangeNote": "Marked as an interchange between the North–South and East–West corridors on the GMRC route map.",
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "UPMS",
+    "name": "Usmanpura",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 8
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "VRMS",
+    "name": "Vijay Nagar",
+    "aliases": [
+      "Vijaynagar"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 9
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "VDMS",
+    "name": "Vadaj",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 10
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "RNIP",
+    "name": "Ranip",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 11
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SBRS",
+    "name": "Sabarmati Railway Station",
+    "aliases": [
+      "Sabarmati Rly",
+      "Sabarmati Railway"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 12
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "AEC",
+    "name": "AEC",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 13
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SMMS",
+    "name": "Sabarmati",
+    "aliases": [
+      "Sabarmati Metro"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 14
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "MTRS",
+    "name": "Motera Stadium",
+    "aliases": [
+      "Motera",
+      "Narendra Modi Stadium"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 15
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "KORD",
+    "name": "Koteshwar Road",
+    "aliases": [
+      "Koteshwar"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 16
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "VIKC",
+    "name": "Vishwakarma College",
+    "aliases": [
+      "Vishwakarma"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 17
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "TAPC",
+    "name": "Tapovan Circle",
+    "aliases": [
+      "Tapovan"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 18
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "NAMC",
+    "name": "Narmada Canal",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 19
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "KOBC",
+    "name": "Koba Circle",
+    "aliases": [
+      "Koba"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 20
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "JUKB",
+    "name": "Juna Koba",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 21
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "KOBG",
+    "name": "Koba Gaam",
+    "aliases": [
+      "Koba Gam",
+      "Koba Gaon"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 22
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GNLU",
+    "name": "GNLU",
+    "aliases": [
+      "Gujarat National Law University",
+      "GNLU Interchange"
+    ],
+    "corridorIds": [
+      "ns",
+      "gift"
+    ],
+    "sequenceByCorridor": {
+      "ns": 23,
+      "gift": 1
+    },
+    "isInterchange": true,
+    "interchangeNote": "Marked as an interchange on the GMRC route map (North–South corridor and GIFT City branch). The GMRC timetable shows some services running through to GIFT City; check the station display for the train you need.",
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "RAYN",
+    "name": "Raysan",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 24
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "RADN",
+    "name": "Randesan",
+    "aliases": [],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 25
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "DHKU",
+    "name": "Dholakuva Circle",
+    "aliases": [
+      "Dholakuva"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 26
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "INFC",
+    "name": "Infocity",
+    "aliases": [
+      "Info City"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 27
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SEOA",
+    "name": "Sector-1",
+    "aliases": [
+      "Sector 1"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 28
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SEAO",
+    "name": "Sector-10A",
+    "aliases": [
+      "Sector 10A",
+      "Sector 10 A"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 29
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SVAL",
+    "name": "Sachivalaya",
+    "aliases": [
+      "Secretariat",
+      "Gandhinagar Sachivalaya"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 30
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "AKDM",
+    "name": "Akshardham",
+    "aliases": [
+      "Akshardham Temple"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 31
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "JUSL",
+    "name": "Juna Sachivalaya",
+    "aliases": [
+      "Old Sachivalaya"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 32
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SEAF",
+    "name": "Sector-16",
+    "aliases": [
+      "Sector 16"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 33
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SEBD",
+    "name": "Sector-24",
+    "aliases": [
+      "Sector 24"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 34
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "MAHM",
+    "name": "Mahatma Mandir",
+    "aliases": [
+      "Mahatama Mandir"
+    ],
+    "corridorIds": [
+      "ns"
+    ],
+    "sequenceByCorridor": {
+      "ns": 35
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "PDEU",
+    "name": "PDEU",
+    "aliases": [
+      "PDPU",
+      "Pandit Deendayal Energy University"
+    ],
+    "corridorIds": [
+      "gift"
+    ],
+    "sequenceByCorridor": {
+      "gift": 2
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GIFC",
+    "name": "GIFT City",
+    "aliases": [
+      "Gift City",
+      "GIFT"
+    ],
+    "corridorIds": [
+      "gift"
+    ],
+    "sequenceByCorridor": {
+      "gift": 3
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 2,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "TLTG",
+    "name": "Thaltej Gam",
+    "aliases": [
+      "Thaltej Gaam"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 1
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "TLTJ",
+    "name": "Thaltej",
+    "aliases": [],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 2
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "DDKN",
+    "name": "Doordarshan Kendra",
+    "aliases": [
+      "Doordarshan",
+      "DD Kendra"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 3
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GKRD",
+    "name": "Gurukul Road",
+    "aliases": [
+      "Gurukul"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 4
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GJUV",
+    "name": "Gujarat University",
+    "aliases": [
+      "Gujarat Univ"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 5
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "CMSR",
+    "name": "Commerce Six Road",
+    "aliases": [
+      "Commerce 6 Road"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 6
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SPSD",
+    "name": "SP Stadium",
+    "aliases": [
+      "Stadium",
+      "S P Stadium"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 7
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "SHHP",
+    "name": "Shahpur",
+    "aliases": [],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 9
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "GEKA",
+    "name": "Ghee Kanta",
+    "aliases": [
+      "Gheekanta"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 10
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "KPMS",
+    "name": "Kalupur",
+    "aliases": [
+      "Kalupur Metro Station",
+      "Kalupur Railway Station"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 11
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "KKES",
+    "name": "Kankaria East",
+    "aliases": [
+      "Kankaria"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 12
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "ARPK",
+    "name": "Apparel Park",
+    "aliases": [],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 13
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "ARVD",
+    "name": "Amraivadi",
+    "aliases": [
+      "Amraiwadi"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 14
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "RBCY",
+    "name": "Rabari Colony",
+    "aliases": [],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 15
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "VSTL",
+    "name": "Vastral",
+    "aliases": [],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 16
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "NTCR",
+    "name": "Nirant Cross Road",
+    "aliases": [
+      "Nirant Cross Roads"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 17
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  },
+  {
+    "id": "VTLG",
+    "name": "Vastral Gam",
+    "aliases": [
+      "Vastral Gaam"
+    ],
+    "corridorIds": [
+      "ew"
+    ],
+    "sequenceByCorridor": {
+      "ew": 18
+    },
+    "isInterchange": false,
+    "interchangeNote": null,
+    "phase": 1,
+    "latitude": null,
+    "longitude": null,
+    "coordinateStatus": "unknown",
+    "stationType": "unknown",
+    "facilities": [],
+    "platforms": [],
+    "sourceMetadata": {
+      "sourceId": "gmrc-route-map",
+      "sourceUrl": "https://www.gujaratmetrorail.com/",
+      "verifiedAt": "2026-10-09",
+      "verificationStatus": "verified",
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
+    }
+  }
+]

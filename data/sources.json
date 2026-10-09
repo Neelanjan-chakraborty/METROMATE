@@ -1,0 +1,47 @@
+[
+  {
+    "id": "gmrc-route-map",
+    "name": "GMRC Route Map (Gujarati / Hindi / English)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Corridors, station names, station order, interchanges",
+    "obtainedBy": "Screenshot supplied by the project team; transcribed by eye",
+    "checkedAt": "2026-10-09",
+    "limitations": "Exact page URL not recorded. Low-resolution image; no coordinates, gates, platforms or fares."
+  },
+  {
+    "id": "gmrc-interactive-map",
+    "name": "GMRC interactive route map (SVG markup)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "GMRC station codes and adjacent-station links",
+    "obtainedBy": "SVG markup pasted by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Used only for station codes and adjacency. Also contains stations/lines (Ashram Road to Airport, GIFT City House, Gujarat Biotechnology University) that are NOT on the official route map and are excluded. Its pixel layout is not reused."
+  },
+  {
+    "id": "gmrc-train-information",
+    "name": "GMRC Train Information (frequency, first/last train, travel time)",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+    "type": "Frequency bands, first and last train, end-to-end travel time and distance per line",
+    "obtainedBy": "Screenshot supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Effective 18/05/2026; page footer says last updated 05-Oct-2026. The per-train timetable image is low resolution and partly hidden, so per-train times are not stored."
+  },
+  {
+    "id": "gmrc-fare-rules",
+    "name": "GMRC Fare Rules",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/fare-rules/",
+    "type": "Fare media, products and rules",
+    "obtainedBy": "Screenshot supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Contains no fare amounts. The start of one bullet about Phase-1/Phase-2 travel is hidden by a navigation bar in the screenshot."
+  },
+  {
+    "id": "gmrc-facilities",
+    "name": "GMRC Facilities for Passengers / Differently Abled Passengers",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Network-wide facility categories",
+    "obtainedBy": "Screenshots supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Photo galleries only. Does not say which station has which facility."
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "name": "MetroMate offline dataset",
+  "version": "2026.10.09-1",
+  "generatedAt": "2026-10-09",
+  "sourcePageLastUpdated": "2026-10-05",
+  "network": "Ahmedabad–Gandhinagar Metro",
+  "stationCount": 54,
+  "notes": "Network structure is transcribed from official GMRC material supplied as screenshots/markup. Coordinates, gates, platforms, lifts per station and fares are unknown."
+}

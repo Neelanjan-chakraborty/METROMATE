@@ -1,0 +1,288 @@
+{
+  "version": "2026-05-18",
+  "validFrom": "2026-05-18",
+  "sourcePageLastUpdated": "2026-10-05",
+  "isLive": false,
+  "sourceMetadata": {
+    "sourceId": "gmrc-train-information",
+    "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+    "verifiedAt": "2026-10-09",
+    "verificationStatus": "verified",
+    "notes": "Static schedule published by GMRC, effective 18/05/2026. Not a live train status. Frequencies are subject to change."
+  },
+  "notes": [
+    "Ticket windows at all stations close five minutes before departure of the last revenue train.",
+    "Frequency of metro train services is subject to change due to inevitable reasons (GMRC)."
+  ],
+  "lines": [
+    {
+      "id": "line-1",
+      "label": "Line 1 — East–West Corridor",
+      "corridorId": "ew",
+      "terminalStationIds": [
+        "TLTG",
+        "VTLG"
+      ],
+      "stationIds": [
+        "TLTG",
+        "TLTJ",
+        "DDKN",
+        "GKRD",
+        "GJUV",
+        "CMSR",
+        "SPSD",
+        "OHCI",
+        "SHHP",
+        "GEKA",
+        "KPMS",
+        "KKES",
+        "ARPK",
+        "ARVD",
+        "RBCY",
+        "VSTL",
+        "NTCR",
+        "VTLG"
+      ],
+      "frequency": [
+        {
+          "label": "Weekdays, peak hours (08:00–11:00 and 17:00–20:00)",
+          "kind": "every",
+          "minutes": 7
+        },
+        {
+          "label": "Weekdays non-peak hours and Saturday peak hours",
+          "kind": "every",
+          "minutes": 10
+        },
+        {
+          "label": "Saturday non-peak hours and all day Sunday",
+          "kind": "every",
+          "minutes": 12
+        },
+        {
+          "label": "All days 06:20–07:00 and 22:00–23:00",
+          "kind": "every",
+          "minutes": 20
+        }
+      ],
+      "firstTrain": [
+        {
+          "stationId": "VTLG",
+          "time": "06:20"
+        },
+        {
+          "stationId": "TLTG",
+          "time": "06:20"
+        }
+      ],
+      "lastTrain": [
+        {
+          "stationId": "VTLG",
+          "time": "23:00"
+        },
+        {
+          "stationId": "TLTG",
+          "time": "23:00"
+        }
+      ],
+      "endToEndMinutes": 45,
+      "distanceKm": 21.1,
+      "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+      "verificationStatus": "verified",
+      "verifiedAt": "2026-10-09",
+      "notes": ""
+    },
+    {
+      "id": "line-2",
+      "label": "Line 2 — APMC to Koteshwar Road (North–South Corridor)",
+      "corridorId": "ns",
+      "terminalStationIds": [
+        "APMC",
+        "KORD"
+      ],
+      "stationIds": [
+        "APMC",
+        "JVRJ",
+        "RNMS",
+        "SRYS",
+        "PLDI",
+        "GRMS",
+        "OHCI",
+        "UPMS",
+        "VRMS",
+        "VDMS",
+        "RNIP",
+        "SBRS",
+        "AEC",
+        "SMMS",
+        "MTRS",
+        "KORD"
+      ],
+      "frequency": [
+        {
+          "label": "Monday–Sunday 06:16–22:00",
+          "kind": "every",
+          "minutes": 12
+        },
+        {
+          "label": "Monday–Sunday 22:00–23:00",
+          "kind": "every",
+          "minutes": 20
+        }
+      ],
+      "firstTrain": [
+        {
+          "stationId": "APMC",
+          "time": "06:20"
+        },
+        {
+          "stationId": "KORD",
+          "time": "06:16"
+        }
+      ],
+      "lastTrain": [
+        {
+          "stationId": "APMC",
+          "time": "23:10"
+        },
+        {
+          "stationId": "KORD",
+          "time": "23:00"
+        }
+      ],
+      "endToEndMinutes": 35,
+      "distanceKm": 20.2,
+      "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+      "verificationStatus": "verified",
+      "verifiedAt": "2026-10-09",
+      "notes": ""
+    },
+    {
+      "id": "line-3",
+      "label": "Line 3 — Koteshwar Road to Mahatma Mandir (Phase 2, Corridor-1)",
+      "corridorId": "ns",
+      "terminalStationIds": [
+        "KORD",
+        "MAHM"
+      ],
+      "stationIds": [
+        "KORD",
+        "VIKC",
+        "TAPC",
+        "NAMC",
+        "KOBC",
+        "JUKB",
+        "KOBG",
+        "GNLU",
+        "RAYN",
+        "RADN",
+        "DHKU",
+        "INFC",
+        "SEOA",
+        "SEAO",
+        "SVAL",
+        "AKDM",
+        "JUSL",
+        "SEAF",
+        "SEBD",
+        "MAHM"
+      ],
+      "frequency": [
+        {
+          "label": "Monday–Sunday 06:40–08:00",
+          "kind": "average",
+          "minutes": 40
+        },
+        {
+          "label": "Monday–Sunday 08:00–21:00",
+          "kind": "average",
+          "minutes": 24
+        }
+      ],
+      "firstTrain": [
+        {
+          "stationId": "KORD",
+          "time": "06:55"
+        },
+        {
+          "stationId": "MAHM",
+          "time": "06:40"
+        }
+      ],
+      "lastTrain": [
+        {
+          "stationId": "KORD",
+          "time": "21:20"
+        },
+        {
+          "stationId": "MAHM",
+          "time": "21:00"
+        }
+      ],
+      "endToEndMinutes": 43,
+      "distanceKm": 20.87,
+      "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+      "verificationStatus": "verified",
+      "verifiedAt": "2026-10-09",
+      "notes": ""
+    },
+    {
+      "id": "line-4",
+      "label": "Line 4 — GNLU to GIFT City (Phase 2, Corridor-2)",
+      "corridorId": "gift",
+      "terminalStationIds": [
+        "GNLU",
+        "GIFC"
+      ],
+      "stationIds": [
+        "GNLU",
+        "PDEU",
+        "GIFC"
+      ],
+      "frequency": [
+        {
+          "label": "07:36–10:18",
+          "kind": "average",
+          "minutes": 49
+        },
+        {
+          "label": "10:18–16:06",
+          "kind": "bus-only",
+          "minutes": null,
+          "note": "GMRC lists only bus services for GNLU–GIFT City in this window."
+        },
+        {
+          "label": "16:06–19:13",
+          "kind": "average",
+          "minutes": 57
+        }
+      ],
+      "firstTrain": [
+        {
+          "stationId": "GNLU",
+          "time": "07:36"
+        },
+        {
+          "stationId": "GIFC",
+          "time": "07:48"
+        }
+      ],
+      "lastTrain": [
+        {
+          "stationId": "GNLU",
+          "time": "18:57"
+        },
+        {
+          "stationId": "GIFC",
+          "time": "19:13"
+        }
+      ],
+      "endToEndMinutes": 6,
+      "distanceKm": 5.8,
+      "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+      "verificationStatus": "verified",
+      "verifiedAt": "2026-10-09",
+      "notes": ""
+    }
+  ]
+}
