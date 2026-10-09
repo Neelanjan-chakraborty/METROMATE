@@ -58,13 +58,17 @@ const LAMP = '#FFE9A8';
 export type HeroMode = 'climb' | 'arrive';
 
 // 'arrive' run, in px along the viaduct (shifts of the mirrored train, see TrainLayer).
-const ARRIVE_FROM = 500;
-const ARRIVE_STOP = 214;
+const ARRIVE_FROM = 480;
+const ARRIVE_STOP = 154;
 const ARRIVE_TO = -300;
 export const ARRIVE_MS = 7_500;
 export const DWELL_MS = 6_000;
 export const DEPART_MS = 5_500;
-const ARRIVE_ORIGIN_X = 190; // viewBox x the train's local origin sits on
+// viewBox x the train's local origin sits on. The whole train must lie inside the 0..430 viewBox in this
+// resting frame (the layer is shifted as a whole, but the SVG clips at its own edges), so the mirrored
+// train (local -243..3) sits at 250 and the Home train (local 0..243) at 186.
+const ARRIVE_ORIGIN_X = 250;
+const CLIMB_ORIGIN_X = 186;
 
 interface Props {
   height: number;
@@ -245,14 +249,62 @@ function StationShelter({ g, x, night }: { g: Geom; x: number; night: number }) 
   const roof = mixColor('#8C83D8', '#4C4CA4', night * 0.9);
   const roofTop = mixColor('#A79FE6', '#6969C2', night * 0.9);
   const post = mixColor('#9B94DC', '#4A4A9A', night * 0.9);
+  const glass = mixColor('#FFFFFF', '#9FA6F2', night);
+  const tower = mixColor('#C9C5F0', '#3E3E8C', night * 0.9);
+  const towerGlass = mixColor('#EEF0FF', '#2A2A66', night * 0.85);
   const glow = night * 0.9;
+  const BAYS = [-250, -190, -130, -70, -10];
+  const towerX = x - 281 * Math.cos((g.angle * Math.PI) / 180);
+  const towerY = deckAt(g, towerX);
   return (
+    <>
+      {/* glass lift tower at the head end of the platform: stands upright, not on the slope */}
+      <G transform={`translate(${towerX} ${towerY})`}>
+        <Rect x={-10} y={-54} width={20} height={56} rx={2} fill={tower} />
+        <Rect x={-7} y={-50} width={14} height={46} rx={1.4} fill={towerGlass} opacity={0.95} />
+        <Rect x={-4} y={-33} width={8} height={12} rx={1.4} fill="#6A55F0" opacity={0.85} />
+        <Rect x={-3.5} y={-31.5} width={7} height={4.4} rx={1} fill="#FFFFFF" opacity={0.65} />
+        <Rect x={-12} y={-57} width={24} height={4} rx={2} fill={roofTop} />
+        {glow > 0.05 ? <Rect x={-7} y={-50} width={14} height={46} rx={1.4} fill="#FFE9A8" opacity={glow * 0.28} /> : null}
+      </G>
     <G transform={`translate(${x} ${deckAt(g, x)}) rotate(${g.angle})`}>
-      {[-250, -190, -130, -70, -10].map((px) => (
+      {/* glazed wind-screens, supports and roof */}
+      {BAYS.slice(0, -1).map((px) => (
+        <Rect key={`gl${px}`} x={px + 2} y={-36.5} width={56} height={12} fill={glass} opacity={0.22} />
+      ))}
+      {BAYS.map((px) => (
         <Rect key={px} x={px - 1.4} y={-40} width={2.8} height={38} rx={1} fill={post} />
       ))}
       <Rect x={-262} y={-37} width={278} height={3} fill={roof} />
       <Rect x={-266} y={-43} width={286} height={6.4} rx={3.2} fill={roofTop} />
+
+      {/* hanging train-information boards and a clock */}
+      {[-222, -186, -98].map((bx) => (
+        <G key={`b${bx}`}>
+          <Rect x={bx + 8} y={-34} width={1} height={2} fill={post} />
+          <Rect x={bx} y={-33} width={17} height={7} rx={1.6} fill={mixColor('#2A3563', '#0F1536', night)} />
+          <Rect x={bx + 2} y={-31.2} width={9} height={1.3} rx={0.6} fill="#FFC857" opacity={0.95} />
+          <Rect x={bx + 2} y={-28.6} width={6} height={1.3} rx={0.6} fill="#FFC857" opacity={0.65} />
+          <Rect x={bx + 12.5} y={-31.4} width={2.6} height={2.6} rx={0.6} fill="#5BE0A3" />
+        </G>
+      ))}
+      <G>
+        <Rect x={-62} y={-34.4} width={1} height={2.4} fill={post} />
+        <Circle cx={-61.5} cy={-29.4} r={4.4} fill="#FFFFFF" stroke={post} strokeWidth={1} />
+        <Path d="M-61.5 -29.4 V-32.2 M-61.5 -29.4 L-59.4 -28.2" stroke="#2A3563" strokeWidth={0.8} strokeLinecap="round" />
+      </G>
+
+      {/* station roundel and name board on the roof */}
+      <G>
+        <Rect x={-142} y={-52} width={2} height={9.5} fill={post} />
+        <Rect x={-120} y={-52} width={2} height={9.5} fill={post} />
+        <Rect x={-150} y={-62} width={40} height={13} rx={4} fill="#4F35E8" />
+        <Circle cx={-141} cy={-55.5} r={4.6} fill="#FFFFFF" />
+        <Rect x={-143.2} y={-58} width={4.4} height={5} rx={1.3} fill="none" stroke="#4F35E8" strokeWidth={1} />
+        <Rect x={-134} y={-58.5} width={20} height={1.9} rx={0.95} fill="#FFFFFF" opacity={0.95} />
+        <Rect x={-134} y={-54.4} width={14} height={1.9} rx={0.95} fill="#FFFFFF" opacity={0.6} />
+      </G>
+
       {/* canopy lights */}
       {glow > 0.05
         ? [-230, -170, -110, -50].map((lx) => (
@@ -263,6 +315,7 @@ function StationShelter({ g, x, night }: { g: Geom; x: number; night: number }) 
           ))
         : null}
     </G>
+    </>
   );
 }
 
@@ -386,6 +439,7 @@ function Cloud({ def, color, opacity, scale, animate }: { def: (typeof CLOUDS)[n
 function TrainLayer({ look, height, scale, animate, mode }: { look: HeroLook; height: number; scale: number; animate: boolean; mode: HeroMode }) {
   const arrive = mode === 'arrive';
   const geom = GEOM[mode];
+  const originX = arrive ? ARRIVE_ORIGIN_X : CLIMB_ORIGIN_X;
   const restAt = arrive ? 1 : P_STATIC; // progress where the train sits still when motion is off
   const [progress] = useState(() => new Animated.Value(animate ? 0 : restAt));
 
@@ -441,7 +495,7 @@ function TrainLayer({ look, height, scale, animate, mode }: { look: HeroLook; he
             <Stop offset="1" stopColor="#FFE9A8" stopOpacity="0" />
           </LinearGradient>
         </Defs>
-        <G transform={`translate(${ARRIVE_ORIGIN_X} ${deckAt(geom, ARRIVE_ORIGIN_X)}) rotate(${geom.angle})${arrive ? ' scale(-1 1)' : ''}`}>
+        <G transform={`translate(${originX} ${deckAt(geom, originX)}) rotate(${geom.angle})${arrive ? ' scale(-1 1)' : ''}`}>
           {light > 0.05 ? <Polygon points="241,-7 330,-26 330,10" fill="url(#tr-beam)" opacity={light * 0.7} /> : null}
           <Rect x={-3} y={-3.4} width={246} height={3.6} rx={1.6} fill={mixColor('#8F8AC0', '#2B2B6B', look.night * 0.8)} />
           {[0, 56, 112].map((x) => (
