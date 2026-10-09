@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Share, StyleSheet, Text, View } from 'react-native';
-import { Crosshair, Share2, Trash2 } from 'lucide-react-native';
-import { Button, Card, IconButton, Muted, Notice } from '../ui';
+import React, { useMemo, useState } from 'react';
+import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Info, Map as MapIcon, MapPin, Share2, Trash2 } from 'lucide-react-native';
+import { Button, IconButton, Notice } from '../ui';
 import { StationPicker } from '../StationPicker';
-import { colors, space, type } from '../../theme';
+import { PositionArt } from './LiveArt';
+import { NAVY, SLATE, VIOLET, useLive } from './LiveSections';
+import { colors } from '../../theme';
 import { RECORD_MAX_ACCURACY_M, type Fix } from '../../lib/locator';
 import type { Station, StationCoord } from '../../types';
 
@@ -58,45 +60,79 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
     void Share.share({ message: JSON.stringify(payload, null, 2) }).catch(() => undefined);
   };
 
-  return (
-    <Card style={{ gap: space.md }}>
-      <View style={styles.head}>
-        <Crosshair size={20} color={colors.primary} />
-        <Text style={[type.h2, { flex: 1 }]}>Improve station positions</Text>
-      </View>
-      <Muted>
-        Built-in station pins come from an unofficial map and can be off by a block. Standing in a station, record your GPS position there; MetroMate averages repeated fixes and prefers them over the pin. Stored only on this phone.
-      </Muted>
+  const { z, st } = useLive();
+  const rs = useMemo(() => makeRecordStyles(z), [z]);
+  const enabled = !!stationId && goodEnough;
 
-      <View style={styles.pickRow}>
-        <View style={{ flex: 1 }}>
-          <Text style={type.tiny}>Station</Text>
-          <Text style={stationId ? type.h3 : [type.body, { color: colors.faint }]}>{stationId ? name(stationId) : 'Choose the station you’re at'}</Text>
+  return (
+    <View style={st.card}>
+      <View style={rs.head}>
+        <View style={st.smallCircle}>
+          <MapPin size={z(15)} color={VIOLET} strokeWidth={2.1} />
         </View>
-        <Button label="Change" variant="secondary" compact onPress={() => setPicker(true)} />
+        <Text style={[st.howTitle, { flex: 1, fontSize: z(15) }]} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+          Improve station positions
+        </Text>
+        <Pressable accessibilityRole="button" accessibilityLabel={stationId ? `Station: ${name(stationId)}. Change station` : 'Choose a station'} onPress={() => setPicker(true)} hitSlop={8} style={({ pressed }) => [st.chip, pressed && { opacity: 0.8 }]}>
+          <MapIcon size={z(14)} color={VIOLET} strokeWidth={2.1} />
+          <Text style={st.chipText}>Change station</Text>
+        </Pressable>
       </View>
-      <Button label="Record my position here" icon={Crosshair} disabled={!stationId || !goodEnough} onPress={() => void record()} />
-      <Text style={type.tiny}>
-        {!fix
-          ? 'Waiting for a GPS fix.'
-          : goodEnough
-            ? `Current fix ±${Math.round(acc!)} m is good enough. Record 2–3 times, a few seconds apart, for a better average.`
-            : `Current fix is ${acc === null ? 'of unknown accuracy' : `±${Math.round(acc)} m`}; recording needs ±${RECORD_MAX_ACCURACY_M} m or better. Step outdoors or wait.`}
-      </Text>
-      {message ? <Notice>{message}</Notice> : null}
+
+      <View style={rs.body}>
+        <PositionArt width={z(115)} height={z(108)} radius={z(14)} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={rs.text}>
+            Help make MetroMate more accurate. Stand in the station, record your GPS position, and we’ll improve the station pin (stored only on this phone).
+          </Text>
+          <Text style={rs.station} numberOfLines={1}>
+            {stationId ? `Recording for ${name(stationId)}` : 'Choose the station you’re at'}
+          </Text>
+        </View>
+      </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Record my position here"
+        accessibilityState={{ disabled: !enabled }}
+        disabled={!enabled}
+        onPress={() => void record()}
+        style={({ pressed }) => [rs.record, !enabled && rs.recordOff, pressed && { opacity: 0.9 }]}
+      >
+        <View style={rs.recordIcon}>
+          <View style={rs.recordDot} />
+        </View>
+        <Text style={rs.recordLabel}>Record my position here</Text>
+      </Pressable>
+
+      <View style={rs.info}>
+        <Info size={z(15)} color={SLATE} strokeWidth={2} style={{ marginTop: z(1) }} />
+        <Text style={[st.caption, { flex: 1, marginTop: 0 }]}>
+          {!fix
+            ? 'Waiting for a GPS fix.'
+            : goodEnough
+              ? `Current fix ±${Math.round(acc!)} m is good enough. Record 2–3 times, a few seconds apart, for a better average.`
+              : `Current fix is ${acc === null ? 'of unknown accuracy' : `±${Math.round(acc)} m`}; recording needs ±${RECORD_MAX_ACCURACY_M} m or better. Step outdoors or wait.`}
+        </Text>
+      </View>
+      {message ? (
+        <View style={{ marginTop: z(10) }}>
+          <Notice>{message}</Notice>
+        </View>
+      ) : null}
 
       {coords.length > 0 ? (
-        <View style={{ gap: space.xs }}>
-          <Text style={type.h3}>Recorded on this phone ({coords.length})</Text>
+        <View style={rs.list}>
+          <Text style={rs.listTitle}>Recorded on this phone ({coords.length})</Text>
           {coords.map((c) => (
-            <View key={c.stationId} style={styles.recRow}>
-              <Text style={[type.small, { flex: 1, color: colors.text }]}>
+            <View key={c.stationId} style={rs.recRow}>
+              <Text style={[st.caption, { flex: 1, marginTop: 0, color: '#39425E' }]}>
                 {name(c.stationId)} · {c.samples} {c.samples === 1 ? 'fix' : 'fixes'} · ±{Math.max(1, Math.round(c.accuracyM))} m
               </Text>
               <IconButton icon={Trash2} label={`Remove recorded position for ${name(c.stationId)}`} color={colors.destination} onPress={() => onClearOne(c.stationId)} />
             </View>
           ))}
-          <View style={{ flexDirection: 'row', gap: space.sm }}>
+          <View style={{ flexDirection: 'row', gap: z(10), marginTop: z(4) }}>
             <Button label="Share as JSON" icon={Share2} variant="secondary" compact style={{ flex: 1 }} onPress={share} />
             <Button label="Clear all" icon={Trash2} variant="danger" compact style={{ flex: 1 }} onPress={onClearAll} />
           </View>
@@ -112,12 +148,24 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
           setMessage(null);
         }}
       />
-    </Card>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  pickRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  recRow: { flexDirection: 'row', alignItems: 'center' },
-});
+function makeRecordStyles(z: (n: number) => number) {
+  return StyleSheet.create({
+    head: { flexDirection: 'row', alignItems: 'center', gap: z(9) },
+    body: { flexDirection: 'row', gap: z(14), marginTop: z(13), alignItems: 'flex-start' },
+    text: { fontSize: z(11.5), lineHeight: z(16.5), color: '#66718C' },
+    station: { fontSize: z(11.5), fontWeight: '700', color: VIOLET, marginTop: z(7) },
+    record: { marginTop: z(12), height: z(38), borderRadius: z(12), backgroundColor: VIOLET, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: z(10), shadowColor: VIOLET, shadowOpacity: 0.28, shadowRadius: z(10), shadowOffset: { width: 0, height: z(5) }, elevation: 4 },
+    recordOff: { backgroundColor: '#B8ADF4', shadowOpacity: 0, elevation: 0 },
+    recordIcon: { width: z(20), height: z(20), borderRadius: z(10), borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    recordDot: { width: z(11), height: z(11), borderRadius: z(6), backgroundColor: '#FFFFFF' },
+    recordLabel: { fontSize: z(13), fontWeight: '700', color: '#FFFFFF' },
+    info: { marginTop: z(10), flexDirection: 'row', gap: z(8), alignItems: 'flex-start' },
+    list: { marginTop: z(14), paddingTop: z(12), borderTopWidth: 1, borderTopColor: '#ECEEF8', gap: z(6) },
+    listTitle: { fontSize: z(14), fontWeight: '800', color: NAVY },
+    recRow: { flexDirection: 'row', alignItems: 'center' },
+  });
+}

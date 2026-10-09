@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccessibilityInfo, AppState } from 'react-native';
-import { minuteOfDay } from '../../lib/skyPalette';
+import { useIsFocused } from 'expo-router';
+import { heroLookAt, minuteOfDay } from '../../lib/skyPalette';
 
 /** Local minute of the day (fractional), refreshed every 30 s and whenever the app returns to the foreground. */
 export function useMinuteOfDay(refreshMs = 30_000): number {
@@ -53,4 +54,18 @@ export function parsePreviewTime(v: string | undefined): number | null {
   const h = Number(m[1]);
   const min = Number(m[2]);
   return h < 24 && min < 60 ? h * 60 + min : null;
+}
+
+/**
+ * Everything a screen needs to drive the shared hero: the sky look for the current (or previewed)
+ * time, whether the screen is focused, and whether moving parts may run right now.
+ */
+export function useHeroState(skyParam: string | undefined) {
+  const clock = useMinuteOfDay();
+  const preview = parsePreviewTime(skyParam);
+  const look = useMemo(() => heroLookAt(preview ?? clock), [preview, clock]);
+  const focused = useIsFocused();
+  const appActive = useAppActive();
+  const reduceMotion = useReduceMotion();
+  return { look, focused, animate: focused && appActive && !reduceMotion };
 }

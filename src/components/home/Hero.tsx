@@ -15,9 +15,20 @@ import { mixColor, windowIsLit, windowThreshold, type HeroLook } from '../../lib
 
 export const VB_W = 430;
 export const VB_H = 172;
-const SLOPE = -64 / 280; // viaduct rises 64 for every 280 to the right
-const deckY = (x: number) => 161 + (x - 150) * SLOPE;
-const DECK_ANGLE = -12.87; // atan(64/280)
+
+/** Viaduct geometry per mode. Home climbs a steep rise; Live has a gentle grade so the stopped train clears the card. */
+interface Geom {
+  slope: number; // dy per dx (negative = rising to the right)
+  base: number; // deck y at x = 150
+  angle: number; // degrees, atan(slope)
+  x0: number; // where the deck starts
+  pillars: number[];
+}
+const GEOM: Record<HeroMode, Geom> = {
+  climb: { slope: -64 / 280, base: 161, angle: -12.87, x0: 150, pillars: [250, 330, 410] },
+  arrive: { slope: -22 / 237, base: 142, angle: -5.3, x0: -20, pillars: [90, 170, 250, 330, 410] },
+};
+const deckAt = (g: Geom, x: number) => g.base + (x - 150) * g.slope;
 
 // Train run: starts hidden below-left behind the card, exits past the right edge.
 const DX_START = -380;
@@ -39,31 +50,49 @@ const NEAR_TOWERS: [number, number, number][] = [[0, 98, 24], [24, 86, 20], [168
 const LIT = '#FFE08A';
 const LAMP = '#FFE9A8';
 
+/**
+ * 'climb'  - Home: the train climbs the viaduct from below the card and leaves past the right edge.
+ * 'arrive' - Live: the train descends from the top right, brakes and stops at a station, waits,
+ *            then rolls on down out of sight below the card.
+ */
+export type HeroMode = 'climb' | 'arrive';
+
+// 'arrive' run, in px along the viaduct (shifts of the mirrored train, see TrainLayer).
+const ARRIVE_FROM = 500;
+const ARRIVE_STOP = 214;
+const ARRIVE_TO = -300;
+export const ARRIVE_MS = 7_500;
+export const DWELL_MS = 6_000;
+export const DEPART_MS = 5_500;
+const ARRIVE_ORIGIN_X = 190; // viewBox x the train's local origin sits on
+
 interface Props {
   height: number;
   look: HeroLook;
+  mode?: HeroMode;
   /** Moving things run only while true (screen focused, app active, reduce-motion off). */
   animate: boolean;
 }
 
-export function Hero({ height, look, animate }: Props) {
+export function Hero({ height, look, animate, mode = 'climb' }: Props) {
   const [box, setBox] = useState({ w: VB_W, h: height });
   const onLayout = (e: LayoutChangeEvent) => setBox({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height });
   // Same fit as preserveAspectRatio="xMaxYMax slice": uniform scale, anchored bottom-right.
   const scale = Math.max(box.w / VB_W, box.h / VB_H);
   return (
     <View pointerEvents="none" onLayout={onLayout} style={[StyleSheet.absoluteFill, { height, overflow: 'hidden' }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Scene look={look} height={height} />
+      <Scene look={look} height={height} mode={mode} />
       <Stars look={look} height={height} animate={animate} />
       <Clouds look={look} scale={scale} animate={animate} />
-      <TrainLayer look={look} height={height} scale={scale} animate={animate} />
+      <TrainLayer look={look} height={height} scale={scale} animate={animate} mode={mode} />
     </View>
   );
 }
 
 // ------------------------------------------------------------------ scene
 
-const Scene = memo(function Scene({ look, height }: { look: HeroLook; height: number }) {
+const Scene = memo(function Scene({ look, height, mode }: { look: HeroLook; height: number; mode: HeroMode }) {
+  const g = GEOM[mode];
   const night = look.night;
 
   // Window grids are drawn as two paths (lit / unlit) instead of hundreds of rects.
@@ -94,8 +123,7 @@ const Scene = memo(function Scene({ look, height }: { look: HeroLook; height: nu
   const deckBottom = mixColor('#B9B5DE', '#34347A', night * 0.75);
   const pillar = mixColor('#C6C3E5', '#3C3C84', night * 0.75);
   const unlitColor = mixColor('#FFFFFF', '#0B0A2E', night);
-  const pillars = [250, 330, 410];
-  const lamps = useMemo(() => Array.from({ length: 15 }, (_, i) => 154 + i * 19), []);
+  const lamps = useMemo(() => Array.from({ length: 15 }, (_, i) => (mode === 'arrive' ? 4 : 154) + i * (mode === 'arrive' ? 29 : 19)), [mode]);
   const b = look.body;
 
   return (
@@ -182,9 +210,9 @@ const Scene = memo(function Scene({ look, height }: { look: HeroLook; height: nu
       </G>
 
       {/* viaduct */}
-      <Polygon points={`150,${deckY(150)} 430,${deckY(430)} 430,${deckY(430) + 6} 150,${deckY(150) + 6}`} fill="url(#sc-deck)" />
-      {pillars.map((x) => {
-        const y = deckY(x) + 6;
+      <Polygon points={`${g.x0},${deckAt(g, g.x0)} 430,${deckAt(g, 430)} 430,${deckAt(g, 430) + 6} ${g.x0},${deckAt(g, g.x0) + 6}`} fill="url(#sc-deck)" />
+      {g.pillars.map((x) => {
+        const y = deckAt(g, x) + 6;
         return (
           <G key={x}>
             <Polygon points={`${x - 6},${y} ${x + 6},${y} ${x + 8},${VB_H} ${x - 8},${VB_H}`} fill={pillar} />
@@ -192,11 +220,12 @@ const Scene = memo(function Scene({ look, height }: { look: HeroLook; height: nu
           </G>
         );
       })}
+      {mode === 'arrive' ? <StationShelter g={g} x={ARRIVE_ORIGIN_X + ARRIVE_STOP} night={night} /> : null}
       {night > 0.25
         ? lamps.map((x) => (
             <G key={x}>
-              <Circle cx={x} cy={deckY(x) - 1.6} r={3.6} fill={LAMP} opacity={night * 0.28} />
-              <Circle cx={x} cy={deckY(x) - 1.6} r={1.1} fill={LAMP} opacity={night * 0.95} />
+              <Circle cx={x} cy={deckAt(g, x) - 1.6} r={3.6} fill={LAMP} opacity={night * 0.28} />
+              <Circle cx={x} cy={deckAt(g, x) - 1.6} r={1.1} fill={LAMP} opacity={night * 0.95} />
             </G>
           ))
         : null}
@@ -205,6 +234,37 @@ const Scene = memo(function Scene({ look, height }: { look: HeroLook; height: nu
     </Svg>
   );
 });
+
+// ---------------------------------------------------------- station shelter
+
+/**
+ * Platform canopy over the stopping point on the viaduct (Live screen). Drawn on the viaduct's
+ * slope, behind the train, so only the roof, supports and name board show above the carriages.
+ */
+function StationShelter({ g, x, night }: { g: Geom; x: number; night: number }) {
+  const roof = mixColor('#8C83D8', '#4C4CA4', night * 0.9);
+  const roofTop = mixColor('#A79FE6', '#6969C2', night * 0.9);
+  const post = mixColor('#9B94DC', '#4A4A9A', night * 0.9);
+  const glow = night * 0.9;
+  return (
+    <G transform={`translate(${x} ${deckAt(g, x)}) rotate(${g.angle})`}>
+      {[-250, -190, -130, -70, -10].map((px) => (
+        <Rect key={px} x={px - 1.4} y={-40} width={2.8} height={38} rx={1} fill={post} />
+      ))}
+      <Rect x={-262} y={-37} width={278} height={3} fill={roof} />
+      <Rect x={-266} y={-43} width={286} height={6.4} rx={3.2} fill={roofTop} />
+      {/* canopy lights */}
+      {glow > 0.05
+        ? [-230, -170, -110, -50].map((lx) => (
+            <G key={lx}>
+              <Rect x={lx - 9} y={-34.6} width={18} height={7} fill="#FFE9A8" opacity={glow * 0.22} />
+              <Rect x={lx - 5} y={-34.4} width={10} height={1.6} rx={0.8} fill="#FFE9A8" opacity={glow} />
+            </G>
+          ))
+        : null}
+    </G>
+  );
+}
 
 // ------------------------------------------------------------------- stars
 
@@ -323,33 +383,45 @@ function Cloud({ def, color, opacity, scale, animate }: { def: (typeof CLOUDS)[n
 
 // ------------------------------------------------------------------- train
 
-function TrainLayer({ look, height, scale, animate }: { look: HeroLook; height: number; scale: number; animate: boolean }) {
-  const [progress] = useState(() => new Animated.Value(animate ? 0 : P_STATIC));
+function TrainLayer({ look, height, scale, animate, mode }: { look: HeroLook; height: number; scale: number; animate: boolean; mode: HeroMode }) {
+  const arrive = mode === 'arrive';
+  const geom = GEOM[mode];
+  const restAt = arrive ? 1 : P_STATIC; // progress where the train sits still when motion is off
+  const [progress] = useState(() => new Animated.Value(animate ? 0 : restAt));
 
   useEffect(() => {
     if (!animate) {
       progress.stopAnimation();
-      progress.setValue(P_STATIC);
+      progress.setValue(restAt);
       return;
     }
-    // Every run (first one, after returning to the tab, after each pause) begins at the foot of the
-    // viaduct, below the journey card, and climbs the slope; it never appears part-way along.
+    // Every run starts hidden (below the card on Home, past the top-right edge on Live) so the
+    // train never appears part-way along the track.
     progress.setValue(0);
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(progress, { toValue: 1, duration: TRAVEL_MS, easing: Easing.linear, useNativeDriver: useNative }),
-        Animated.delay(PAUSE_MS),
-        Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: useNative }),
-      ]),
-    );
+    const run = arrive
+      ? Animated.sequence([
+          Animated.timing(progress, { toValue: 1, duration: ARRIVE_MS, easing: Easing.out(Easing.cubic), useNativeDriver: useNative }), // brakes into the station
+          Animated.delay(DWELL_MS), // doors open, passengers board
+          Animated.timing(progress, { toValue: 2, duration: DEPART_MS, easing: Easing.in(Easing.quad), useNativeDriver: useNative }), // pulls away
+          Animated.delay(PAUSE_MS),
+          Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: useNative }),
+        ])
+      : Animated.sequence([
+          Animated.timing(progress, { toValue: 1, duration: TRAVEL_MS, easing: Easing.linear, useNativeDriver: useNative }),
+          Animated.delay(PAUSE_MS),
+          Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: useNative }),
+        ]);
+    const loop = Animated.loop(run);
     loop.start();
     return () => {
       loop.stop();
     };
-  }, [animate, progress]);
+  }, [animate, progress, arrive, restAt]);
 
-  const dx = progress.interpolate({ inputRange: [0, 1], outputRange: [DX_START * scale, DX_END * scale] });
-  const dy = progress.interpolate({ inputRange: [0, 1], outputRange: [DX_START * SLOPE * scale, DX_END * SLOPE * scale] });
+  const shifts = arrive ? [ARRIVE_FROM, ARRIVE_STOP, ARRIVE_TO] : [DX_START, DX_END];
+  const input = arrive ? [0, 1, 2] : [0, 1];
+  const dx = progress.interpolate({ inputRange: input, outputRange: shifts.map((d) => d * scale) });
+  const dy = progress.interpolate({ inputRange: input, outputRange: shifts.map((d) => d * geom.slope * scale) });
 
   const bodyTop = mixColor('#FFFFFF', '#D9D6F2', look.night);
   const bodyBottom = mixColor('#E6E3FA', '#9C98D0', look.night);
@@ -369,7 +441,7 @@ function TrainLayer({ look, height, scale, animate }: { look: HeroLook; height: 
             <Stop offset="1" stopColor="#FFE9A8" stopOpacity="0" />
           </LinearGradient>
         </Defs>
-        <G transform={`translate(190 ${deckY(190)}) rotate(${DECK_ANGLE})`}>
+        <G transform={`translate(${ARRIVE_ORIGIN_X} ${deckAt(geom, ARRIVE_ORIGIN_X)}) rotate(${geom.angle})${arrive ? ' scale(-1 1)' : ''}`}>
           {light > 0.05 ? <Polygon points="241,-7 330,-26 330,10" fill="url(#tr-beam)" opacity={light * 0.7} /> : null}
           <Rect x={-3} y={-3.4} width={246} height={3.6} rx={1.6} fill={mixColor('#8F8AC0', '#2B2B6B', look.night * 0.8)} />
           {[0, 56, 112].map((x) => (

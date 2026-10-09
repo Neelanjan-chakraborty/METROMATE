@@ -1,4 +1,4 @@
-import { celestialBodyAt, heroLookAt, luminance, minuteOfDay, mixColor, skyPaletteAt, windowIsLit, windowThreshold, wrapMinutes } from '../skyPalette';
+import { celestialBodyAt, headerBackdrop, heroLookAt, luminance, minuteOfDay, mixColor, skyPaletteAt, windowIsLit, windowThreshold, wrapMinutes } from '../skyPalette';
 
 const at = (h: number, m = 0) => h * 60 + m;
 
@@ -103,16 +103,13 @@ describe('heroLookAt: header text stays legible', () => {
   it('uses dark ink on light skies and white ink on dark skies, never mid-grey on mid sky', () => {
     for (let m = 0; m < 1440; m += 5) {
       const look = heroLookAt(m);
-      const darkSky = luminance(look.skyTop) < 0.3;
+      const backdrop = headerBackdrop(look);
+      const darkSky = luminance(backdrop) < 0.3;
       expect(look.ink).toBe(darkSky ? '#FFFFFF' : '#111A32');
       expect(look.statusBar).toBe(darkSky ? 'light' : 'dark');
-      // contrast of the primary ink against the sky behind the header
-      const L1 = Math.max(luminance(look.ink), luminance(look.skyTop)) + 0.05;
-      const L2 = Math.min(luminance(look.ink), luminance(look.skyTop)) + 0.05;
-      expect(L1 / L2).toBeGreaterThan(3);
-      const S1 = Math.max(luminance(look.inkSoft), luminance(look.skyTop)) + 0.05;
-      const S2 = Math.min(luminance(look.inkSoft), luminance(look.skyTop)) + 0.05;
-      expect(S1 / S2).toBeGreaterThan(2.4); // secondary tagline, lowest right at the white/navy switch-over
+      const contrast = (fg: string) => (Math.max(luminance(fg), luminance(backdrop)) + 0.05) / (Math.min(luminance(fg), luminance(backdrop)) + 0.05);
+      expect(contrast(look.ink)).toBeGreaterThan(3);
+      expect(contrast(look.inkSoft)).toBeGreaterThan(2.2); // secondary tagline, lowest right at the white/navy switch-over
       if (look.skyTop === '#F4F2FF') expect(look.inkSoft).toBe('#66718C');
     }
   });

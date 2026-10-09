@@ -178,16 +178,25 @@ export function celestialBodyAt(minutes: number): CelestialBody {
   return { kind: 'moon', x, y, opacity: horizonFade, color: '#F1EEFF' };
 }
 
+/**
+ * Colour the header text actually sits on: the upper-middle of the sky gradient with the distant
+ * towers showing through it (the hero is cropped to its lower part on shorter screens).
+ */
+export function headerBackdrop(p: SkyPalette): string {
+  return mixColor(mixColor(p.skyTop, p.skyBottom, 0.3), p.farTop, 0.35);
+}
+
 export function heroLookAt(minutes: number): HeroLook {
   const p = skyPaletteAt(minutes);
-  const darkSky = luminance(p.skyTop) < 0.3;
+  const backdrop = headerBackdrop(p);
+  const darkSky = luminance(backdrop) < 0.3;
   const body = celestialBodyAt(minutes);
   return {
     ...p,
     body: body.opacity > 0.02 ? body : null,
     ink: darkSky ? '#FFFFFF' : '#111A32',
     // the reference slate on bright skies, a deeper slate on the mid-tone dawn and golden-hour skies
-    inkSoft: darkSky ? '#E4E6FF' : mixColor('#3E4766', '#66718C', clamp01((luminance(p.skyTop) - 0.6) / 0.25)),
+    inkSoft: darkSky ? '#E4E6FF' : mixColor('#3E4766', '#66718C', clamp01((luminance(backdrop) - 0.45) / 0.2)),
     statusBar: darkSky ? 'light' : 'dark',
   };
 }

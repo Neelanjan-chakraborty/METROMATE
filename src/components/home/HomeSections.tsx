@@ -23,8 +23,30 @@ function useStyles() {
 
 // ------------------------------------------------------------------ header
 
-export function HomeHeader({ topInset, ink, inkSoft }: { topInset: number; ink: string; inkSoft: string }) {
+export interface HeaderBadge {
+  label: string;
+  Icon: LucideIcon;
+  accessibilityLabel: string;
+}
+
+const OFFLINE_READY: HeaderBadge = { label: 'Offline ready', Icon: WifiOff, accessibilityLabel: 'Offline ready. Routes, search and saved journeys work without internet.' };
+
+/** Shared by Home and Live: logo, brand, a one-line tagline and a status badge over the hero. */
+export function HomeHeader({
+  topInset,
+  ink,
+  inkSoft,
+  tagline = 'Your offline metro companion',
+  badge = OFFLINE_READY,
+}: {
+  topInset: number;
+  ink: string;
+  inkSoft: string;
+  tagline?: string;
+  badge?: HeaderBadge;
+}) {
   const { z, st } = useStyles();
+  const BadgeIcon = badge.Icon;
   return (
     <View style={[st.header, { paddingTop: topInset + z(21) }]}>
       <View style={st.logo} accessibilityLabel="MetroMate logo">
@@ -35,12 +57,12 @@ export function HomeHeader({ topInset, ink, inkSoft }: { topInset: number; ink: 
           MetroMate
         </Text>
         <Text style={[st.tagline, { color: inkSoft }]} numberOfLines={1}>
-          Your offline metro companion
+          {tagline}
         </Text>
       </View>
-      <View style={st.offlinePill} accessibilityLabel="Offline ready. Routes, search and saved journeys work without internet.">
-        <WifiOff size={z(15)} color="#0F6B3E" strokeWidth={2} />
-        <Text style={st.offlineText}>Offline ready</Text>
+      <View style={st.offlinePill} accessibilityLabel={badge.accessibilityLabel}>
+        <BadgeIcon size={z(15)} color="#0F6B3E" strokeWidth={2} />
+        <Text style={st.offlineText}>{badge.label}</Text>
       </View>
     </View>
   );

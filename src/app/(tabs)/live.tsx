@@ -1,26 +1,35 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
+import { Alert, Platform, ScrollView, Vibration, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { ChevronRight, Info, LocateFixed } from 'lucide-react-native';
-import { Card, Muted, Notice, Screen, SectionTitle } from '../../components/ui';
-import { OfflineBadge } from '../../components/OfflineBadge';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Wifi } from 'lucide-react-native';
+import { Notice, Screen } from '../../components/ui';
 import { StationPicker } from '../../components/StationPicker';
-import { LocationCard } from '../../components/live/LocationCard';
+import { Hero } from '../../components/home/Hero';
+import { HomeHeader, type HeaderBadge } from '../../components/home/HomeSections';
+import { useHeroState } from '../../components/home/useHeroClock';
+import { useHomeScale } from '../../components/home/scale';
+import { HowItWorks, TrackSection, WhereAmICard } from '../../components/live/LiveSections';
 import { JourneyPanel } from '../../components/live/JourneyPanel';
 import { RecordCard } from '../../components/live/RecordCard';
+import { useApp } from '../../state/AppProvider';
 import { useReady } from '../../state/useReady';
 import { useLocation, type Precision } from '../../hooks/useLocation';
 import { findRoute } from '../../lib/routing';
-import { describeLocation, describeSignalLoss, type LocationText } from '../../lib/liveText';
+import { cardFromSignalLoss, describeLocationCard, describeSignalLoss, walkingDirectionsUrl, type LocationCardText } from '../../lib/liveText';
 import { isHeadingAway, isUndergroundLink, locate, signalState, trackJourney } from '../../lib/locator';
 import { resolvePosition } from '../../lib/position';
-import { colors, radius, space, type } from '../../theme';
 
 type Target = 'from' | 'to' | null;
 
 export default function LiveScreen() {
   const { network, dataset, stationPoints, links, stationCoords, recordStationFix, clearStationCoord, clearStationCoords } = useReady();
-  const params = useLocalSearchParams<{ from?: string; to?: string }>();
+  const params = useLocalSearchParams<{ from?: string; to?: string; sky?: string }>();
+  const insets = useSafeAreaInsets();
+  const { z } = useHomeScale();
+  const { online } = useApp();
+  const { look, focused, animate } = useHeroState(params.sky);
   const [precision, setPrecision] = useState<Precision>('precise');
   const loc = useLocation(true, precision);
 
@@ -30,16 +39,25 @@ export default function LiveScreen() {
   const [manualIdx, setManualIdx] = useState<number | null>(null);
   const [demoIdx, setDemoIdx] = useState<number | null>(null);
   const [wake, setWake] = useState(true);
+  const [tracking, setTracking] = useState(false);
+  const [trackWarn, setTrackWarn] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   // Pre-fill from "Track live" on the route screen, once per set of params.
   const paramKey = `${params.from ?? ''}|${params.to ?? ''}`;
   const [appliedKey, setAppliedKey] = useState('');
   if (paramKey !== appliedKey) {
     setAppliedKey(paramKey);
-    if (params.from && network.stations.has(params.from)) setFromId(params.from);
-    if (params.to && network.stations.has(params.to)) setToId(params.to);
+    const f = params.from && network.stations.has(params.from) ? params.from : null;
+    const t = params.to && network.stations.has(params.to) ? params.to : null;
+    if (f) setFromId(f);
+    if (t) setToId(t);
     setManualIdx(null);
     setDemoIdx(null);
+    // "Track" on the route screen has already chosen both ends, so start following straight away.
+    setTracking(!!f && !!t && f !== t);
+    setTrackWarn(null);
+    setNote(null);
   }
 
   const nameOf = (id: string) => network.stations.get(id)?.name ?? id;
@@ -48,7 +66,7 @@ export default function LiveScreen() {
   const signal = signalState(loc.now, loc.fix?.timestamp ?? null);
   const located = useMemo(() => (loc.fix ? locate(loc.fix, stationPoints, links) : null), [loc.fix, stationPoints, links]);
 
-  const text: LocationText | null = useMemo(() => {
+  const card: LocationCardText | null = useMemo(() => {
     if (!loc.fix || !located) return null;
     if (signal === 'lost') {
       const age = Math.round((loc.now - loc.fix.timestamp) / 1000);
@@ -62,16 +80,16 @@ export default function LiveScreen() {
         lastKnown = `between ${nameOf(located.fromId)} and ${nameOf(located.toId)}`;
         underground = isUndergroundLink(st(located.fromId), st(located.toId));
       }
-      return describeSignalLoss(age, lastKnown, underground);
+      return cardFromSignalLoss(describeSignalLoss(age, lastKnown, underground));
     }
-    return describeLocation(located, nameOf, loc.fix.accuracyM);
+    return describeLocationCard(located, nameOf, loc.fix.accuracyM);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loc.fix, loc.now, located, signal, network]);
 
   // ---- journey
   const routeOutcome = useMemo(() => (fromId && toId ? findRoute(network, fromId, toId) : null), [network, fromId, toId]);
   const route = routeOutcome && routeOutcome.ok ? routeOutcome : null;
-  const routeIds = route?.stationIds ?? null;
+  const routeIds = tracking && route ? route.stationIds : null;
 
   const gps = useMemo(() => (loc.fix && routeIds ? trackJourney(loc.fix, routeIds, stationPoints) : null), [loc.fix, routeIds, stationPoints]);
   const headingAway = useMemo(() => {
@@ -94,7 +112,7 @@ export default function LiveScreen() {
   }, [demoRunning, lastIdx]);
 
   // ---- arrival alert (foreground only)
-  const alertKey = wake && position && (position.arriving || position.arrived) && route ? `${route.originId}>${route.destinationId}:${position.arrived ? 'arrived' : 'arriving'}` : null;
+  const alertKey = wake && tracking && position && (position.arriving || position.arrived) && route ? `${route.originId}>${route.destinationId}:${position.arrived ? 'arrived' : 'arriving'}` : null;
   const alertedRef = useRef<string | null>(null);
   useEffect(() => {
     if (!alertKey) {
@@ -107,6 +125,46 @@ export default function LiveScreen() {
     }
   }, [alertKey]);
 
+  // Nearest station to the phone: the start for "Use my current location".
+  const nearestStationId = useMemo(() => {
+    if (!located || signal === 'lost') return null;
+    switch (located.kind) {
+      case 'at-station':
+      case 'near-station':
+        return located.stationId;
+      case 'off-network':
+        return located.nearestId;
+      case 'between':
+        return located.fraction < 0.5 ? located.fromId : located.toId;
+      default:
+        return null;
+    }
+  }, [located, signal]);
+
+  const directionsUrl = useMemo(() => {
+    const id = card?.nearestId;
+    const pt = id ? stationPoints.get(id) : undefined;
+    return pt ? walkingDirectionsUrl(pt.lat, pt.lon) : null;
+  }, [card, stationPoints]);
+
+  const stationsChanged = () => {
+    setTracking(false);
+    setTrackWarn(null);
+    setNote(null);
+    setManualIdx(null);
+    setDemoIdx(null);
+  };
+
+  const toggleTracking = () => {
+    if (tracking) return stationsChanged();
+    if (!fromId || !toId) return setTrackWarn('Choose both a starting station and a destination.');
+    if (fromId === toId) return setTrackWarn('Your start and destination are the same station.');
+    if (routeOutcome && !routeOutcome.ok) return setTrackWarn(routeOutcome.message);
+    setTrackWarn(null);
+    setNote(null);
+    setTracking(true);
+  };
+
   const undergroundOnRoute = useMemo(() => (routeIds ?? []).filter((id) => network.stations.get(id)?.stationType === 'underground'), [routeIds, network]);
 
   const coverage = {
@@ -114,7 +172,6 @@ export default function LiveScreen() {
     total: dataset.stations.length,
     recorded: [...stationPoints.values()].filter((p) => p.source === 'recorded').length,
   };
-  const canUseAsStart = located && (located.kind === 'at-station' || located.kind === 'near-station') ? located.stationId : null;
 
   const confirmClearAll = () => {
     const run = () => void clearStationCoords();
@@ -125,115 +182,112 @@ export default function LiveScreen() {
     ]);
   };
 
+  const badge: HeaderBadge = {
+    label: online === false ? 'Offline mode' : 'Offline ready',
+    Icon: Wifi,
+    accessibilityLabel: online === false ? 'Offline mode. Live location still works from stored station positions.' : 'Offline ready. Live location works without internet.',
+  };
+  const hint =
+    note ??
+    (tracking && route
+      ? `Following ${nameOf(route.originId)} to ${nameOf(route.destinationId)}. Your progress is shown below.`
+      : 'Pick your start and destination to follow your progress stop by stop.');
+
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={type.title} accessibilityRole="header">
-              Live
-            </Text>
-            <Muted>Your place on the metro, from this phone’s GPS. Works offline.</Muted>
+    <Screen edges={[]}>
+      {focused ? <StatusBar style={look.statusBar} /> : null}
+      <ScrollView contentContainerStyle={{ paddingBottom: z(28) }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
+          <View>
+            <Hero height={z(128) + insets.top} look={look} animate={animate} mode="arrive" />
+            <HomeHeader topInset={insets.top} ink={look.ink} inkSoft={look.inkSoft} tagline="Live · Track · Reach Faster" badge={badge} />
+            <View style={{ height: z(21) }} />
           </View>
-          <OfflineBadge />
-        </View>
 
-        <LocationCard
-          permission={loc.permission}
-          canAskAgain={loc.canAskAgain}
-          servicesEnabled={loc.servicesEnabled}
-          onRequest={() => void loc.request()}
-          precision={precision}
-          onPrecision={setPrecision}
-          signal={signal}
-          fix={loc.fix}
-          text={text}
-          error={loc.error}
-          coverage={coverage}
-        />
-
-        <View>
-          <SectionTitle>Track a journey</SectionTitle>
-          <Card style={{ gap: space.md }}>
-            <StationRow label="From" value={fromId ? nameOf(fromId) : null} placeholder="Choose starting station" dot={colors.origin} onPress={() => setPicker('from')} />
-            <StationRow label="To" value={toId ? nameOf(toId) : null} placeholder="Choose destination" dot={colors.destination} onPress={() => setPicker('to')} />
-            {canUseAsStart && canUseAsStart !== fromId ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Use ${nameOf(canUseAsStart)} as my start`}
-                onPress={() => {
-                  setFromId(canUseAsStart);
-                  setManualIdx(null);
-                }}
-                style={styles.useHere}
-              >
-                <LocateFixed size={16} color={colors.primary} />
-                <Text style={styles.useHereText}>I’m at {nameOf(canUseAsStart)}: use as start</Text>
-              </Pressable>
-            ) : null}
-            {routeOutcome && !routeOutcome.ok ? <Notice tone="warn">{routeOutcome.message}</Notice> : null}
-            {!routeOutcome ? <Muted>Pick your start and destination to follow your progress stop by stop.</Muted> : null}
-          </Card>
-        </View>
-
-        {route ? (
-          <>
-            {undergroundOnRoute.length > 0 ? (
-              <Notice title="Underground section on this route">
-                GPS can’t reach underground stations ({undergroundOnRoute.map(nameOf).join(', ')}). Expect the signal to drop there; use “I’m here” check-ins if you want to keep tracking.
-              </Notice>
-            ) : null}
-            <JourneyPanel
-              route={route}
-              stations={network.stations}
-              position={position}
-              headingAway={headingAway}
-              offRouteM={gps?.status === 'off-route' ? gps.offRouteM : null}
-              wake={wake}
-              onWake={setWake}
-              demoRunning={demoRunning}
-              onDemo={() => {
-                setManualIdx(null);
-                setDemoIdx(demoRunning ? null : 0);
-              }}
-              onCheckIn={(idx) => {
-                setDemoIdx(null);
-                setManualIdx(idx);
-              }}
-              onClearCheckIn={() => setManualIdx(null)}
-              gpsActive={loc.permission === 'granted'}
+          <View style={{ gap: z(14) }}>
+            <WhereAmICard
+              permission={loc.permission}
+              canAskAgain={loc.canAskAgain}
+              servicesEnabled={loc.servicesEnabled}
+              onRequest={() => void loc.request()}
+              precision={precision}
+              onPrecision={setPrecision}
+              signal={signal}
+              fix={loc.fix}
+              card={card}
+              directionsUrl={directionsUrl}
+              error={loc.error}
+              coverage={coverage}
             />
-          </>
-        ) : null}
 
-        <RecordCard
-          fix={loc.fix}
-          stations={network.stations}
-          coords={stationCoords}
-          suggestedId={located?.kind === 'at-station' ? located.stationId : null}
-          onRecord={(id) => (loc.fix ? recordStationFix(id, loc.fix) : Promise.resolve(null))}
-          onClearOne={(id) => void clearStationCoord(id)}
-          onClearAll={confirmClearAll}
-        />
-
-        <Card style={{ gap: space.sm }}>
-          <View style={styles.infoHead}>
-            <Info size={18} color={colors.primary} />
-            <Text style={type.h3}>How live location works here</Text>
-          </View>
-          {[
-            'GPS works with no internet. MetroMate compares your phone’s position with the stored station map on the device.',
-            'Mobile-network (cell tower) positioning is done by the phone’s operating system, not by MetroMate: the app can’t read cell tower IDs. “Battery saver” asks for balanced accuracy so the OS may use cell or Wi‑Fi location, which is less accurate. Fixes are labelled by accuracy.',
-            'Underground (Kankaria East, Kalupur, Gheekanta, Shahpur) GPS is unavailable. MetroMate then says “signal lost” and shows your last position instead of guessing.',
-            'This tracks YOU, not other trains. There is no live train feed, and MetroMate never shows a train’s position or arrival time.',
-            'Tracking and alerts work only while the app is open. Station pins are from an unofficial map (estimated).',
-          ].map((t) => (
-            <View key={t} style={{ flexDirection: 'row', gap: 6 }}>
-              <ChevronRight size={14} color={colors.faint} style={{ marginTop: 3 }} />
-              <Text style={[type.small, { flex: 1 }]}>{t}</Text>
+            <View>
+              <TrackSection
+                fromName={fromId ? nameOf(fromId) : null}
+                toName={toId ? nameOf(toId) : null}
+                onFrom={() => setPicker('from')}
+                onTo={() => setPicker('to')}
+                onSwap={() => {
+                  setFromId(toId);
+                  setToId(fromId);
+                  stationsChanged();
+                }}
+                tracking={tracking}
+                onToggle={toggleTracking}
+                useLocationLabel={loc.permission === 'granted' && nearestStationId ? `Use ${nameOf(nearestStationId)}, the nearest station to me, as my start` : null}
+                onUseLocation={() => {
+                  if (!nearestStationId) return;
+                  setFromId(nearestStationId);
+                  stationsChanged();
+                  setNote(`Starting from ${nameOf(nearestStationId)}, the nearest station to you.`);
+                }}
+                hint={hint}
+                warn={trackWarn ?? (routeOutcome && !routeOutcome.ok && tracking ? routeOutcome.message : null)}
+              />
             </View>
-          ))}
-        </Card>
+
+            {tracking && route ? (
+              <View style={{ marginHorizontal: z(16), gap: z(14) }}>
+                {undergroundOnRoute.length > 0 ? (
+                  <Notice title="Underground section on this route">
+                    GPS can’t reach underground stations ({undergroundOnRoute.map(nameOf).join(', ')}). Expect the signal to drop there; use “I’m here” check-ins if you want to keep tracking.
+                  </Notice>
+                ) : null}
+                <JourneyPanel
+                  route={route}
+                  stations={network.stations}
+                  position={position}
+                  headingAway={headingAway}
+                  offRouteM={gps?.status === 'off-route' ? gps.offRouteM : null}
+                  wake={wake}
+                  onWake={setWake}
+                  demoRunning={demoRunning}
+                  onDemo={() => {
+                    setManualIdx(null);
+                    setDemoIdx(demoRunning ? null : 0);
+                  }}
+                  onCheckIn={(idx) => {
+                    setDemoIdx(null);
+                    setManualIdx(idx);
+                  }}
+                  onClearCheckIn={() => setManualIdx(null)}
+                  gpsActive={loc.permission === 'granted'}
+                />
+              </View>
+            ) : null}
+
+            <RecordCard
+              fix={loc.fix}
+              stations={network.stations}
+              coords={stationCoords}
+              suggestedId={located?.kind === 'at-station' ? located.stationId : null}
+              onRecord={(id) => (loc.fix ? recordStationFix(id, loc.fix) : Promise.resolve(null))}
+              onClearOne={(id) => void clearStationCoord(id)}
+              onClearAll={confirmClearAll}
+            />
+
+            <HowItWorks />
+          </View>
+        </View>
       </ScrollView>
 
       <StationPicker
@@ -243,40 +297,9 @@ export default function LiveScreen() {
         onSelect={(id) => {
           if (picker === 'from') setFromId(id);
           else setToId(id);
-          setManualIdx(null);
-          setDemoIdx(null);
+          stationsChanged();
         }}
       />
     </Screen>
   );
 }
-
-function StationRow({ label, value, placeholder, dot, onPress }: { label: string; value: string | null; placeholder: string; dot: string; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${label} station: ${value ?? 'not chosen'}. Tap to change`}
-      onPress={onPress}
-      style={({ pressed }) => [styles.stationRow, pressed && { backgroundColor: colors.primarySoft }]}
-    >
-      <View style={[styles.dot, { backgroundColor: dot }]} />
-      <View style={{ flex: 1 }}>
-        <Text style={type.tiny}>{label}</Text>
-        <Text style={value ? type.h3 : [type.body, { color: colors.faint }]} numberOfLines={1}>
-          {value ?? placeholder}
-        </Text>
-      </View>
-      <ChevronRight size={18} color={colors.faint} />
-    </Pressable>
-  );
-}
-
-const styles = StyleSheet.create({
-  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xl * 2, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  stationRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, minHeight: 56, paddingHorizontal: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  useHere: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 40 },
-  useHereText: { color: colors.primary, fontWeight: '700', fontSize: 14 },
-  infoHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-});
