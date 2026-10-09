@@ -40,7 +40,8 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 
 - **No live train feed**: the Live screen tracks the *rider's phone*, not trains. No train positions or arrival times are shown.
 - **No cell-tower IDs**: apps cannot read them in Expo Go and iOS has no public API. "Battery saver" mode asks the OS for balanced accuracy, which may use network (cell/Wi-Fi) positioning; fixes are labelled by accuracy radius, not by source.
-- **GPS is unavailable underground**, so there is no position between Apparel Park and Old High Court (the underground stretch). The app says "signal lost" and shows the last position; it never extrapolates, because no verified per-station travel times exist.
+- **GPS is unavailable underground** (Shahpur, Ghee Kanta, Kalupur, Kankaria East). If the last position was in a tunnel, the live view shows a position **estimated** from GMRC's published line times (labelled, dashed, capped before the portal, corrected when GPS returns). On the surface, lost GPS shows "last seen" with no extrapolation. Per-station travel times are not published, so the estimate spreads each line's end-to-end time over the hops by (estimated) distance.
+- **Live journey view data limits**: no track alignment (straight runs with softened corners), no tunnel portal positions (drawn mid-hop), no river/bridge, road or building data (the surroundings are procedural and illustrative), no live delays or service alerts, no transfer/walking time between platforms, no dwell times beyond the published line averages. Landmarks are chosen from station names only.
 - **Foreground only**: tracking and the arrival vibration work only while the app is open.
 - **Not verified on a real device** — see README.
 

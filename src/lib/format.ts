@@ -33,3 +33,18 @@ export function relativeDay(ts: number, now: number = Date.now()): string {
   if (days === 1) return 'Yesterday';
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
 }
+
+/** "10:42 AM" for an epoch-ms time in the device's local time (no Intl needed). */
+export function formatClock(ms: number): string {
+  const d = new Date(ms);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/** "45 min", "1 h 05 min". */
+export function formatDuration(minutes: number): string {
+  const m = Math.max(0, Math.round(minutes));
+  if (m < 60) return `${m} min`;
+  return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`;
+}

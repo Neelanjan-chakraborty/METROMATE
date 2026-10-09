@@ -18,6 +18,8 @@ export interface Fix {
   lon: number;
   /** Horizontal accuracy radius in metres, if the provider reports one. */
   accuracyM: number | null;
+  /** Ground speed in metres per second, when the provider reports one (null/absent otherwise). */
+  speedMps?: number | null;
   /** Milliseconds since epoch. */
   timestamp: number;
   mocked?: boolean;

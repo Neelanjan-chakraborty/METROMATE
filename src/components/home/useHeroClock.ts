@@ -67,5 +67,5 @@ export function useHeroState(skyParam: string | undefined) {
   const focused = useIsFocused();
   const appActive = useAppActive();
   const reduceMotion = useReduceMotion();
-  return { look, focused, animate: focused && appActive && !reduceMotion };
+  return { look, focused, reduceMotion, animate: focused && appActive && !reduceMotion };
 }

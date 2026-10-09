@@ -1,22 +1,24 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Platform, ScrollView, Vibration, View } from 'react-native';
+import { Alert, Modal, Platform, Pressable, ScrollView, Text, Vibration, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Wifi } from 'lucide-react-native';
+import { Maximize2, Wifi } from 'lucide-react-native';
 import { Notice, Screen } from '../../components/ui';
+import { colors } from '../../theme';
 import { StationPicker } from '../../components/StationPicker';
 import { Hero } from '../../components/home/Hero';
 import { HomeHeader, type HeaderBadge } from '../../components/home/HomeSections';
 import { useHeroState } from '../../components/home/useHeroClock';
 import { useHomeScale } from '../../components/home/scale';
 import { HowItWorks, TrackSection, WhereAmICard } from '../../components/live/LiveSections';
-import { JourneyPanel } from '../../components/live/JourneyPanel';
+import { JourneyScreen } from '../../components/journey/JourneyScreen';
 import { RecordCard } from '../../components/live/RecordCard';
 import { useApp } from '../../state/AppProvider';
 import { useReady } from '../../state/useReady';
 import { useLocation, type Precision } from '../../hooks/useLocation';
 import { findRoute } from '../../lib/routing';
+import { findFarePair } from '../../lib/fareCalculator';
 import { cardFromSignalLoss, describeLocationCard, describeSignalLoss, walkingDirectionsUrl, type LocationCardText } from '../../lib/liveText';
 import { isHeadingAway, isUndergroundLink, locate, signalState, trackJourney } from '../../lib/locator';
 import { resolvePosition } from '../../lib/position';
@@ -29,7 +31,7 @@ export default function LiveScreen() {
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
   const { online } = useApp();
-  const { look, focused, animate } = useHeroState(params.sky);
+  const { look, focused, animate, reduceMotion } = useHeroState(params.sky);
   const [precision, setPrecision] = useState<Precision>('precise');
   const loc = useLocation(true, precision);
 
@@ -40,6 +42,8 @@ export default function LiveScreen() {
   const [demoIdx, setDemoIdx] = useState<number | null>(null);
   const [wake, setWake] = useState(true);
   const [tracking, setTracking] = useState(false);
+  /** The full-screen live view is open (tracking can continue while it is minimised). */
+  const [immersive, setImmersive] = useState(false);
   const [trackWarn, setTrackWarn] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
@@ -56,6 +60,7 @@ export default function LiveScreen() {
     setDemoIdx(null);
     // "Track" on the route screen has already chosen both ends, so start following straight away.
     setTracking(!!f && !!t && f !== t);
+    setImmersive(!!f && !!t && f !== t);
     setTrackWarn(null);
     setNote(null);
   }
@@ -149,6 +154,7 @@ export default function LiveScreen() {
 
   const stationsChanged = () => {
     setTracking(false);
+    setImmersive(false);
     setTrackWarn(null);
     setNote(null);
     setManualIdx(null);
@@ -163,6 +169,7 @@ export default function LiveScreen() {
     setTrackWarn(null);
     setNote(null);
     setTracking(true);
+    setImmersive(true);
   };
 
   const undergroundOnRoute = useMemo(() => (routeIds ?? []).filter((id) => network.stations.get(id)?.stationType === 'underground'), [routeIds, network]);
@@ -190,7 +197,7 @@ export default function LiveScreen() {
   const hint =
     note ??
     (tracking && route
-      ? `Following ${nameOf(route.originId)} to ${nameOf(route.destinationId)}. Your progress is shown below.`
+      ? `Following ${nameOf(route.originId)} to ${nameOf(route.destinationId)}.`
       : 'Pick your start and destination to follow your progress stop by stop.');
 
   return (
@@ -245,33 +252,28 @@ export default function LiveScreen() {
               />
             </View>
 
-            {tracking && route ? (
-              <View style={{ marginHorizontal: z(16), gap: z(14) }}>
+            {tracking && route && !immersive ? (
+              <View style={{ marginHorizontal: z(16), gap: z(10) }}>
                 {undergroundOnRoute.length > 0 ? (
                   <Notice title="Underground section on this route">
-                    GPS can’t reach underground stations ({undergroundOnRoute.map(nameOf).join(', ')}). Expect the signal to drop there; use “I’m here” check-ins if you want to keep tracking.
+                    GPS can’t reach underground stations ({undergroundOnRoute.map(nameOf).join(', ')}). The live view then shows an estimate, clearly labelled, until GPS returns.
                   </Notice>
                 ) : null}
-                <JourneyPanel
-                  route={route}
-                  stations={network.stations}
-                  position={position}
-                  headingAway={headingAway}
-                  offRouteM={gps?.status === 'off-route' ? gps.offRouteM : null}
-                  wake={wake}
-                  onWake={setWake}
-                  demoRunning={demoRunning}
-                  onDemo={() => {
-                    setManualIdx(null);
-                    setDemoIdx(demoRunning ? null : 0);
-                  }}
-                  onCheckIn={(idx) => {
-                    setDemoIdx(null);
-                    setManualIdx(idx);
-                  }}
-                  onClearCheckIn={() => setManualIdx(null)}
-                  gpsActive={loc.permission === 'granted'}
-                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Open the live journey view"
+                  onPress={() => setImmersive(true)}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: '#ECE9FF' }}
+                >
+                  <Maximize2 size={20} color={colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14.5, fontWeight: '800', color: colors.text }}>Live journey view</Text>
+                    <Text style={{ fontSize: 12, color: colors.slate }}>
+                      {nameOf(route.originId)} to {nameOf(route.destinationId)} · tracking continues
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>Open</Text>
+                </Pressable>
               </View>
             ) : null}
 
@@ -289,6 +291,46 @@ export default function LiveScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal visible={tracking && !!route && immersive} animationType={Platform.OS === 'web' ? 'none' : 'slide'} presentationStyle="fullScreen" statusBarTranslucent onRequestClose={() => setImmersive(false)}>
+        {route ? (
+          <JourneyScreen
+            route={route}
+            stations={network.stations}
+            corridorColor={(id) => dataset.corridors.find((c) => c.id === id)?.color ?? colors.primary}
+            stationPoints={stationPoints}
+            timetableLines={dataset.timetable.lines}
+            calculatorMinutes={findFarePair(dataset.fares, route.originId, route.destinationId)?.travelMinutes ?? null}
+            position={position}
+            fix={loc.fix}
+            signal={signal}
+            nowMs={loc.now}
+            permission={loc.permission}
+            canAskAgain={loc.canAskAgain}
+            onRequestLocation={() => void loc.request()}
+            online={online}
+            offRouteM={gps?.status === 'off-route' ? gps.offRouteM : null}
+            headingAway={headingAway}
+            wake={wake}
+            onWake={setWake}
+            demoRunning={demoRunning}
+            onDemo={() => {
+              setManualIdx(null);
+              setDemoIdx(demoRunning ? null : 0);
+            }}
+            onCheckIn={(idx) => {
+              setDemoIdx(null);
+              setManualIdx(idx);
+            }}
+            onClearCheckIn={() => setManualIdx(null)}
+            onMinimize={() => setImmersive(false)}
+            onEnd={stationsChanged}
+            look={look}
+            animate={animate}
+            reduceMotion={reduceMotion}
+          />
+        ) : null}
+      </Modal>
 
       <StationPicker
         visible={picker !== null}

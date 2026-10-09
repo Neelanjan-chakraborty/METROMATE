@@ -1,4 +1,4 @@
-import { formatDate, plural, relativeDay } from '../format';
+import { formatClock, formatDate, formatDuration, plural, relativeDay } from '../format';
 
 const at = (y: number, m: number, d: number, h = 12) => new Date(y, m - 1, d, h).getTime();
 
@@ -22,5 +22,19 @@ describe('format helpers', () => {
     expect(formatDate(null)).toBe('unknown');
     expect(plural(1, 'stop')).toBe('1 stop');
     expect(plural(20, 'stop')).toBe('20 stops');
+  });
+});
+
+describe('formatClock / formatDuration', () => {
+  it('formats 12-hour clock times', () => {
+    expect(formatClock(new Date(2026, 9, 9, 10, 42).getTime())).toBe('10:42 AM');
+    expect(formatClock(new Date(2026, 9, 9, 0, 5).getTime())).toBe('12:05 AM');
+    expect(formatClock(new Date(2026, 9, 9, 12, 0).getTime())).toBe('12:00 PM');
+    expect(formatClock(new Date(2026, 9, 9, 23, 59).getTime())).toBe('11:59 PM');
+  });
+  it('formats durations', () => {
+    expect(formatDuration(12.4)).toBe('12 min');
+    expect(formatDuration(65)).toBe('1 h 05 min');
+    expect(formatDuration(-3)).toBe('0 min');
   });
 });
