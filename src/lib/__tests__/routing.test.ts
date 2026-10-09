@@ -114,6 +114,18 @@ describe('interchanges', () => {
   });
 });
 
+describe('station service notes', () => {
+  it('warns when a route passes through Sabarmati Railway Station', () => {
+    const r = route('RNIP', 'AEC');
+    expect(r.stationIds).toContain('SBRS');
+    expect(r.warnings.join(' ')).toMatch(/Sabarmati Railway Station: .*not listed/);
+  });
+
+  it('does not warn about it on routes that avoid the station', () => {
+    expect(route('APMC', 'RNIP').warnings.join(' ')).not.toMatch(/Sabarmati Railway Station/);
+  });
+});
+
 describe('error handling', () => {
   it('rejects the same station', () => {
     const r = findRoute(net, 'MTRS', 'MTRS');

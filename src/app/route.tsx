@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeftRight, ChevronDown, ChevronLeft, ChevronUp, Clock, Map as MapIcon, Star, Ticket } from 'lucide-react-native';
+import { ArrowLeftRight, ChevronDown, ChevronLeft, ChevronUp, Clock, LocateFixed, Map as MapIcon, Star, Ticket } from 'lucide-react-native';
 import { Button, Card, IconButton, Muted, Notice, Pill, Screen, SectionTitle, VerifyBadge } from '../components/ui';
 import { RouteTimeline } from '../components/RouteTimeline';
 import { OfflineBadge } from '../components/OfflineBadge';
@@ -126,7 +126,8 @@ export default function RouteScreen() {
               style={{ flex: 1 }}
               onPress={() => router.replace({ pathname: '/route', params: { from: route.destinationId, to: route.originId } })}
             />
-            <Button label="Show on map" icon={MapIcon} variant="secondary" compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/map', params: { from: route.originId, to: route.destinationId } })} />
+            <Button label="Map" icon={MapIcon} variant="secondary" compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/map', params: { from: route.originId, to: route.destinationId } })} />
+            <Button label="Track live" icon={LocateFixed} compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/live', params: { from: route.originId, to: route.destinationId } })} />
           </View>
         </Card>
 

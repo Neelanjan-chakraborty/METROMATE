@@ -68,6 +68,15 @@ export function validateDataset(ds: Dataset): ValidationReport {
         err(`Station ${s.id} has coordinates but coordinateStatus is ${s.coordinateStatus}`);
       }
       if (!hasCoords && s.coordinateStatus !== 'unknown') err(`Station ${s.id} has no coordinates but coordinateStatus is ${s.coordinateStatus}`);
+      if (hasCoords && !(s.latitude! > 22.8 && s.latitude! < 23.5 && s.longitude! > 72.3 && s.longitude! < 72.9)) {
+        err(`Station ${s.id} coordinates are outside the Ahmedabad–Gandhinagar area`);
+      }
+      if (hasCoords && !s.coordinateSourceId) err(`Station ${s.id} has coordinates but no coordinateSourceId`);
+      for (const l of s.lifts ?? []) {
+        if (!ds.gates.some((g) => g.stationId === s.id && g.gateNumber === String(l.nearGate))) {
+          err(`Station ${s.id}: lift ${l.lift} is near gate ${l.nearGate}, which is not a listed gate`);
+        }
+      }
       for (const p of s.platforms) {
         if (p.verificationStatus === 'verified' && !p.sourceUrl) err(`Platform ${p.id} is verified without a sourceUrl`);
       }

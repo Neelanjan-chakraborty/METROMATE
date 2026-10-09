@@ -15,10 +15,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 22.997729,
+    "longitude": 72.537201,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -27,7 +27,28 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "bus",
+        "gateNumber": 1,
+        "note": "Footpath connectivity to Existing point of Gujarat State Road Transportation Corporation (GSRTC) bus terminal",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "JVRJ",
@@ -44,10 +65,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.005481,
+    "longitude": 72.53355,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -56,7 +77,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "RNMS",
@@ -73,10 +103,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.009701,
+    "longitude": 72.53673,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -85,7 +115,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 4
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SRYS",
@@ -102,10 +141,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.013778,
+    "longitude": 72.549295,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -114,7 +153,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 4
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "PLDI",
@@ -129,10 +181,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.018566,
+    "longitude": 72.562385,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -141,7 +193,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 3
+      },
+      {
+        "lift": 6,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GRMS",
@@ -158,10 +223,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.027234,
+    "longitude": 72.56892,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -170,7 +235,28 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "rail",
+        "gateNumber": 3,
+        "note": "Stair & Lift Connectivity for Integration with Railways",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "OHCI",
@@ -190,10 +276,10 @@
     "isInterchange": true,
     "interchangeNote": "Marked as an interchange between the North–South and East–West corridors on the GMRC route map.",
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.037622,
+    "longitude": 72.566988,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -202,7 +288,28 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 4
+      },
+      {
+        "lift": 4,
+        "nearGate": 7
+      },
+      {
+        "lift": 5,
+        "nearGate": 8
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "UPMS",
@@ -217,10 +324,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.045889,
+    "longitude": 72.565015,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -229,7 +336,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "VRMS",
@@ -246,10 +362,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.056222,
+    "longitude": 72.562468,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -258,7 +374,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "VDMS",
@@ -273,10 +398,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.06773,
+    "longitude": 72.565822,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -285,7 +410,28 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "brts",
+        "gateNumber": 5,
+        "note": "Lift and Skywalk connecting BRTS",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 5,
+        "nearGate": 5
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "RNIP",
@@ -300,10 +446,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.067675,
+    "longitude": 72.574009,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -312,7 +458,39 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "bus",
+        "gateNumber": 2,
+        "note": "Footpath with GSRTC",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      },
+      {
+        "kind": "brts",
+        "gateNumber": 3,
+        "note": "Lift and Skywalk connecting to BRTS",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      },
+      {
+        "lift": 3,
+        "nearGate": 4
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SBRS",
@@ -330,9 +508,9 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
+    "latitude": 23.069729,
+    "longitude": 72.586695,
+    "coordinateStatus": "estimated",
     "stationType": "unknown",
     "facilities": [],
     "platforms": [],
@@ -342,7 +520,11 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [],
+    "serviceNote": "Shown on the GMRC route map but not listed in GMRC’s table of operational entry/exit gates (checked 2026-10-09). Confirm that trains stop here before relying on it."
   },
   {
     "id": "AEC",
@@ -357,10 +539,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.075157,
+    "longitude": 72.593291,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -369,7 +551,39 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "brts",
+        "gateNumber": 5,
+        "note": "Lift and Skywalk connecting BRTS",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      },
+      {
+        "kind": "rail",
+        "gateNumber": null,
+        "note": "Skywalk connecting to Sabarmati High Speed Railway Station",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      },
+      {
+        "lift": 3,
+        "nearGate": 5
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SMMS",
@@ -386,10 +600,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.085675,
+    "longitude": 72.592206,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -398,7 +612,32 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "brts",
+        "gateNumber": 3,
+        "note": "Lift and Skywalk connecting BRTS",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      },
+      {
+        "lift": 3,
+        "nearGate": 5
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "MTRS",
@@ -416,10 +655,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.096694,
+    "longitude": 72.596655,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -428,7 +667,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "KORD",
@@ -445,10 +697,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.105398,
+    "longitude": 72.603111,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -457,7 +709,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 3,
+        "nearGate": 1
+      },
+      {
+        "lift": 4,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "VIKC",
@@ -474,10 +739,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.11431,
+    "longitude": 72.608569,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -486,7 +751,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "TAPC",
@@ -503,10 +781,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.119914,
+    "longitude": 72.616597,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -515,7 +793,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "NAMC",
@@ -530,10 +821,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.125338,
+    "longitude": 72.622327,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -542,7 +833,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "KOBC",
@@ -559,10 +863,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.132206,
+    "longitude": 72.630952,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -571,7 +875,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "JUKB",
@@ -586,10 +903,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.141811,
+    "longitude": 72.638453,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -598,7 +915,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "KOBG",
@@ -616,10 +946,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.147469,
+    "longitude": 72.643825,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -628,7 +958,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GNLU",
@@ -648,10 +991,10 @@
     "isInterchange": true,
     "interchangeNote": "Marked as an interchange on the GMRC route map (North–South corridor and GIFT City branch). The GMRC timetable shows some services running through to GIFT City; check the station display for the train you need.",
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.154344,
+    "longitude": 72.647375,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -660,7 +1003,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "RAYN",
@@ -675,10 +1031,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.166206,
+    "longitude": 72.648367,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -687,7 +1043,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "RADN",
@@ -702,10 +1071,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.178853,
+    "longitude": 72.647333,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -714,7 +1083,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "DHKU",
@@ -731,10 +1113,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.185698,
+    "longitude": 72.643363,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -743,7 +1125,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 3,
+        "nearGate": 1
+      },
+      {
+        "lift": 4,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "INFC",
@@ -760,10 +1155,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.192418,
+    "longitude": 72.639748,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -772,7 +1167,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SEOA",
@@ -789,10 +1197,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.205186,
+    "longitude": 72.643387,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -801,7 +1209,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SEAO",
@@ -819,10 +1240,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.210558,
+    "longitude": 72.651751,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -831,7 +1252,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SVAL",
@@ -849,10 +1283,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.214883,
+    "longitude": 72.658712,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -861,7 +1295,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "AKDM",
@@ -878,10 +1325,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.223491,
+    "longitude": 72.664241,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -890,7 +1337,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 3,
+        "nearGate": 1
+      },
+      {
+        "lift": 4,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "JUSL",
@@ -907,10 +1367,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.228877,
+    "longitude": 72.659482,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -919,7 +1379,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 3,
+        "nearGate": 1
+      },
+      {
+        "lift": 4,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SEAF",
@@ -936,10 +1409,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.233805,
+    "longitude": 72.650208,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -948,7 +1421,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SEBD",
@@ -965,10 +1451,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.238425,
+    "longitude": 72.641564,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -977,7 +1463,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "MAHM",
@@ -994,10 +1493,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.233654,
+    "longitude": 72.633664,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1006,7 +1505,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "PDEU",
@@ -1024,10 +1536,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.154792,
+    "longitude": 72.661297,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1036,7 +1548,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GIFC",
@@ -1054,10 +1579,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 2,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.153264,
+    "longitude": 72.685575,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1066,7 +1591,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 4,
+        "nearGate": 1
+      },
+      {
+        "lift": 3,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "TLTG",
@@ -1083,10 +1621,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.050156,
+    "longitude": 72.507029,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1095,7 +1633,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "TLTJ",
@@ -1110,10 +1661,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.049738,
+    "longitude": 72.515931,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1122,7 +1673,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 4
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "DDKN",
@@ -1140,10 +1704,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.048086,
+    "longitude": 72.524867,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1152,7 +1716,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GKRD",
@@ -1169,10 +1742,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.046007,
+    "longitude": 72.53505,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1181,7 +1754,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GJUV",
@@ -1198,10 +1780,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.044902,
+    "longitude": 72.543374,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1210,7 +1792,28 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "brts",
+        "gateNumber": 1,
+        "note": "Footpath connectivity to BRTS station",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 4
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "CMSR",
@@ -1227,10 +1830,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.040691,
+    "longitude": 72.552968,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1239,7 +1842,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SPSD",
@@ -1257,10 +1869,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.039854,
+    "longitude": 72.561807,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1269,7 +1881,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "SHHP",
@@ -1284,10 +1909,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.039222,
+    "longitude": 72.581776,
+    "coordinateStatus": "estimated",
+    "stationType": "underground",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1295,8 +1920,17 @@
       "sourceUrl": "https://www.gujaratmetrorail.com/",
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
-      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+      "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map. GMRC lists \"Gate No. 3\" twice for this station (probable typo in the source table); only gates 3 and 4 are recorded."
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "GEKA",
@@ -1313,10 +1947,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.028383,
+    "longitude": 72.586332,
+    "coordinateStatus": "estimated",
+    "stationType": "underground",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1325,7 +1959,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "KPMS",
@@ -1343,10 +1990,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.024785,
+    "longitude": 72.602903,
+    "coordinateStatus": "estimated",
+    "stationType": "underground",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1355,7 +2002,24 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [
+      {
+        "kind": "rail",
+        "gateNumber": null,
+        "note": "Subway constructed for connecting with Kalupur High Speed Railway Station",
+        "sourceId": "google-my-maps",
+        "verificationStatus": "unverified"
+      }
+    ],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "KKES",
@@ -1372,10 +2036,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.015185,
+    "longitude": 72.606984,
+    "coordinateStatus": "estimated",
+    "stationType": "underground",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1384,7 +2048,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 2
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "ARPK",
@@ -1399,10 +2072,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.01085,
+    "longitude": 72.61746,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1411,7 +2084,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "ARVD",
@@ -1428,10 +2110,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.007846,
+    "longitude": 72.628641,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1440,7 +2122,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "RBCY",
@@ -1455,10 +2150,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.005513,
+    "longitude": 72.635463,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1467,7 +2162,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "VSTL",
@@ -1482,10 +2186,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.003801,
+    "longitude": 72.646869,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1494,7 +2198,20 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 2
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "NTCR",
@@ -1511,10 +2228,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 23.000442,
+    "longitude": 72.658886,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1523,7 +2240,16 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      }
+    ],
+    "serviceNote": null
   },
   {
     "id": "VTLG",
@@ -1540,10 +2266,10 @@
     "isInterchange": false,
     "interchangeNote": null,
     "phase": 1,
-    "latitude": null,
-    "longitude": null,
-    "coordinateStatus": "unknown",
-    "stationType": "unknown",
+    "latitude": 22.997218,
+    "longitude": 72.667415,
+    "coordinateStatus": "estimated",
+    "stationType": "elevated",
     "facilities": [],
     "platforms": [],
     "sourceMetadata": {
@@ -1552,6 +2278,19 @@
       "verifiedAt": "2026-10-09",
       "verificationStatus": "verified",
       "notes": "Name and position from the GMRC route map; code and adjacency cross-checked against the GMRC interactive map."
-    }
+    },
+    "coordinateSourceId": "google-my-maps",
+    "nearbyConnections": [],
+    "lifts": [
+      {
+        "lift": 1,
+        "nearGate": 1
+      },
+      {
+        "lift": 2,
+        "nearGate": 3
+      }
+    ],
+    "serviceNote": null
   }
 ]

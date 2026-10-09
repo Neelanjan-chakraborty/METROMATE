@@ -1,0 +1,395 @@
+{
+  "source": "google-my-maps",
+  "sourceUrl": "https://www.google.com/maps/d/viewer?mid=1ebnAmbRUbMyI_quB06reRZWcyfcLF8M",
+  "note": "Parsed from the supplied KML. Unofficial map: coordinates are estimates. Planned-line placemarks are listed under \"ignored\".",
+  "used": [
+    {
+      "id": "APMC",
+      "kmlName": "APMC",
+      "folder": "Phase-I-NS",
+      "lat": 22.997729,
+      "lon": 72.537201
+    },
+    {
+      "id": "JVRJ",
+      "kmlName": "Jivraj Park",
+      "folder": "Phase-I-NS",
+      "lat": 23.005481,
+      "lon": 72.53355
+    },
+    {
+      "id": "RNMS",
+      "kmlName": "Rajivnagar",
+      "folder": "Phase-I-NS",
+      "lat": 23.009701,
+      "lon": 72.53673
+    },
+    {
+      "id": "SRYS",
+      "kmlName": "Shreyas",
+      "folder": "Phase-I-NS",
+      "lat": 23.013778,
+      "lon": 72.549295
+    },
+    {
+      "id": "PLDI",
+      "kmlName": "Paldi",
+      "folder": "Phase-I-NS",
+      "lat": 23.018566,
+      "lon": 72.562385
+    },
+    {
+      "id": "GRMS",
+      "kmlName": "Gandhigram",
+      "folder": "Phase-I-NS",
+      "lat": 23.027234,
+      "lon": 72.56892
+    },
+    {
+      "id": "OHCI",
+      "kmlName": "Old High Court Interchange",
+      "folder": "Phase-I-NS",
+      "lat": 23.037622,
+      "lon": 72.566988
+    },
+    {
+      "id": "UPMS",
+      "kmlName": "Usmanpura",
+      "folder": "Phase-I-NS",
+      "lat": 23.045889,
+      "lon": 72.565015
+    },
+    {
+      "id": "VRMS",
+      "kmlName": "Vijaynagar",
+      "folder": "Phase-I-NS",
+      "lat": 23.056222,
+      "lon": 72.562468
+    },
+    {
+      "id": "VDMS",
+      "kmlName": "Vadaj",
+      "folder": "Phase-I-NS",
+      "lat": 23.06773,
+      "lon": 72.565822
+    },
+    {
+      "id": "RNIP",
+      "kmlName": "Ranip",
+      "folder": "Phase-I-NS",
+      "lat": 23.067675,
+      "lon": 72.574009
+    },
+    {
+      "id": "SBRS",
+      "kmlName": "Sabarmati Rly Station",
+      "folder": "Phase-I-NS",
+      "lat": 23.069729,
+      "lon": 72.586695
+    },
+    {
+      "id": "AEC",
+      "kmlName": "AEC",
+      "folder": "Phase-I-NS",
+      "lat": 23.075157,
+      "lon": 72.593291
+    },
+    {
+      "id": "SMMS",
+      "kmlName": "Sabarmati",
+      "folder": "Phase-I-NS",
+      "lat": 23.085675,
+      "lon": 72.592206
+    },
+    {
+      "id": "MTRS",
+      "kmlName": "Motera Stadium",
+      "folder": "Phase-I-NS",
+      "lat": 23.096694,
+      "lon": 72.596655
+    },
+    {
+      "id": "SPSD",
+      "kmlName": "S P Stadium",
+      "folder": "Phase-I-EW",
+      "lat": 23.039854,
+      "lon": 72.561807
+    },
+    {
+      "id": "SHHP",
+      "kmlName": "Shahpur",
+      "folder": "Phase-I-EW",
+      "lat": 23.039222,
+      "lon": 72.581776
+    },
+    {
+      "id": "KPMS",
+      "kmlName": "Kalupur Rly Station",
+      "folder": "Phase-I-EW",
+      "lat": 23.024785,
+      "lon": 72.602903
+    },
+    {
+      "id": "KKES",
+      "kmlName": "Kankaria East",
+      "folder": "Phase-I-EW",
+      "lat": 23.015185,
+      "lon": 72.606984
+    },
+    {
+      "id": "ARPK",
+      "kmlName": "Apparel Park",
+      "folder": "Phase-I-EW",
+      "lat": 23.01085,
+      "lon": 72.61746
+    },
+    {
+      "id": "ARVD",
+      "kmlName": "Amraiwadi",
+      "folder": "Phase-I-EW",
+      "lat": 23.007846,
+      "lon": 72.628641
+    },
+    {
+      "id": "RBCY",
+      "kmlName": "Rabari Colony",
+      "folder": "Phase-I-EW",
+      "lat": 23.005513,
+      "lon": 72.635463
+    },
+    {
+      "id": "VSTL",
+      "kmlName": "Vastral",
+      "folder": "Phase-I-EW",
+      "lat": 23.003801,
+      "lon": 72.646869
+    },
+    {
+      "id": "NTCR",
+      "kmlName": "Nirant Cross Road",
+      "folder": "Phase-I-EW",
+      "lat": 23.000442,
+      "lon": 72.658886
+    },
+    {
+      "id": "VTLG",
+      "kmlName": "Vastral Gam",
+      "folder": "Phase-I-EW",
+      "lat": 22.997218,
+      "lon": 72.667415
+    },
+    {
+      "id": "TLTJ",
+      "kmlName": "Thaltej",
+      "folder": "Phase-I-EW",
+      "lat": 23.0497376,
+      "lon": 72.515931
+    },
+    {
+      "id": "TLTG",
+      "kmlName": "Thaltej Gam",
+      "folder": "Phase-I-EW",
+      "lat": 23.0501558,
+      "lon": 72.5070294
+    },
+    {
+      "id": "GKRD",
+      "kmlName": "Gurukul Road Metro Station",
+      "folder": "Phase-I-EW",
+      "lat": 23.046007,
+      "lon": 72.53505
+    },
+    {
+      "id": "DDKN",
+      "kmlName": "Doordarshan Kendra Metro Station",
+      "folder": "Phase-I-EW",
+      "lat": 23.048086,
+      "lon": 72.524867
+    },
+    {
+      "id": "GJUV",
+      "kmlName": "Gujarat University",
+      "folder": "Phase-I-EW",
+      "lat": 23.044902,
+      "lon": 72.543374
+    },
+    {
+      "id": "CMSR",
+      "kmlName": "Commerce Six Metro Station",
+      "folder": "Phase-I-EW",
+      "lat": 23.040691,
+      "lon": 72.552968
+    },
+    {
+      "id": "GEKA",
+      "kmlName": "Metro Station gheekanta",
+      "folder": "Phase-I-EW",
+      "lat": 23.028383,
+      "lon": 72.586332
+    },
+    {
+      "id": "KORD",
+      "kmlName": "Koteshwar Road",
+      "folder": "Phase-II Stations",
+      "lat": 23.105398,
+      "lon": 72.6031113
+    },
+    {
+      "id": "VIKC",
+      "kmlName": "Vishwakarma College",
+      "folder": "Phase-II Stations",
+      "lat": 23.11431,
+      "lon": 72.608569
+    },
+    {
+      "id": "TAPC",
+      "kmlName": "Tapovan Circle",
+      "folder": "Phase-II Stations",
+      "lat": 23.1199142,
+      "lon": 72.6165966
+    },
+    {
+      "id": "NAMC",
+      "kmlName": "Narmada Canal",
+      "folder": "Phase-II Stations",
+      "lat": 23.125338,
+      "lon": 72.622327
+    },
+    {
+      "id": "KOBC",
+      "kmlName": "Koba Circle",
+      "folder": "Phase-II Stations",
+      "lat": 23.132206,
+      "lon": 72.630952
+    },
+    {
+      "id": "JUKB",
+      "kmlName": "Juna Koba",
+      "folder": "Phase-II Stations",
+      "lat": 23.141811,
+      "lon": 72.638453
+    },
+    {
+      "id": "KOBG",
+      "kmlName": "Koba Gam",
+      "folder": "Phase-II Stations",
+      "lat": 23.147469,
+      "lon": 72.643825
+    },
+    {
+      "id": "GNLU",
+      "kmlName": "GNLU",
+      "folder": "Phase-II Stations",
+      "lat": 23.154344,
+      "lon": 72.647375
+    },
+    {
+      "id": "PDEU",
+      "kmlName": "PDEU",
+      "folder": "Phase-II Stations",
+      "lat": 23.154792,
+      "lon": 72.661297
+    },
+    {
+      "id": "GIFC",
+      "kmlName": "GIFT City",
+      "folder": "Phase-II Stations",
+      "lat": 23.153264,
+      "lon": 72.685575
+    },
+    {
+      "id": "RAYN",
+      "kmlName": "Raysan",
+      "folder": "Phase-II Stations",
+      "lat": 23.166206,
+      "lon": 72.648367
+    },
+    {
+      "id": "RADN",
+      "kmlName": "Randesan",
+      "folder": "Phase-II Stations",
+      "lat": 23.178853,
+      "lon": 72.647333
+    },
+    {
+      "id": "DHKU",
+      "kmlName": "Dholakuva Circle",
+      "folder": "Phase-II Stations",
+      "lat": 23.185698,
+      "lon": 72.643363
+    },
+    {
+      "id": "INFC",
+      "kmlName": "Infocity",
+      "folder": "Phase-II Stations",
+      "lat": 23.192418,
+      "lon": 72.639748
+    },
+    {
+      "id": "SEOA",
+      "kmlName": "Sector-1",
+      "folder": "Phase-II Stations",
+      "lat": 23.205186,
+      "lon": 72.643387
+    },
+    {
+      "id": "SEAO",
+      "kmlName": "Sector-10A",
+      "folder": "Phase-II Stations",
+      "lat": 23.210558,
+      "lon": 72.651751
+    },
+    {
+      "id": "SVAL",
+      "kmlName": "Sachivalaya",
+      "folder": "Phase-II Stations",
+      "lat": 23.214883,
+      "lon": 72.658712
+    },
+    {
+      "id": "AKDM",
+      "kmlName": "Akshardham",
+      "folder": "Phase-II Stations",
+      "lat": 23.223491,
+      "lon": 72.664241
+    },
+    {
+      "id": "JUSL",
+      "kmlName": "Juna Sachivalaya",
+      "folder": "Phase-II Stations",
+      "lat": 23.228877,
+      "lon": 72.659482
+    },
+    {
+      "id": "SEAF",
+      "kmlName": "Sector-16",
+      "folder": "Phase-II Stations",
+      "lat": 23.233805,
+      "lon": 72.650208
+    },
+    {
+      "id": "SEBD",
+      "kmlName": "Sector-24",
+      "folder": "Phase-II Stations",
+      "lat": 23.238425,
+      "lon": 72.641564
+    },
+    {
+      "id": "MAHM",
+      "kmlName": "Mahatma Mandir",
+      "folder": "Phase-II Stations",
+      "lat": 23.233654,
+      "lon": 72.633664
+    }
+  ],
+  "ignored": [
+    "GiftCity Shahpur / GIFT City House",
+    "GiftCity Shahpur / Gujarat Biotechnology University",
+    "GiftCity Shahpur / Shahpur",
+    "Koteshwar Road to Airport / Ashram Road",
+    "Koteshwar Road to Airport / Koteshwar Prachin Mandir",
+    "Koteshwar Road to Airport / Sabarmati River",
+    "Koteshwar Road to Airport / Sardarnagar",
+    "Koteshwar Road to Airport / Airport"
+  ]
+}

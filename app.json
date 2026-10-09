@@ -24,10 +24,16 @@
       "output": "single"
     },
     "scheme": "metromate",
-    "description": "Offline metro companion for the Ahmedabad–Gandhinagar Metro.",
+    "description": "Offline metro companion for the Ahmedabad\u2013Gandhinagar Metro.",
     "plugins": [
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MetroMate uses your location to show which metro station you are at and how far along your journey you are. It works offline and your location never leaves your phone."
+        }
+      ]
     ],
     "splash": {
       "image": "./assets/splash-icon.png",

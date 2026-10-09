@@ -1,4 +1,5 @@
-import type { Dataset, SavedJourney } from '../types';
+import type { Dataset, SavedJourney, StationCoord } from '../types';
+import { accumulatorAccuracyM, mergeStationFix, type Fix } from '../lib/locator';
 import type { Db } from './types';
 
 export const RECENTS_LIMIT = 10;
@@ -44,6 +45,14 @@ export async function migrate(db: Db): Promise<void> {
       to_id TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       UNIQUE (from_id, to_id)
+    );
+    CREATE TABLE IF NOT EXISTS station_coords (
+      station_id TEXT PRIMARY KEY NOT NULL,
+      lat REAL NOT NULL,
+      lon REAL NOT NULL,
+      weight REAL NOT NULL,
+      samples INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS recents (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -188,4 +197,55 @@ export async function resetLocalData(db: Db, ds: Dataset): Promise<void> {
   await db.runAsync('DELETE FROM favourites');
   await db.runAsync('DELETE FROM recents');
   await seedDataset(db, ds);
+}
+
+// ------------------------------------------------- recorded station positions
+
+interface CoordRow {
+  station_id: string;
+  lat: number;
+  lon: number;
+  weight: number;
+  samples: number;
+  updated_at: number;
+}
+
+export const toStationCoord = (r: CoordRow): StationCoord => ({
+  stationId: r.station_id,
+  lat: r.lat,
+  lon: r.lon,
+  weight: r.weight,
+  samples: r.samples,
+  updatedAt: r.updated_at,
+  accuracyM: accumulatorAccuracyM({ weight: r.weight }),
+});
+
+export async function listStationCoords(db: Db): Promise<StationCoord[]> {
+  const rows = await db.getAllAsync<CoordRow>('SELECT station_id, lat, lon, weight, samples, updated_at FROM station_coords ORDER BY station_id');
+  return rows.map(toStationCoord);
+}
+
+/**
+ * Adds one GPS fix to a station's recorded position (inverse-variance weighted average).
+ * Returns null, and writes nothing, if the fix is too inaccurate to use.
+ */
+export async function recordStationFix(db: Db, stationId: string, fix: Pick<Fix, 'lat' | 'lon' | 'accuracyM'>): Promise<StationCoord | null> {
+  const prevRow = await db.getFirstAsync<CoordRow>('SELECT station_id, lat, lon, weight, samples, updated_at FROM station_coords WHERE station_id = ?', [stationId]);
+  const merged = mergeStationFix(prevRow ? { lat: prevRow.lat, lon: prevRow.lon, weight: prevRow.weight, samples: prevRow.samples } : null, fix);
+  if (!merged) return null;
+  const now = Date.now();
+  await db.runAsync(
+    `INSERT INTO station_coords (station_id, lat, lon, weight, samples, updated_at) VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(station_id) DO UPDATE SET lat = excluded.lat, lon = excluded.lon, weight = excluded.weight, samples = excluded.samples, updated_at = excluded.updated_at`,
+    [stationId, merged.lat, merged.lon, merged.weight, merged.samples, now],
+  );
+  return toStationCoord({ station_id: stationId, lat: merged.lat, lon: merged.lon, weight: merged.weight, samples: merged.samples, updated_at: now });
+}
+
+export async function clearStationCoord(db: Db, stationId: string): Promise<void> {
+  await db.runAsync('DELETE FROM station_coords WHERE station_id = ?', [stationId]);
+}
+
+export async function clearStationCoords(db: Db): Promise<void> {
+  await db.runAsync('DELETE FROM station_coords');
 }

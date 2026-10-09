@@ -43,5 +43,41 @@
     "obtainedBy": "Screenshots supplied by the project team",
     "checkedAt": "2026-10-09",
     "limitations": "Photo galleries only. Does not say which station has which facility."
+  },
+  {
+    "id": "gmrc-gates",
+    "name": "GMRC Information of Entry-Exit Gate at Entrance",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/information-of-entry-exit-gate-at-entrance/",
+    "type": "Station type (elevated/underground), operational gate numbers, lifts with ramp near gates",
+    "obtainedBy": "PDF printout supplied by the project team (page footer: last updated 05-Oct-2026); table extracted programmatically, two entries corrected by viewing the rendered PDF",
+    "checkedAt": "2026-10-09",
+    "limitations": "Gate NUMBERS only: GMRC publishes no street or landmark direction for any gate. Lift operating status is not published. Sabarmati Railway Station is not listed. Shahpur lists Gate No. 3 twice (probable typo)."
+  },
+  {
+    "id": "google-my-maps",
+    "name": "Google My Maps: Ahmedabad Metro Rail (KML export)",
+    "url": "https://www.google.com/maps/d/viewer?mid=1ebnAmbRUbMyI_quB06reRZWcyfcLF8M",
+    "type": "Station coordinates; entry/exit connectivity notes (BRTS, GSRTC, railway)",
+    "obtainedBy": "KML and CSV exports supplied by the project team; parsed by scripts/import-coordinates.mjs",
+    "checkedAt": "2026-10-09",
+    "limitations": "Unofficial community/third-party map, so coordinates are stored as estimated, not verified, and may be tens to hundreds of metres from the actual station entrance or platform. Connectivity notes are unverified. Planned-line placemarks (Ashram Road to Airport, GIFT City House, Gujarat Biotechnology University, a second Shahpur) are ignored."
+  },
+  {
+    "id": "gmrc-route-pdf",
+    "name": "GMRC Route / train timing sheet (older, undated PDF)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Older frequency and run-time table; per-station headways",
+    "obtainedBy": "PDF supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Undated and superseded by the 18 May 2026 Train Information page, so it is NOT used for timings. Its blank cell for Sabarmati Rly. Station is consistent with that station not being in service."
+  },
+  {
+    "id": "mega-alignment-2015",
+    "name": "MEGA Alignment of Ahmedabad Metro Rail Project Phase I (DPR, March 2015)",
+    "url": "https://www.gujaratmetrorail.com/reports/",
+    "type": "Phase I alignment drawing: elevated vs underground lengths and station counts",
+    "obtainedBy": "PDF supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "2015 planning document; used only as corroboration that four East–West stations (Shahpur, Gheekanta, Kalupur, Kankaria East) are underground. Its summary table says 17 East–West stations whereas the current gate table and route map list 18."
   }
 ]

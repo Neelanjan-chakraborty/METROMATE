@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNetworkState } from 'expo-network';
-import type { Dataset, SavedJourney } from '../types';
+import type { Dataset, SavedJourney, StationCoord } from '../types';
+import { accumulatorAccuracyM, buildLinks, buildStationPoints, mergeStationFix, type Fix, type Link, type StationPoint } from '../lib/locator';
 import { loadBundledDataset } from '../lib/dataset';
 import { validateDataset, type ValidationReport } from '../lib/dataValidation';
 import { buildNetwork, type Network } from '../lib/routing';
@@ -22,6 +23,16 @@ interface AppState {
   online: boolean | null;
   favourites: SavedJourney[];
   recents: SavedJourney[];
+  /** Positions recorded on this phone from GPS fixes. */
+  stationCoords: StationCoord[];
+  /** Best known coordinates per station (dataset pins and recorded positions). */
+  stationPoints: Map<string, StationPoint>;
+  /** Undirected station links, for locating a fix between two stations. */
+  links: Link[];
+  /** Adds a GPS fix to a station's recorded position. Resolves null if the fix is too inaccurate. */
+  recordStationFix: (stationId: string, fix: Pick<Fix, 'lat' | 'lon' | 'accuracyM'>) => Promise<StationCoord | null>;
+  clearStationCoord: (stationId: string) => Promise<void>;
+  clearStationCoords: () => Promise<void>;
   isFavourite: (fromId: string, toId: string) => boolean;
   toggleFavourite: (fromId: string, toId: string) => Promise<void>;
   removeFavourite: (id: number) => Promise<void>;
@@ -45,6 +56,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [storage, setStorage] = useState<'sqlite' | 'memory'>('sqlite');
   const [favourites, setFavourites] = useState<SavedJourney[]>([]);
   const [recents, setRecents] = useState<SavedJourney[]>([]);
+  const [stationCoords, setStationCoords] = useState<StationCoord[]>([]);
   const dbRef = useRef<Db | null>(null);
   const memId = useRef(1);
   const net = useNetworkState();
@@ -54,6 +66,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!db) return;
     setFavourites(await repo.listFavourites(db));
     setRecents(await repo.listRecents(db));
+    setStationCoords(await repo.listStationCoords(db));
   }, []);
 
   useEffect(() => {
@@ -67,10 +80,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         await repo.seedIfNeeded(db, bundled);
         ds = (await repo.loadDataset(db)) ?? bundled;
         dbRef.current = db;
-        const [f, r] = [await repo.listFavourites(db), await repo.listRecents(db)];
+        const [f, r, c] = [await repo.listFavourites(db), await repo.listRecents(db), await repo.listStationCoords(db)];
         if (cancelled) return;
         setFavourites(f);
         setRecents(r);
+        setStationCoords(c);
         setStorage('sqlite');
       } catch (e) {
         // The app must keep working without the database: fall back to the bundled data.
@@ -96,6 +110,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const network = useMemo(() => (dataset ? buildNetwork(dataset) : null), [dataset]);
   const validation = useMemo(() => (dataset ? validateDataset(dataset) : null), [dataset]);
+
+  const stationPoints = useMemo(
+    () => buildStationPoints(dataset?.stations ?? [], stationCoords),
+    [dataset, stationCoords],
+  );
+  const links = useMemo(() => buildLinks(dataset?.connections ?? []), [dataset]);
+
+  const recordStationFix = useCallback(
+    async (stationId: string, fix: Pick<Fix, 'lat' | 'lon' | 'accuracyM'>) => {
+      const db = dbRef.current;
+      if (db) {
+        const saved = await repo.recordStationFix(db, stationId, fix);
+        if (saved) await refresh();
+        return saved;
+      }
+      // In-memory fallback: same maths, no persistence.
+      const prev = stationCoords.find((c) => c.stationId === stationId);
+      const merged = mergeStationFix(prev ? { lat: prev.lat, lon: prev.lon, weight: prev.weight, samples: prev.samples } : null, fix);
+      if (!merged) return null;
+      const next: StationCoord = { stationId, ...merged, updatedAt: Date.now(), accuracyM: accumulatorAccuracyM(merged) };
+      setStationCoords((cur) => [...cur.filter((c) => c.stationId !== stationId), next]);
+      return next;
+    },
+    [stationCoords, refresh],
+  );
+
+  const clearStationCoord = useCallback(
+    async (stationId: string) => {
+      const db = dbRef.current;
+      if (db) {
+        await repo.clearStationCoord(db, stationId);
+        await refresh();
+      } else {
+        setStationCoords((cur) => cur.filter((c) => c.stationId !== stationId));
+      }
+    },
+    [refresh],
+  );
+
+  const clearStationCoords = useCallback(async () => {
+    const db = dbRef.current;
+    if (db) {
+      await repo.clearStationCoords(db);
+      await refresh();
+    } else {
+      setStationCoords([]);
+    }
+  }, [refresh]);
 
   const isFavourite = useCallback(
     (fromId: string, toId: string) => favourites.some((f) => f.fromId === fromId && f.toId === toId),
@@ -187,6 +249,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       online,
       favourites,
       recents,
+      stationCoords,
+      stationPoints,
+      links,
+      recordStationFix,
+      clearStationCoord,
+      clearStationCoords,
       isFavourite,
       toggleFavourite,
       removeFavourite,
@@ -194,7 +262,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       clearRecents,
       resetLocalData,
     }),
-    [status, error, dataset, network, validation, storage, online, favourites, recents, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData],
+    [status, error, dataset, network, validation, storage, online, favourites, recents, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

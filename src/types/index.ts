@@ -41,6 +41,14 @@ export interface Platform {
   verificationStatus: VerificationStatus;
 }
 
+export interface NearbyConnection {
+  kind: 'brts' | 'bus' | 'rail' | 'other';
+  gateNumber: number | null;
+  note: string;
+  sourceId: string;
+  verificationStatus: VerificationStatus;
+}
+
 export interface Station {
   id: string;
   name: string;
@@ -55,7 +63,15 @@ export interface Station {
   latitude: number | null;
   longitude: number | null;
   coordinateStatus: VerificationStatus;
+  /** Where the coordinates came from (a source id), or null when unknown. */
+  coordinateSourceId: string | null;
   stationType: 'elevated' | 'underground' | 'unknown';
+  /** Lifts with ramp listed by GMRC at entrances, by lift number and nearest gate number. */
+  lifts: { lift: number; nearGate: number }[];
+  /** Set when the station needs a caveat (e.g. not in GMRC's operational gate table). */
+  serviceNote: string | null;
+  /** Bus/BRTS/railway connectivity notes. Unverified (from an unofficial map). */
+  nearbyConnections: NearbyConnection[];
   facilities: string[];
   platforms: Platform[];
   sourceMetadata: SourceMetadata;
@@ -85,8 +101,12 @@ export interface Gate {
   /** Independently verified street/landmark direction; null unless verified. */
   verifiedDirection: string | null;
   accessibilityNotes: string | null;
+  /** Connectivity notes for this gate (unverified; from an unofficial map). */
+  nearbyConnectionNotes?: string[];
   sourceUrl: string | null;
+  verifiedAt?: string | null;
   verificationStatus: VerificationStatus;
+  notes?: string;
 }
 
 export interface Landmark {
@@ -273,4 +293,17 @@ export interface SavedJourney {
   fromId: string;
   toId: string;
   createdAt: number;
+}
+
+/** A station position recorded on this phone from GPS fixes (kept separately from the dataset). */
+export interface StationCoord {
+  stationId: string;
+  lat: number;
+  lon: number;
+  /** Sum of inverse-variance weights; higher means more precise. */
+  weight: number;
+  samples: number;
+  updatedAt: number;
+  /** Estimated accuracy of the averaged position, in metres. */
+  accuracyM: number;
 }

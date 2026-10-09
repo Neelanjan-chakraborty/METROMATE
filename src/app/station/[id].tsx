@@ -57,9 +57,14 @@ export default function StationScreen() {
             })}
             {station.isInterchange ? <Pill label="Interchange" color={colors.warn} bg={colors.interchangeSoft} /> : null}
             <Pill label={`Phase ${station.phase}`} color={colors.muted} bg="#EEF0F5" />
+            {station.stationType !== 'unknown' ? (
+              <Pill label={station.stationType === 'underground' ? 'Underground' : 'Elevated'} color={colors.muted} bg="#EEF0F5" />
+            ) : null}
           </View>
           {station.aliases.length > 0 ? <Muted>Also known as: {station.aliases.join(', ')}</Muted> : null}
           {station.interchangeNote ? <Notice>{station.interchangeNote}</Notice> : null}
+          {station.serviceNote ? <Notice tone="warn">{station.serviceNote}</Notice> : null}
+          {station.stationType === 'underground' ? <Notice>GPS does not work underground, so Live tracking will show “signal lost” here.</Notice> : null}
           <View style={{ flexDirection: 'row', gap: space.sm }}>
             <Button label="Start here" icon={Flag} variant="secondary" compact style={{ flex: 1 }} onPress={() => router.navigate({ pathname: '/', params: { from: station.id } })} />
             <Button label="Go here" icon={Navigation} compact style={{ flex: 1 }} onPress={() => router.navigate({ pathname: '/', params: { to: station.id } })} />
@@ -104,16 +109,35 @@ export default function StationScreen() {
           <SectionTitle>Gates &amp; platforms</SectionTitle>
           <Card style={{ gap: space.sm }}>
             {gates.length === 0 ? (
-              <Muted>Entry and exit gate information is not verified yet. Follow the exit signs inside the station.</Muted>
+              <Muted>
+                {station.serviceNote
+                  ? 'GMRC’s table of operational entry/exit gates does not list this station.'
+                  : 'Entry and exit gate information is not available for this station.'}
+              </Muted>
             ) : (
-              gates.map((g) => (
-                <View key={g.id} style={{ gap: 2 }}>
-                  <Text style={type.h3}>Gate {g.gateNumber}</Text>
-                  <Muted>GMRC description: {g.publishedDescription || 'none published'}</Muted>
-                  <Muted>{g.verifiedDirection ? `Direction: ${g.verifiedDirection}` : 'Street direction not verified yet.'}</Muted>
-                  {g.accessibilityNotes ? <Muted>{g.accessibilityNotes}</Muted> : null}
-                </View>
-              ))
+              <>
+                <Muted>
+                  GMRC lists {gates.length} operational entry/exit {gates.length === 1 ? 'gate' : 'gates'}. GMRC publishes gate numbers only: which street or landmark each gate faces is not verified, so check the signs inside the station.
+                </Muted>
+                {gates.map((g) => (
+                  <View key={g.id} style={styles.gateRow}>
+                    <View style={styles.gateNo}>
+                      <Text style={styles.gateNoText}>{g.gateNumber}</Text>
+                    </View>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={type.h3}>Gate {g.gateNumber}</Text>
+                      {g.accessibilityNotes ? <Text style={type.small}>{g.accessibilityNotes}</Text> : null}
+                      {(g.nearbyConnectionNotes ?? []).map((n) => (
+                        <Text key={n} style={type.small}>
+                          {n} <Text style={{ color: colors.warn }}>(unofficial map, unverified)</Text>
+                        </Text>
+                      ))}
+                      <Text style={type.tiny}>Direction: not verified yet</Text>
+                    </View>
+                  </View>
+                ))}
+                {gates.some((g) => g.notes) ? <Muted>{[...new Set(gates.map((g) => g.notes).filter(Boolean))].join(' ')}</Muted> : null}
+              </>
             )}
             <View style={styles.divider} />
             {station.platforms.length === 0 ? (
@@ -131,7 +155,14 @@ export default function StationScreen() {
         <View>
           <SectionTitle>Lifts &amp; accessibility</SectionTitle>
           <Card style={{ gap: space.sm }}>
-            <Muted>Lift and step-free access at {station.name} is not verified yet, so MetroMate does not claim this station is step-free.</Muted>
+            {station.lifts.length > 0 ? (
+              <Muted>
+                GMRC lists {station.lifts.length} {station.lifts.length === 1 ? 'lift' : 'lifts'} with ramp for wheelchair users at the entrances:{' '}
+                {station.lifts.map((l) => `Lift ${String(l.lift).padStart(2, '0')} near Gate ${l.nearGate}`).join(', ')}. Whether a lift is working today, and step-free access inside the station, are not published, so MetroMate does not claim this station is step-free.
+              </Muted>
+            ) : (
+              <Muted>No lift information is published for {station.name}, so MetroMate does not claim it is step-free.</Muted>
+            )}
             <Pressable onPress={() => setFacilitiesOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: facilitiesOpen }} style={styles.toggle}>
               <Text style={[type.small, { color: colors.primary, fontWeight: '700', flex: 1 }]}>Facilities GMRC lists across the network</Text>
               {facilitiesOpen ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
@@ -167,8 +198,16 @@ export default function StationScreen() {
                 </View>
               ))
             )}
+            {station.nearbyConnections.filter((c) => c.gateNumber === null).map((c) => (
+              <Muted key={c.note}>
+                {c.note} (unofficial map, unverified)
+              </Muted>
+            ))}
             <Notice>
-              Location of {station.name}: {station.latitude !== null ? `${station.latitude}, ${station.longitude}` : 'coordinates not verified yet'}. MetroMate does not provide turn-by-turn walking directions.
+              {station.latitude !== null
+                ? `Station position: ${station.latitude.toFixed(5)}, ${station.longitude!.toFixed(5)} (${station.coordinateStatus}; from an unofficial map pin, so it may be off by a block).`
+                : 'Station coordinates are not available.'}{' '}
+              MetroMate does not provide turn-by-turn walking directions.
             </Notice>
             <Button label="Search in Maps (needs internet)" icon={ExternalLink} variant="secondary" compact onPress={() => openUrl(mapsSearchUrl(station.name))} />
           </Card>
@@ -207,6 +246,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     borderRadius: radius.md,
   },
+  gateRow: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start' },
+  gateNo: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  gateNoText: { fontWeight: '800', color: colors.primaryDark },
   divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: 4 },
   toggle: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },

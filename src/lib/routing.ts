@@ -153,6 +153,10 @@ export function findRoute(net: Network, originId: string | null | undefined, des
   const warnings: string[] = [];
   if (crossesPhaseBoundary) warnings.push(PHASE_WARNING);
   if (interchanges.some((i) => i.stationId === 'GNLU')) warnings.push(GNLU_WARNING);
+  for (const id of stationIds) {
+    const note = net.stations.get(id)?.serviceNote;
+    if (note) warnings.push(`${net.stations.get(id)!.name}: ${note}`);
+  }
 
   return {
     ok: true,

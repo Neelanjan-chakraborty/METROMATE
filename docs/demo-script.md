@@ -10,13 +10,15 @@
 | 0:50 | Point at the fare and time cards. | "Fare shows 'Fare unavailable offline'. GMRC's fare page lists no amounts, and we refuse to multiply stops by a made-up rate. Journey time is likewise not guessed — GMRC publishes line times, not per-station times; those are shown under 'Published train timings', labelled static." |
 | 1:05 | Tap **Show on map**, then tap the star. | "The map is our own schematic, drawn from the station data and bundled in the app. I'll save this route." |
 | 1:15 | **Turn on airplane mode.** The badge turns red: "Offline · all features work". | "Now fully offline." |
-| 1:25 | Saved tab → open the favourite. Then Stations tab → search `amraiwadi`. Open **Old High Court**. | "Saved routes, search, route planning, the map and station pages all still work. Unknown things — gates, platforms, lifts — say 'not verified yet' instead of guessing." |
+| 1:20 | Live tab → choose the same journey → **Run demo ride**. | "This is our Find-My-Train-style tracker. On a real ride it reads the phone's GPS, which works offline, and follows your progress stop by stop. The demo is simulated and labelled as such. Underground, where GPS can't reach, it says 'signal lost' instead of guessing." |
+| 1:25 | Saved tab → open the favourite. Then Stations tab → search `amraiwadi`. Open **Old High Court**. | "Saved routes, search, route planning, the map and station pages all still work. The station page shows GMRC's real gate numbers and lifts, and says 'not verified yet' for what GMRC doesn't publish — gate directions and platforms — instead of guessing." |
 | 1:45 | Open **Data & sources** (Plan tab footer). | "Every record carries its source and check date. The data comes from official GMRC material; what's missing is listed here and in `docs/data-gaps.md`." |
-| 1:55 | Close. | "Next: add GMRC's fare chart, gates and coordinates to the JSON files — the app and its tests pick them up with no code changes." |
+| 1:55 | Close. | "Next: add GMRC's fare chart, gate directions and surveyed station coordinates to the data files — the app and its tests pick them up with no code changes." |
 
 ## Notes for the presenter
 
 - Do not call the airplane-mode step "tested" unless you have just done it on the device: the repository's automated tests cover routing, search, the SQLite persistence layer and the bundle, but **not** an on-device airplane-mode run.
+- The Live demo ride is simulated. Real GPS tracking has been exercised only with emulated positions in a browser, **not on a phone**. If you can, walk or ride with it before presenting and say what you saw.
 - If asked about live status: MetroMate shows a static GMRC schedule (effective 18 May 2026) and says so.
 - If asked about the Phase-1/Phase-2 warning: it quotes GMRC's fare rules; part of that rule's text was not available, so the app asks passengers to confirm ticketing at the station.
 

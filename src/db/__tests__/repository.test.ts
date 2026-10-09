@@ -5,12 +5,16 @@ import {
   RECENTS_LIMIT,
   addFavourite,
   clearRecents,
+  clearStationCoord,
+  clearStationCoords,
   getDatasetMeta,
   listFavourites,
   listRecents,
+  listStationCoords,
   loadDataset,
   migrate,
   recordRecent,
+  recordStationFix,
   removeFavourite,
   removeFavouritePair,
   resetLocalData,
@@ -138,5 +142,54 @@ describe('reset', () => {
     expect(await listFavourites(db)).toEqual([]);
     expect(await listRecents(db)).toEqual([]);
     expect((await loadDataset(db))!.stations).toHaveLength(54);
+  });
+});
+
+describe('recorded station positions', () => {
+  it('averages fixes per station and persists them', async () => {
+    const db = await freshDb();
+    expect(await recordStationFix(db, 'MTRS', { lat: 23.0967, lon: 72.5967, accuracyM: 10 })).toMatchObject({ samples: 1 });
+    const second = await recordStationFix(db, 'MTRS', { lat: 23.0969, lon: 72.5967, accuracyM: 10 });
+    expect(second!.samples).toBe(2);
+    expect(second!.lat).toBeCloseTo(23.0968, 6);
+    expect(second!.accuracyM).toBeLessThan(10);
+    const list = await listStationCoords(db);
+    expect(list).toHaveLength(1);
+    expect(list[0].stationId).toBe('MTRS');
+  });
+
+  it('writes nothing for a fix that is too inaccurate', async () => {
+    const db = await freshDb();
+    expect(await recordStationFix(db, 'MTRS', { lat: 23.1, lon: 72.6, accuracyM: 120 })).toBeNull();
+    expect(await recordStationFix(db, 'MTRS', { lat: 23.1, lon: 72.6, accuracyM: null })).toBeNull();
+    expect(await listStationCoords(db)).toEqual([]);
+  });
+
+  it('can clear one station or all, and survives reset of other data', async () => {
+    const db = await freshDb();
+    await recordStationFix(db, 'MTRS', { lat: 23.1, lon: 72.6, accuracyM: 10 });
+    await recordStationFix(db, 'APMC', { lat: 22.99, lon: 72.53, accuracyM: 10 });
+    await clearStationCoord(db, 'MTRS');
+    expect((await listStationCoords(db)).map((c) => c.stationId)).toEqual(['APMC']);
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds); // favourites/recents/dataset reset must not wipe recorded positions
+    expect(await listStationCoords(db)).toHaveLength(1);
+    await clearStationCoords(db);
+    expect(await listStationCoords(db)).toEqual([]);
+  });
+
+  it('persists across closing and reopening the database', async () => {
+    const dir = path.join(__dirname, '..', '..', '..', 'node_modules', '.cache', 'metromate-test');
+    fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, `coords-${process.pid}.db`);
+    const first = new NodeSqliteDb(file);
+    await migrate(first);
+    await recordStationFix(first, 'PLDI', { lat: 23.0186, lon: 72.5624, accuracyM: 8 });
+    first.close();
+    const second = new NodeSqliteDb(file);
+    await migrate(second);
+    expect((await listStationCoords(second))[0]).toMatchObject({ stationId: 'PLDI', samples: 1 });
+    second.close();
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 });
