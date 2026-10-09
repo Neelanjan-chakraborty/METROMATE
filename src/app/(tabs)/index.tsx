@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Database } from 'lucide-react-native';
 import { Notice, Screen } from '../../components/ui';
 import { StationPicker } from '../../components/StationPicker';
-import { HeroIllustration } from '../../components/home/art';
+import { Hero } from '../../components/home/Hero';
+import { parsePreviewTime, useAppActive, useMinuteOfDay, useReduceMotion } from '../../components/home/useHeroClock';
 import { HomeHeader, JourneyCard, QuickRoutes, RecentTrips, SectionHeader, ShortcutCards, type QuickItem, type TripItem } from '../../components/home/HomeSections';
 import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
@@ -13,6 +15,7 @@ import { findRoute } from '../../lib/routing';
 import { getFare } from '../../lib/fareCalculator';
 import { getJourneyTime } from '../../lib/journeyTime';
 import { formatDate, plural, relativeDay } from '../../lib/format';
+import { heroLookAt } from '../../lib/skyPalette';
 import { colors } from '../../theme';
 import { QUICK_SLOTS, type QuickSlot } from '../../types';
 
@@ -21,7 +24,7 @@ const QUICK_LABEL: Record<QuickSlot, string> = { home: 'Home', campus: 'Campus',
 
 export default function Home() {
   const { dataset, network, recents, quickRoutes, setQuickRoute, clearQuickRoute, storage } = useReady();
-  const params = useLocalSearchParams<{ from?: string; to?: string }>();
+  const params = useLocalSearchParams<{ from?: string; to?: string; sky?: string }>();
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
 
@@ -101,15 +104,25 @@ export default function Home() {
     if (r) openRoute(r.fromId, r.toId);
   };
 
+  // ---- living hero: sky, lights and train follow the real time (or ?sky=HH:MM for a preview)
+  const clock = useMinuteOfDay();
+  const preview = parsePreviewTime(params.sky);
+  const look = useMemo(() => heroLookAt(preview ?? clock), [preview, clock]);
+  const focused = useIsFocused();
+  const appActive = useAppActive();
+  const reduceMotion = useReduceMotion();
+  const animate = focused && appActive && !reduceMotion;
+
   const heroHeight = z(176) + insets.top;
 
   return (
     <Screen edges={[]}>
+      {focused ? <StatusBar style={look.statusBar} /> : null}
       <ScrollView contentContainerStyle={{ paddingBottom: z(28) }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
           <View>
-            <HeroIllustration height={heroHeight} />
-            <HomeHeader topInset={insets.top} />
+            <Hero height={heroHeight} look={look} animate={animate} />
+            <HomeHeader topInset={insets.top} ink={look.ink} inkSoft={look.inkSoft} />
             <View style={{ height: z(76) }} />
           </View>
 

@@ -23,7 +23,7 @@ function useStyles() {
 
 // ------------------------------------------------------------------ header
 
-export function HomeHeader({ topInset }: { topInset: number }) {
+export function HomeHeader({ topInset, ink, inkSoft }: { topInset: number; ink: string; inkSoft: string }) {
   const { z, st } = useStyles();
   return (
     <View style={[st.header, { paddingTop: topInset + z(21) }]}>
@@ -31,10 +31,10 @@ export function HomeHeader({ topInset }: { topInset: number }) {
         <MetroTrainIcon size={z(32)} color="#FFFFFF" strokeWidth={1.7} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={st.brand} accessibilityRole="header" numberOfLines={1}>
+        <Text style={[st.brand, { color: ink }]} accessibilityRole="header" numberOfLines={1}>
           MetroMate
         </Text>
-        <Text style={st.tagline} numberOfLines={1}>
+        <Text style={[st.tagline, { color: inkSoft }]} numberOfLines={1}>
           Your offline metro companion
         </Text>
       </View>
