@@ -19,6 +19,7 @@ Other commands:
 npm test               # unit + SQLite persistence tests (Jest)
 npm run validate:data  # dataset consistency checks only
 npm run typecheck      # tsc --noEmit
+npm run lint           # ESLint (eslint-config-expo)
 npm run export:android # confirm the Android bundle builds
 npm run web            # optional browser preview (storage falls back to memory)
 ```

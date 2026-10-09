@@ -1,6 +1,5 @@
 import type { BindValue, Db } from '../types';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Node's built-in SQLite, used only in tests. `process.getBuiltinModule` is used
 // because Jest's resolver does not know the scheme-only `node:sqlite` module.
 const { DatabaseSync } = (process as any).getBuiltinModule('node:sqlite');

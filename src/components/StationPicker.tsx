@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Search, X } from 'lucide-react-native';
@@ -15,12 +15,17 @@ interface Props {
 }
 
 export function StationPicker({ visible, title, onClose, onSelect }: Props) {
+  return (
+    <Modal visible={visible} animationType={Platform.OS === 'web' ? 'none' : 'slide'} onRequestClose={onClose} presentationStyle="fullScreen">
+      {/* The body mounts only while visible, so the search box starts empty every time. */}
+      {visible ? <PickerBody title={title} onClose={onClose} onSelect={onSelect} /> : null}
+    </Modal>
+  );
+}
+
+function PickerBody({ title, onClose, onSelect }: Omit<Props, 'visible'>) {
   const { dataset } = useReady();
   const [query, setQuery] = useState('');
-  useEffect(() => {
-    if (visible) setQuery('');
-  }, [visible]);
-
   const corridorById = useMemo(() => new Map(dataset.corridors.map((c) => [c.id, c])), [dataset]);
   const hits = useMemo(() => searchStations(dataset.stations, dataset.landmarks, query, 60), [dataset, query]);
 
@@ -62,7 +67,7 @@ export function StationPicker({ visible, title, onClose, onSelect }: Props) {
   };
 
   return (
-    <Modal visible={visible} animationType={Platform.OS === 'web' ? 'none' : 'slide'} onRequestClose={onClose} presentationStyle="fullScreen">
+    <>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
           <View style={styles.header}>
@@ -110,7 +115,7 @@ export function StationPicker({ visible, title, onClose, onSelect }: Props) {
           />
         </SafeAreaView>
       </SafeAreaProvider>
-    </Modal>
+    </>
   );
 }
 

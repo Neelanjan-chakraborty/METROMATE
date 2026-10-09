@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowUpDown, ChevronRight, Database, History, List, Map as MapIcon, Navigation, Star, TrainFront } from 'lucide-react-native';
@@ -20,11 +20,14 @@ export default function Home() {
   const [picker, setPicker] = useState<Target>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill from a station detail screen ("Start here" / "Go here").
-  useEffect(() => {
+  // Pre-fill from a station detail screen ("Start here" / "Go here"), applied once per set of params.
+  const paramKey = `${params.from ?? ''}|${params.to ?? ''}`;
+  const [appliedKey, setAppliedKey] = useState('');
+  if (paramKey !== appliedKey) {
+    setAppliedKey(paramKey);
     if (params.from && network.stations.has(params.from)) setFromId(params.from);
     if (params.to && network.stations.has(params.to)) setToId(params.to);
-  }, [params.from, params.to, network]);
+  }
 
   const name = (id: string | null) => (id ? network.stations.get(id)?.name ?? id : null);
 
