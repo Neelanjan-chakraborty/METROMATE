@@ -34,6 +34,7 @@
     "jest": "^29.7.0",
     "jest-expo": "~57.0.5",
     "react-test-renderer": "^19.2.3",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -47,7 +48,8 @@
     "export:android": "expo export --platform android",
     "lint": "eslint .",
     "check:fares": "jest src/lib/__tests__/fares.test.ts",
-    "import:fares": "node scripts/import-fares.mjs"
+    "import:fares": "node scripts/import-fares.mjs",
+    "fetch:thumbs": "node scripts/fetch-station-thumbs.mjs"
   },
   "private": true,
   "jest": {

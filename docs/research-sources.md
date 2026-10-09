@@ -71,3 +71,7 @@ Web-search summaries (Wikipedia list/line articles, news items, a GMRC press rel
 - Exact page URLs for sources 1, 2 and 5.
 - Gujarati and Hindi station names (visible on the route map, not transcribed).
 - Landmark associations and walking distances.
+
+## Station thumbnails (not yet fetched)
+
+`scripts/fetch-station-thumbs.mjs` is designed to use Wikimedia Commons (CC0, CC BY, CC BY-SA and public-domain files only) and to record title, page URL, licence and author for each photo in `data/source/station-photos.json`; the app credits the author on the station screen. The build container cannot reach Commons, so no photo has been fetched or checked, and the script has been tested only against a local fake of the API. Review each pick before release; photographers' attribution requirements (CC BY, CC BY-SA) are met by the on-screen credit and link.

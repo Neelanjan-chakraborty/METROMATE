@@ -23,6 +23,10 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 - **Integration icons** (BRTS, AMTS, railway) on the route map: not transcribed.
 - **Gujarati / Hindi names**: visible on the route map, not transcribed; search is English-only.
 
+- **Station thumbnails: none bundled yet.** Photos need internet; run `npm run fetch:thumbs` (README, "Stations screen and thumbnails"). Until then every station shows a generic drawn illustration, labelled as such. Commons has few or no photos for some stations, which keep the illustration.
+- **Per-station escalators, parking and facilities: not published.** GMRC's facility galleries are network-wide, so the Stations cards show only exits, lifts and (unverified) BRTS/rail/bus links.
+- **Station area names / street addresses: not in the data.** The card's place line uses a landmark named like the station, an alias, or the stop number, never an invented neighbourhood.
+
 ## Resolved by the newly supplied data
 
 - Station **type** (elevated / underground) for 53 stations: four underground (Kankaria East, Kalupur, Gheekanta, Shahpur), the rest elevated.

@@ -5,6 +5,8 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink, Flag, 
 import { Button, Card, CorridorDot, IconButton, Muted, Notice, Pill, Screen, SectionTitle, VerifyBadge } from '../../components/ui';
 import { OfflineBadge } from '../../components/OfflineBadge';
 import { useReady } from '../../state/useReady';
+import { StationThumb } from '../../components/stations/StationThumb';
+import { stationPhoto } from '../../components/stations/photos';
 import { formatDate, mapsSearchUrl } from '../../lib/format';
 import { colors, radius, space, type } from '../../theme';
 
@@ -35,6 +37,7 @@ export default function StationScreen() {
   const landmarks = dataset.landmarks.filter((l) => l.nearestStationId === station.id);
   const source = dataset.sources.find((s) => s.id === station.sourceMetadata.sourceId);
 
+  const photo = stationPhoto(station.id);
   const openUrl = (url: string) => {
     Linking.openURL(url).catch(() => undefined);
   };
@@ -50,6 +53,18 @@ export default function StationScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Card style={{ gap: space.md }}>
+          <View style={{ gap: space.xs }}>
+            <StationThumb station={station} color={corridors.get(station.corridorIds[0])?.color ?? colors.primary} width={2} height={1} radius={radius.md} fluid />
+            {photo ? (
+              <Pressable accessibilityRole="link" accessibilityLabel={`Photo credit: ${photo.credit}, ${photo.license}. Opens Wikimedia Commons`} onPress={() => openUrl(photo.pageUrl)}>
+                <Text style={type.tiny}>
+                  Photo: {photo.credit} · {photo.license} · Wikimedia Commons
+                </Text>
+              </Pressable>
+            ) : (
+              <Text style={type.tiny}>Illustration. Not a photo of this station.</Text>
+            )}
+          </View>
           <View style={styles.pills}>
             {station.corridorIds.map((cid) => {
               const c = corridors.get(cid);
