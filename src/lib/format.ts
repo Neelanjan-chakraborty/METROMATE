@@ -19,3 +19,17 @@ export function mapsSearchUrl(stationName: string): string {
   const q = encodeURIComponent(`${stationName} metro station, Gujarat, India`);
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
+
+/**
+ * "Today", "Yesterday", or "9 Oct" for an epoch-ms timestamp, in the device's local time.
+ * `now` is injectable for tests.
+ */
+export function relativeDay(ts: number, now: number = Date.now()): string {
+  const d = new Date(ts);
+  const n = new Date(now);
+  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const days = Math.round((startOf(n) - startOf(d)) / 86_400_000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}

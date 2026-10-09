@@ -1,4 +1,5 @@
-import type { Dataset, SavedJourney, StationCoord } from '../types';
+import type { Dataset, QuickRoute, QuickSlot, SavedJourney, StationCoord } from '../types';
+import { QUICK_SLOTS } from '../types';
 import { accumulatorAccuracyM, mergeStationFix, type Fix } from '../lib/locator';
 import type { Db } from './types';
 
@@ -52,6 +53,12 @@ export async function migrate(db: Db): Promise<void> {
       lon REAL NOT NULL,
       weight REAL NOT NULL,
       samples INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS quick_routes (
+      slot TEXT PRIMARY KEY NOT NULL,
+      from_id TEXT NOT NULL,
+      to_id TEXT NOT NULL,
       updated_at INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS recents (
@@ -196,6 +203,7 @@ export async function getDatasetMeta(db: Db): Promise<{ version: string | null; 
 export async function resetLocalData(db: Db, ds: Dataset): Promise<void> {
   await db.runAsync('DELETE FROM favourites');
   await db.runAsync('DELETE FROM recents');
+  await db.runAsync('DELETE FROM quick_routes');
   await seedDataset(db, ds);
 }
 
@@ -248,4 +256,35 @@ export async function clearStationCoord(db: Db, stationId: string): Promise<void
 
 export async function clearStationCoords(db: Db): Promise<void> {
   await db.runAsync('DELETE FROM station_coords');
+}
+
+// ------------------------------------------------------------------ quick routes
+
+interface QuickRow {
+  slot: string;
+  from_id: string;
+  to_id: string;
+  updated_at: number;
+}
+
+export async function listQuickRoutes(db: Db): Promise<QuickRoute[]> {
+  const rows = await db.getAllAsync<QuickRow>('SELECT slot, from_id, to_id, updated_at FROM quick_routes');
+  return rows
+    .filter((r): r is QuickRow & { slot: QuickSlot } => (QUICK_SLOTS as readonly string[]).includes(r.slot))
+    .map((r) => ({ slot: r.slot, fromId: r.from_id, toId: r.to_id, updatedAt: r.updated_at }));
+}
+
+/** Saves (or replaces) the journey behind a Home / Campus / Work shortcut. */
+export async function setQuickRoute(db: Db, slot: QuickSlot, fromId: string, toId: string): Promise<void> {
+  if (!(QUICK_SLOTS as readonly string[]).includes(slot)) throw new Error(`Unknown quick-route slot: ${slot}`);
+  if (fromId === toId) throw new Error('A quick route needs two different stations');
+  await db.runAsync(
+    `INSERT INTO quick_routes (slot, from_id, to_id, updated_at) VALUES (?, ?, ?, ?)
+     ON CONFLICT(slot) DO UPDATE SET from_id = excluded.from_id, to_id = excluded.to_id, updated_at = excluded.updated_at`,
+    [slot, fromId, toId, Date.now()],
+  );
+}
+
+export async function clearQuickRoute(db: Db, slot: QuickSlot): Promise<void> {
+  await db.runAsync('DELETE FROM quick_routes WHERE slot = ?', [slot]);
 }

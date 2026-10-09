@@ -327,3 +327,14 @@ export interface StationCoord {
   /** Estimated accuracy of the averaged position, in metres. */
   accuracyM: number;
 }
+
+export const QUICK_SLOTS = ['home', 'campus', 'work'] as const;
+export type QuickSlot = (typeof QUICK_SLOTS)[number];
+
+/** A one-tap shortcut to a saved journey (Home / Campus / Work). */
+export interface QuickRoute {
+  slot: QuickSlot;
+  fromId: string;
+  toId: string;
+  updatedAt: number;
+}
