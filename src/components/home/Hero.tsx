@@ -20,7 +20,7 @@ const deckY = (x: number) => 161 + (x - 150) * SLOPE;
 const DECK_ANGLE = -12.87; // atan(64/280)
 
 // Train run: starts hidden below-left behind the card, exits past the right edge.
-const DX_START = -295;
+const DX_START = -380;
 const DX_END = 250;
 export const TRAVEL_MS = 15_000;
 export const PAUSE_MS = 4_000;
@@ -324,7 +324,7 @@ function Cloud({ def, color, opacity, scale, animate }: { def: (typeof CLOUDS)[n
 // ------------------------------------------------------------------- train
 
 function TrainLayer({ look, height, scale, animate }: { look: HeroLook; height: number; scale: number; animate: boolean }) {
-  const [progress] = useState(() => new Animated.Value(P_STATIC));
+  const [progress] = useState(() => new Animated.Value(animate ? 0 : P_STATIC));
 
   useEffect(() => {
     if (!animate) {
@@ -332,26 +332,18 @@ function TrainLayer({ look, height, scale, animate }: { look: HeroLook; height: 
       progress.setValue(P_STATIC);
       return;
     }
-    // Enter shortly after opening: begin partway along the run, then loop run + pause.
-    progress.setValue(0.3);
-    const firstLeg = Animated.timing(progress, { toValue: 1, duration: TRAVEL_MS * 0.7, easing: Easing.linear, useNativeDriver: useNative });
+    // Every run (first one, after returning to the tab, after each pause) begins at the foot of the
+    // viaduct, below the journey card, and climbs the slope; it never appears part-way along.
+    progress.setValue(0);
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(progress, { toValue: 1, duration: TRAVEL_MS, easing: Easing.linear, useNativeDriver: useNative }),
         Animated.delay(PAUSE_MS),
+        Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: useNative }),
       ]),
     );
-    let cancelled = false;
-    firstLeg.start(({ finished }) => {
-      if (!finished || cancelled) return;
-      // `loop` resets the value to 0 before each run, after the pause.
-      Animated.delay(PAUSE_MS).start(({ finished: f2 }) => {
-        if (f2 && !cancelled) loop.start();
-      });
-    });
+    loop.start();
     return () => {
-      cancelled = true;
-      firstLeg.stop();
       loop.stop();
     };
   }, [animate, progress]);
