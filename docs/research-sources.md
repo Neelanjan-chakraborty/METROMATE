@@ -22,6 +22,10 @@ Everything transcribed from a screenshot was read by eye. Treat "verified" in th
 | 8 | GMRC route/timing sheet (older PDF) | https://www.gujaratmetrorail.com/ | Older frequency/run-time table | 2026-10-09 | Undated and superseded by source 3: **not used** for timings. Its blank cell for "Sabarmati Rly. Station" is consistent with that station not being in service. |
 | 9 | MEGA "Alignment of Ahmedabad Metro Rail Project Phase I" (DPR, March 2015) | https://www.gujaratmetrorail.com/reports/ | Phase I alignment drawing: elevated vs underground lengths and station counts | 2026-10-09 | 2015 planning document, used only as corroboration that four East–West stations are underground and that Sabarmati Railway Station was planned. Its table says 17 East–West stations (current sources list 18). |
 
+## GMRC fare calculator (endpoint observed, not yet captured)
+
+The route-and-fares page loads fares from its own calculator: `POST https://www.gujaratmetrorail.com/ahmedabad/wp-admin/admin-ajax.php` with `action=get_fare&FromStation=<id>&ToStation=<id>`, answering JSON such as `{"fare_price":"10","station_count":"7","search_found":"Yes","station_interchange":"0","station_km":"7.10","station_min":"14","msg":"","same_station_msg":""}`. The project team captured this request from the page in a browser (status 200, no authentication). It is the page's normal public interface, so no access control is bypassed, but it was **not** called from the build environment (the host is blocked there). `scripts/capture-fares.browser.js` and `scripts/import-fares.mjs` are the intended, rate-limited route to the full set. Until that is run, `data/fares.json` is empty. Limitations: the response does not state the ticket type or a validity date; the calculator's station-ID list must be captured from the page's dropdown to map IDs to stations (the sample's IDs 2 and 8 could not be identified).
+
 ## Requested sources not inspected
 
 | Source | URL | Status |

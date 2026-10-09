@@ -6,8 +6,9 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 
 | Gap | Effect in the app | How to close it |
 |---|---|---|
-| **Fare amounts / tariff rule** | Every route shows "Fare unavailable offline". (The supplied "entry-exit gate" page and PDFs contain no fares.) | Add verified pairs (or a verified tariff) from GMRC's route-and-fares page / app to `data/fares.json`. |
-| **Per-station travel times** | No journey-time figure. Only the published end-to-end time per line is shown, labelled as such. The older route PDF has run times, but it is undated and superseded. | Add `estimatedTravelMinutes` to connections once published or measured. |
+| **Fare amounts** | Every route shows "Fare unavailable offline". **The pipeline to fill this is built and tested on synthetic data; the real capture has not been run yet.** GMRC's fare calculator returns fare, km, minutes, station count and interchanges per pair (one real sample response was supplied: ₹10, 7 stations, 7.10 km, 14 min, 0 interchanges — but the calculator's station IDs for that sample are unknown, so it is not stored). | Run `scripts/capture-fares.browser.js` in a browser on the route-and-fares page, then `npm run import:fares -- <file>` (see README). |
+| **Journey time** | No journey-time figure until fares are captured (the calculator's `station_min` becomes "GMRC estimate"). Only the published end-to-end time per line is shown otherwise. | Same capture. |
+| **Fare ticket type / validity** | The calculator does not say whether the fare is for a token, card or QR ticket, nor from when it applies. The app says so and does not claim a ticket product. | Confirm with GMRC. |
 | **Hidden start of the Phase-1/Phase-2 fare-rule bullet** | Routes crossing Motera Stadium ↔ Koteshwar Road show a neutral warning quoting the visible text. | Get the full sentence from GMRC's Fare Rules page and update `data/fare-rules.json` and the warning in `src/lib/routing.ts`. |
 
 ## Station data

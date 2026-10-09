@@ -1,26 +1,36 @@
-import type { FareOutcome, FareTable } from '../types';
+import type { FareOutcome, FarePair, FareTable } from '../types';
 
 export const FARE_UNAVAILABLE_MESSAGE = 'Fare unavailable offline';
 
+const usable = (p: FarePair) => p.verificationStatus === 'verified' && Number.isFinite(p.amountInr) && p.amountInr >= 0;
+
 /**
- * Looks up a verified origin–destination fare. Fares are NEVER derived from
- * the number of stops: if no verified pair exists the result is "unavailable".
+ * Finds the verified record for a journey. A pair is used in the OPPOSITE direction only when
+ * the fare table says fares were checked to be symmetric.
+ */
+export function findFarePair(fares: FareTable, fromId: string, toId: string): FarePair | undefined {
+  const direct = fares.pairs.find((p) => usable(p) && p.fromStationId === fromId && p.toStationId === toId);
+  if (direct) return direct;
+  if (!fares.symmetric) return undefined;
+  return fares.pairs.find((p) => usable(p) && p.fromStationId === toId && p.toStationId === fromId);
+}
+
+/**
+ * Looks up a verified origin–destination fare. Fares are NEVER derived from the number of stops:
+ * if no verified pair exists the result is "unavailable".
  */
 export function getFare(fares: FareTable, fromId: string, toId: string): FareOutcome {
-  const pair = fares.pairs.find(
-    (p) =>
-      p.verificationStatus === 'verified' &&
-      Number.isFinite(p.amountInr) &&
-      p.amountInr >= 0 &&
-      ((p.fromStationId === fromId && p.toStationId === toId) ||
-        (p.fromStationId === toId && p.toStationId === fromId)),
-  );
+  const pair = findFarePair(fares, fromId, toId);
   if (!pair) return { status: 'unavailable', message: FARE_UNAVAILABLE_MESSAGE };
   return {
     status: 'available',
     amountInr: pair.amountInr,
     fareType: pair.fareType,
-    validFrom: pair.validFrom,
+    validFrom: fares.validFrom,
     sourceUrl: pair.sourceUrl,
+    distanceKm: pair.distanceKm ?? null,
+    travelMinutes: pair.travelMinutes ?? null,
+    stationCount: pair.stationCount ?? null,
+    interchanges: pair.interchanges ?? null,
   };
 }

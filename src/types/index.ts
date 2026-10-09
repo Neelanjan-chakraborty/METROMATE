@@ -129,7 +129,13 @@ export interface FarePair {
   fromStationId: string;
   toStationId: string;
   amountInr: number;
+  /** Ticket type, exactly as far as the source states it (the calculator does not say). */
   fareType: string;
+  /** Distance, journey time, station count and interchanges as returned by GMRC's fare calculator. */
+  distanceKm?: number | null;
+  travelMinutes?: number | null;
+  stationCount?: number | null;
+  interchanges?: number | null;
   validFrom: string | null;
   sourceUrl: string;
   verifiedAt: string;
@@ -143,6 +149,10 @@ export interface FareTable {
   validFrom: string | null;
   reviewDate: string | null;
   fareType: string | null;
+  /** True only if the capture showed fares are the same in both directions. */
+  symmetric?: boolean;
+  /** How many station pairs have a verified fare (for "partial coverage" messages). */
+  coverage?: { pairs: number; capturedAt: string | null };
   pairs: FarePair[];
   rules: unknown[];
   notes: string;
@@ -273,11 +283,21 @@ export type RouteOutcome = RouteResult | RouteError;
 // ------------------------------------------------------------- fare / time
 
 export type FareOutcome =
-  | { status: 'available'; amountInr: number; fareType: string; validFrom: string | null; sourceUrl: string }
+  | {
+      status: 'available';
+      amountInr: number;
+      fareType: string;
+      validFrom: string | null;
+      sourceUrl: string;
+      distanceKm: number | null;
+      travelMinutes: number | null;
+      stationCount: number | null;
+      interchanges: number | null;
+    }
   | { status: 'unavailable'; message: string };
 
 export type JourneyTimeOutcome =
-  | { status: 'estimated'; minutes: number; note: string }
+  | { status: 'estimated'; minutes: number; note: string; source: 'gmrc-calculator' | 'per-hop-sum' }
   | { status: 'unavailable'; message: string };
 
 export interface ServiceInfo {

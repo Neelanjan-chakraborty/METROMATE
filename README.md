@@ -80,11 +80,24 @@ docs/                       research-sources, data-gaps, demo-script
 
 BFS-equivalent least-stops search over (station, line) states with fewer changes as tie-break. Connections exist only between stations adjacent on a line, in both directions. Direction labels come from the line's station order. Platform/boarding side is never inferred. Fares come only from verified pairs; journey time only from verified per-hop times. Both are currently absent, so both display "unavailable".
 
+## Getting real fares (GMRC's own calculator)
+
+GMRC's route-and-fares page answers fare questions through its own calculator
+(`POST …/wp-admin/admin-ajax.php`, `action=get_fare&FromStation=…&ToStation=…`). It returns, per pair of stations, the **fare, distance (km), journey time (minutes), station count and interchange count**. That fills the "Fare unavailable offline" and journey-time gaps with GMRC-published numbers.
+
+MetroMate cannot reach that site from the build environment, so the capture runs in **your own browser**:
+
+1. Open <https://www.gujaratmetrorail.com/ahmedabad/route-and-fares/>, paste `scripts/capture-fares.browser.js` into the DevTools console (try `QUICK_TEST = true` first). It asks the page's calculator one pair per second (~1,450 requests, ~25 min), stops if the site refuses, and downloads `gmrc-fares-capture.json`. Be considerate: run it once, off-peak, and check the site's terms or ask GMRC if you plan to repeat it.
+2. `npm run import:fares -- gmrc-fares-capture.json` maps the calculator's station names to ours (it **stops and lists** any it can't match; resolve with `--map 12=OHCI`), writes `data/fares.json`, registers the source and bumps the dataset version. Use `--dry-run` to preview.
+3. `npm run check:fares` (also part of `npm test`) cross-checks every imported pair against MetroMate's own route graph: GMRC's station count and interchange count must agree with our routing, so wrong station matches or graph errors show up immediately.
+
+What the app then shows: the fare and distance on the route screen, labelled as GMRC calculator output with the capture date (the calculator doesn't state the ticket type or a validity date, and fares can change), and **GMRC's journey time for that pair, labelled as GMRC's estimate**. Pairs that were not captured still say "Fare unavailable offline". A pair is used in the reverse direction only if the capture proved fares are symmetric (≥10 reversed pairs, all equal).
+
 ## Adding verified data
 
 Edit the JSON in `data/`, then `npm test` (it validates the dataset) and bump `version` in `data/dataset.json` so existing installs re-seed.
 
-- **Fares** — append to `fares.json` → `pairs`: `{ fromStationId, toStationId, amountInr, fareType, validFrom, sourceUrl, verifiedAt, verificationStatus: "verified" }` and set `status` to `"available"`.
+- **Fares** — prefer the capture above. To add one by hand, append to `fares.json` → `pairs`: `{ fromStationId, toStationId, amountInr, fareType, validFrom, sourceUrl, verifiedAt, verificationStatus: "verified" }` and set `status` to `"available"`.
 - **Coordinates** — `node scripts/import-coordinates.mjs <export.kml>` re-imports from a KML (stored as `estimated`). To use surveyed/official values, set `latitude`, `longitude`, `coordinateStatus: "verified"` and `coordinateSourceId` on a station.
 - **Gates** — update `data/source/gates-table.json`, then `node scripts/import-gates.mjs`. Gate directions go in `verifiedDirection` only once independently verified.
 - **Travel times** — set `estimatedTravelMinutes` on each connection (both directions); journey time appears only when every hop on the route has one.
@@ -95,7 +108,7 @@ Edit the JSON in `data/`, then `npm test` (it validates the dataset) and bump `v
 Route planning; interchange and direction logic; station search with aliases and landmarks; fare lookup (no verified fares yet); static timetable info; SQLite storage with favourites, recents, reset; original SVG-based map; station details; data/sources screen; data validation.
 
 ### Tested
-- **104 automated tests pass** (`npm test`): routing (including all 2,862 ordered station pairs and their reverses, interchanges at Old High Court and GNLU, same-station, unknown ids, no-route, dangling connections, Sabarmati Railway Station warning), fare and journey-time honesty, search aliases, the schematic layout, dataset validation including negative cases (the real gate/lift/coordinate data), the **live-location engine** (at-station / between / near / off-network, accuracy gating, journey progress, arriving/arrived, off-route, partial coverage, signal loss, wrong-way detection, position-source priority, averaging of recorded fixes) and the SQLite repository (seeding, re-seeding, favourites, recents, recorded station positions, reset, and **persistence after closing and reopening the database**) run against a real SQLite engine.
+- **122 automated tests pass** (`npm test`): routing (including all 2,862 ordered station pairs and their reverses, interchanges at Old High Court and GNLU, same-station, unknown ids, no-route, dangling connections, Sabarmati Railway Station warning), fare and journey-time honesty, search aliases, the schematic layout, dataset validation including negative cases (the real gate/lift/coordinate data), the **live-location engine** (at-station / between / near / off-network, accuracy gating, journey progress, arriving/arrived, off-route, partial coverage, signal loss, wrong-way detection, position-source priority, averaging of recorded fixes) the **fare-import pipeline** (parsing GMRC's calculator response, name matching, symmetry check, route-graph cross-check, and the import CLI end to end on a synthetic capture), and the SQLite repository (seeding, re-seeding, favourites, recents, recorded station positions, reset, and **persistence after closing and reopening the database**) run against a real SQLite engine.
 - `tsc --noEmit` clean; Android bundle exports (`expo export --platform android`).
 - A **web preview in headless Chromium at a 390×844 viewport** was driven through plan → route → favourite → map → station → offline emulation, and through the Live tab with **emulated GPS positions** (Playwright geolocation): at a station, mid-line, coarse fix, off-network, recording and averaging a station position, the demo ride, lost signal after 70 s (fake clock), and permission denied — 21/21 checks, no console errors. That confirms layout and logic. Emulated geolocation and browser network emulation are **not** a real GPS or airplane mode on a phone.
 

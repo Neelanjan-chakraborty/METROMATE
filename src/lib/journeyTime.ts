@@ -1,15 +1,24 @@
-import type { JourneyTimeOutcome, RouteResult, ServiceInfo, TimetableMetadata } from '../types';
+import type { FareTable, JourneyTimeOutcome, RouteResult, ServiceInfo, TimetableMetadata } from '../types';
+import { findFarePair } from './fareCalculator';
 import type { Network } from './routing';
 
 export const JOURNEY_TIME_UNAVAILABLE =
   'Journey time estimate unavailable: GMRC publishes line end-to-end times but no per-station travel times, so none is calculated.';
 
+export const CALCULATOR_TIME_NOTE =
+  'Journey time as shown by GMRC’s own fare calculator for this pair of stations. GMRC does not say whether it includes waiting or interchange time. It is an estimate, not a live prediction.';
+
 /**
- * Sums verified per-connection travel times. Returns "unavailable" unless
- * EVERY connection on the route has a non-negative time. The result is an
- * estimate of in-train time only (no walking, waiting or interchange buffer).
+ * Journey time, in order of preference:
+ *  1. GMRC's published time for this exact pair (from its fare calculator), if captured;
+ *  2. the sum of verified per-connection times, only if EVERY connection has one;
+ *  3. otherwise "unavailable" — no time is ever invented.
  */
-export function getJourneyTime(net: Network, route: RouteResult): JourneyTimeOutcome {
+export function getJourneyTime(net: Network, route: RouteResult, fares?: FareTable): JourneyTimeOutcome {
+  const pair = fares ? findFarePair(fares, route.originId, route.destinationId) : undefined;
+  if (pair && typeof pair.travelMinutes === 'number' && pair.travelMinutes >= 0) {
+    return { status: 'estimated', minutes: pair.travelMinutes, note: CALCULATOR_TIME_NOTE, source: 'gmrc-calculator' };
+  }
   let total = 0;
   for (let i = 0; i < route.stationIds.length - 1; i++) {
     const from = route.stationIds[i];
@@ -25,6 +34,7 @@ export function getJourneyTime(net: Network, route: RouteResult): JourneyTimeOut
     status: 'estimated',
     minutes: total,
     note: 'Estimated in-train time from published per-station times. Excludes waiting, walking and interchange time. Not a live prediction.',
+    source: 'per-hop-sum',
   };
 }
 

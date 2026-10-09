@@ -20,7 +20,7 @@ describe('fares', () => {
     expect(FARE_UNAVAILABLE_MESSAGE).toBe('Fare unavailable offline');
   });
 
-  it('returns a fare only for an exact verified pair (either direction)', () => {
+  it('returns a fare only for an exact verified pair; the reverse direction only if symmetry was proven', () => {
     const table: FareTable = {
       ...ds.fares,
       status: 'available',
@@ -47,7 +47,10 @@ describe('fares', () => {
         },
       ],
     };
-    expect(getFare(table, 'MAHM', 'MTRS')).toMatchObject({ status: 'available', amountInr: 40 });
+    expect(getFare(table, 'MTRS', 'MAHM')).toMatchObject({ status: 'available', amountInr: 40 });
+    // not proven symmetric -> the reverse journey has no verified fare
+    expect(getFare(table, 'MAHM', 'MTRS').status).toBe('unavailable');
+    expect(getFare({ ...table, symmetric: true }, 'MAHM', 'MTRS')).toMatchObject({ status: 'available', amountInr: 40 });
     expect(getFare(table, 'MTRS', 'KORD').status).toBe('unavailable');
     // unverified pairs are ignored
     expect(getFare(table, 'APMC', 'MAHM').status).toBe('unavailable');

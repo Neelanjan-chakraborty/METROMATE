@@ -180,8 +180,24 @@ export function validateDataset(ds: Dataset): ValidationReport {
       if (!stationById.has(p.fromStationId) || !stationById.has(p.toStationId)) err(`Fare pair ${p.fromStationId}-${p.toStationId} references an unknown station`);
       if (!(Number.isFinite(p.amountInr) && p.amountInr >= 0)) err(`Fare pair ${p.fromStationId}-${p.toStationId} has an invalid amount`);
       if (p.verificationStatus === 'verified' && (!p.sourceUrl || !p.verifiedAt)) err(`Fare pair ${p.fromStationId}-${p.toStationId} is verified without provenance`);
+      for (const [label, v] of [['distanceKm', p.distanceKm], ['travelMinutes', p.travelMinutes], ['stationCount', p.stationCount], ['interchanges', p.interchanges]] as const) {
+        if (v !== undefined && v !== null && !(Number.isFinite(v) && v >= 0)) err(`Fare pair ${p.fromStationId}-${p.toStationId} has an invalid ${label}`);
+      }
+      if (p.fromStationId === p.toStationId) err(`Fare pair ${p.fromStationId} has the same origin and destination`);
     }
     if (ds.fares.status === 'available' && ds.fares.pairs.length === 0) err('Fares marked available but no verified fare pairs are present');
+    const fareKeys = new Set<string>();
+    for (const p of ds.fares.pairs) {
+      const k = `${p.fromStationId}>${p.toStationId}`;
+      if (fareKeys.has(k)) err(`Duplicate fare pair ${k}`);
+      fareKeys.add(k);
+    }
+    if (ds.fares.symmetric) {
+      for (const p of ds.fares.pairs) {
+        const rev = ds.fares.pairs.find((q) => q.fromStationId === p.toStationId && q.toStationId === p.fromStationId);
+        if (rev && rev.amountInr !== p.amountInr) err(`Fares marked symmetric but ${p.fromStationId}-${p.toStationId} differs by direction`);
+      }
+    }
     if (ds.fares.pairs.length === 0) warn('No verified fares: every route will show "Fare unavailable offline".');
 
     // Timetable

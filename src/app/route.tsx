@@ -55,7 +55,7 @@ export default function RouteScreen() {
   const origin = network.stations.get(route.originId)!;
   const destination = network.stations.get(route.destinationId)!;
   const fare = getFare(dataset.fares, route.originId, route.destinationId);
-  const time = getJourneyTime(network, route);
+  const time = getJourneyTime(network, route, dataset.fares);
   const services = getServiceInfo(dataset.timetable, route);
 
   return (
@@ -85,16 +85,20 @@ export default function RouteScreen() {
             <View style={{ flex: 1 }}>
               {fare.status === 'available' ? (
                 <>
-                  <Text style={type.h3}>₹{fare.amountInr}</Text>
+                  <Text style={type.h3}>
+                    ₹{fare.amountInr}
+                    {fare.distanceKm !== null ? ` · ${fare.distanceKm} km` : ''}
+                  </Text>
                   <Muted>
                     {fare.fareType}
                     {fare.validFrom ? ` · valid from ${formatDate(fare.validFrom)}` : ''}. Other ticket types may cost differently.
+                    {dataset.fares.coverage?.capturedAt ? ` Fares checked ${formatDate(dataset.fares.coverage.capturedAt)}; they can change.` : ''}
                   </Muted>
                 </>
               ) : (
                 <>
                   <Text style={type.h3}>{fare.message}</Text>
-                  <Muted>GMRC fare amounts have not been added to the offline data yet. Check the ticket window or the GMRC app. MetroMate never guesses a fare from the number of stops.</Muted>
+                  <Muted>No verified GMRC fare is stored for this pair of stations. Check the ticket window or the GMRC app. MetroMate never guesses a fare from the number of stops.</Muted>
                 </>
               )}
             </View>
@@ -105,7 +109,10 @@ export default function RouteScreen() {
             <View style={{ flex: 1 }}>
               {time.status === 'estimated' ? (
                 <>
-                  <Text style={type.h3}>About {plural(time.minutes, 'min')} in the train (estimate)</Text>
+                  <Text style={type.h3}>
+                    About {plural(time.minutes, 'min')}
+                    {time.source === 'gmrc-calculator' ? ' (GMRC estimate)' : ' in the train (estimate)'}
+                  </Text>
                   <Muted>{time.note}</Muted>
                 </>
               ) : (
@@ -127,7 +134,7 @@ export default function RouteScreen() {
               onPress={() => router.replace({ pathname: '/route', params: { from: route.destinationId, to: route.originId } })}
             />
             <Button label="Map" icon={MapIcon} variant="secondary" compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/map', params: { from: route.originId, to: route.destinationId } })} />
-            <Button label="Track live" icon={LocateFixed} compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/live', params: { from: route.originId, to: route.destinationId } })} />
+            <Button label="Track" icon={LocateFixed} compact style={{ flex: 1 }} onPress={() => router.push({ pathname: '/live', params: { from: route.originId, to: route.destinationId } })} />
           </View>
         </Card>
 

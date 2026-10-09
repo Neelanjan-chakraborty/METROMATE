@@ -41,7 +41,9 @@
     "test": "jest",
     "validate:data": "jest src/lib/__tests__/dataValidation.test.ts",
     "export:android": "expo export --platform android",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "check:fares": "jest src/lib/__tests__/fares.test.ts",
+    "import:fares": "node scripts/import-fares.mjs"
   },
   "private": true,
   "jest": {
