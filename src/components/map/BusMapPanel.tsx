@@ -6,7 +6,7 @@ import { IconButton, Muted } from '../ui';
 import { BusMap } from './BusMap';
 import { bboxOf, makeProjector, unionBBox } from '../../lib/geoProject';
 import { buildMetroLayer, createBusMapGeometry, legEnds, legsToLines, linesBounds, type LegLine } from '../../lib/transit/geoMap';
-import { AGENCY_LOOK, formatClockMinutes, isoDate, minutesOfDay, parseAtParam, startOfDay } from '../../lib/transit/format';
+import { AGENCY_LOOK, agencyFull, agencyLabel, formatClockMinutes, isoDate, minutesOfDay, parseAtParam, startOfDay } from '../../lib/transit/format';
 import { createPlanner, planTransit } from '../../lib/transit/planner';
 import { buildRouteIndex } from '../../lib/transit/routeIndex';
 import { routesAtStop } from '../../lib/transit/transitIndex';
@@ -15,6 +15,7 @@ import { AGENCY_IDS, type AgencyId } from '../../lib/transit/types';
 import { placeName } from '../../lib/transit/places';
 import { useReady } from '../../state/useReady';
 import { colors, radius, space, type } from '../../theme';
+import { useT } from '../../i18n/useT';
 import { bus } from '../../theme/bus';
 
 /** Zoom steps. The level of detail of the drawn lines follows these (see lodFor). */
@@ -36,21 +37,22 @@ interface Props {
 
 /** The "Bus & metro" half of the Map tab. Waits for the bus data, then draws it. */
 export function BusMapPanel(props: Props) {
+  const { t } = useT();
   const tr = useTransit(true);
   const sh = useBusShapes(tr.status === 'ready');
   if (tr.status === 'error') {
     return (
       <View style={styles.center}>
-        <Text style={[type.body, { fontWeight: '700' }]}>Bus data could not be loaded</Text>
-        <Muted>The metro schematic still works. Restart the app and try again.</Muted>
+        <Text style={[type.body, { fontWeight: '700' }]}>{t('map.bus.error.title')}</Text>
+        <Muted>{t('map.bus.error.body')}</Muted>
       </View>
     );
   }
   if (tr.status !== 'ready' || sh.status !== 'ready') {
     return (
       <View style={styles.center}>
-        <Text style={[type.body, { color: bus.dark, fontWeight: '700' }]}>Loading bus routes…</Text>
-        <Muted>Reading the timetable stored on your phone.</Muted>
+        <Text style={[type.body, { color: bus.dark, fontWeight: '700' }]}>{t('map.bus.loading.title')}</Text>
+        <Muted>{t('map.bus.loading.body')}</Muted>
       </View>
     );
   }
@@ -59,6 +61,7 @@ export function BusMapPanel(props: Props) {
 
 function Ready({ from, to, at, route: routeParam, transit, shapes }: Props & { transit: import('../../lib/transit/transitIndex').TransitIndex; shapes: import('../../lib/transit/types').ShapesData | null }) {
   const { dataset, network, stationPoints } = useReady();
+  const { t } = useT();
   const ri = useMemo(() => buildRouteIndex(transit), [transit]);
 
   const proj = useMemo(() => {
@@ -203,12 +206,13 @@ function Ready({ from, to, at, route: routeParam, transit, shapes }: Props & { t
               key={a}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on }}
-              accessibilityLabel={`Show ${look.full} routes`}
+              accessibilityLabel={t('map.chip.a11y', { name: agencyFull(a, t) })}
               onPress={() => toggle(a)}
+              hitSlop={{ top: 4, bottom: 4 }}
               style={[styles.chip, on && { backgroundColor: bus.soft, borderColor: look.color }]}
             >
               <View style={[styles.chipDot, { backgroundColor: look.color, opacity: on ? 1 : 0.35 }]} />
-              <Text style={[styles.chipText, on && { fontWeight: '800', color: bus.ink }]}>{look.label}</Text>
+              <Text style={[styles.chipText, on && { fontWeight: '800', color: bus.ink }]}>{agencyLabel(a, t)}</Text>
             </Pressable>
           );
         })}
@@ -216,16 +220,16 @@ function Ready({ from, to, at, route: routeParam, transit, shapes }: Props & { t
 
       {journey && !journey.plan ? (
         <View style={styles.banner}>
-          <Text style={[type.small, { flex: 1, color: bus.dark, fontWeight: '700' }]}>No journey found for these places, so there is nothing to highlight.</Text>
-          <IconButton icon={X} label="Clear highlighted journey" color={bus.dark} onPress={clearFocus} />
+          <Text style={[type.small, { flex: 1, color: bus.dark, fontWeight: '700' }]}>{t('map.journey.none')}</Text>
+          <IconButton icon={X} label={t('map.journey.clear')} color={bus.dark} onPress={clearFocus} />
         </View>
       ) : null}
       {journeyShown && journey?.plan ? (
         <View style={styles.banner}>
           <Text style={[type.small, { flex: 1, color: bus.dark, fontWeight: '700' }]} numberOfLines={2}>
-            {nameOf(from!)} → {nameOf(to!)} · {formatClockMinutes(journey.plan.departAt)}–{formatClockMinutes(journey.plan.arriveAt)} · scheduled
+            {t('map.journey.scheduled', { from: nameOf(from!), to: nameOf(to!), dep: formatClockMinutes(journey.plan.departAt), arr: formatClockMinutes(journey.plan.arriveAt) })}
           </Text>
-          <IconButton icon={X} label="Clear highlighted journey" color={bus.dark} onPress={clearFocus} />
+          <IconButton icon={X} label={t('map.journey.clear')} color={bus.dark} onPress={clearFocus} />
         </View>
       ) : null}
 
@@ -244,11 +248,11 @@ function Ready({ from, to, at, route: routeParam, transit, shapes }: Props & { t
           </ScrollView>
         </ScrollView>
         <View style={styles.zoom}>
-          <IconButton icon={ZoomIn} label="Zoom in" color={bus.red} onPress={() => zoomTo(scaleIx + 1)} />
-          <IconButton icon={ZoomOut} label="Zoom out" color={bus.red} onPress={() => zoomTo(scaleIx - 1)} />
+          <IconButton icon={ZoomIn} label={t('map.zoomIn')} color={bus.red} onPress={() => zoomTo(scaleIx + 1)} />
+          <IconButton icon={ZoomOut} label={t('map.zoomOut')} color={bus.red} onPress={() => zoomTo(scaleIx - 1)} />
           <IconButton
             icon={Maximize}
-            label="Reset zoom"
+            label={t('map.zoomReset')}
             color={bus.red}
             onPress={() => {
               setPicked(null);
@@ -266,7 +270,7 @@ function Ready({ from, to, at, route: routeParam, transit, shapes }: Props & { t
 
       <View style={styles.legend}>
         <Text style={styles.legendText}>
-          <Text style={{ fontWeight: '800' }}>━</Text> on a road shape  ·  <Text style={{ fontWeight: '800' }}>┅</Text> straight between stops (no road shape in the feed)  ·  Metro lines run through estimated station pins, so treat them as approximate. Bus times are scheduled, not live.
+          <Text style={{ fontWeight: '800' }}>━</Text> {t('map.legend.road')}  ·  <Text style={{ fontWeight: '800' }}>┅</Text> {t('map.legend.straight')}  ·  {t('map.legend.metroNote')}
         </Text>
       </View>
     </View>
@@ -286,21 +290,21 @@ function PickedCard({
   network: { stations: Map<string, { name: string }> };
   onClose: () => void;
 }) {
-  const close = <IconButton icon={X} label="Close" color={bus.dark} onPress={onClose} />;
+  const { t, tn } = useT();
+  const close = <IconButton icon={X} label={t('common.close')} color={bus.dark} onPress={onClose} />;
   if (picked.kind === 'station') {
     const st = network.stations.get(picked.id);
     return (
-      <Row onPress={() => router.push({ pathname: '/station/[id]', params: { id: picked.id } })} title={st?.name ?? 'Metro station'} sub="Metro station · pin position is estimated" accent={colors.primary} close={close} />
+      <Row onPress={() => router.push({ pathname: '/station/[id]', params: { id: picked.id } })} title={st?.name ?? t('map.pick.metroStation')} sub={t('map.pick.metroSub')} accent={colors.primary} close={close} />
     );
   }
   if (picked.kind === 'route') {
     const r = routeIndexRoutes[picked.route];
-    const look = AGENCY_LOOK[r.agency];
     return (
       <Row
         onPress={() => router.push({ pathname: '/bus/route/[id]', params: { id: String(r.index) } })}
-        title={`${look.label} ${r.short}`}
-        sub={`${r.dirs.map((d) => d.headsign).join(' ⇄ ') || r.long} · scheduled`}
+        title={`${agencyLabel(r.agency, t)} ${r.short}`}
+        sub={t('map.pick.routeSub', { ends: r.dirs.map((d) => d.headsign).join(' ⇄ ') || r.long })}
         accent={bus.red}
         close={close}
       />
@@ -314,7 +318,7 @@ function PickedCard({
     <Row
       onPress={() => router.push({ pathname: '/bus/stop/[id]', params: { id: d.stops.id[picked.stop] } })}
       title={d.stops.name[picked.stop]}
-      sub={`${routes.length} route${routes.length === 1 ? '' : 's'}${shorts ? `: ${shorts}${names.length > 6 ? '…' : ''}` : ''}`}
+      sub={`${tn('bus.routes', routes.length)}${shorts ? `: ${shorts}${names.length > 6 ? '…' : ''}` : ''}`}
       accent={bus.red}
       close={close}
     />
@@ -322,9 +326,10 @@ function PickedCard({
 }
 
 function Row({ title, sub, accent, onPress, close }: { title: string; sub: string; accent: string; onPress: () => void; close: React.ReactNode }) {
+  const { t } = useT();
   return (
     <View style={styles.card}>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${title}. ${sub}. Open details`} onPress={onPress} style={styles.cardMain}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('map.pick.a11y', { title, sub })} onPress={onPress} style={styles.cardMain}>
         <View style={[styles.cardBar, { backgroundColor: accent }]} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={styles.cardTitle} numberOfLines={1}>
@@ -344,7 +349,7 @@ function Row({ title, sub, accent, onPress, close }: { title: string; sub: strin
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.xl, gap: 6 },
   chips: { paddingHorizontal: space.lg, gap: 8, paddingBottom: space.sm, alignItems: 'center' },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 36, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.border },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36, paddingVertical: 4, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.border },
   chipDot: { width: 10, height: 10, borderRadius: 5 },
   chipText: { fontSize: 13, fontWeight: '600', color: bus.inkSoft },
   banner: { flexDirection: 'row', alignItems: 'center', marginHorizontal: space.lg, marginBottom: space.sm, paddingLeft: space.md, backgroundColor: bus.soft, borderRadius: radius.md },

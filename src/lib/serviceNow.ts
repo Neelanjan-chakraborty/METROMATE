@@ -1,4 +1,5 @@
 import type { FrequencyBand, RouteResult, TimetableLine, TimetableMetadata } from '../types';
+import { enT, type T } from '../i18n/translate';
 
 /**
  * What GMRC's published (static) timetable says about a line right now. This is NOT live: MetroMate has
@@ -80,16 +81,16 @@ export function linesForRoute(timetable: TimetableMetadata, route: RouteResult):
 }
 
 /** "Every 7 min", "About every 40 min", "Bus only". */
-export function bandText(band: FrequencyBand): string {
-  if (band.kind === 'bus-only') return 'Bus only';
-  return `${band.kind === 'average' ? 'About every' : 'Every'} ${band.minutes} min`;
+export function bandText(band: FrequencyBand, t: T = enT): string {
+  if (band.kind === 'bus-only') return t('route.lib.band.busOnly');
+  return t(band.kind === 'average' ? 'route.lib.band.about' : 'route.lib.band.every', { n: String(band.minutes) });
 }
 
 /** Short tag for the band's period, taken from GMRC's label ("Peak", "Non-peak", "Early / late"). */
-export function bandPeriod(band: FrequencyBand): string | null {
+export function bandPeriod(band: FrequencyBand, t: T = enT): string | null {
   const l = band.label.toLowerCase();
-  if (l.includes('non-peak')) return 'Non-peak hours';
-  if (l.includes('peak')) return 'Peak hours';
-  if (/06:20.*07:00.*22:00.*23:00/.test(l)) return 'Early / late hours';
+  if (l.includes('non-peak')) return t('route.lib.period.nonPeak');
+  if (l.includes('peak')) return t('route.lib.period.peak');
+  if (/06:20.*07:00.*22:00.*23:00/.test(l)) return t('route.lib.period.earlyLate');
   return null;
 }

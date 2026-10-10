@@ -5,6 +5,8 @@ import { StationThumb, type ThumbStation } from '../stations/StationThumb';
 import { useHomeScale } from '../home/scale';
 import { Gradient, cardShadow } from './primitives';
 import type { StopKind } from '../../lib/routeView';
+import { useT } from '../../i18n/useT';
+import type { MessageKey } from '../../i18n';
 
 /**
  * A key stop (start, change, destination) drawn as a photo banner: the station's thumbnail (its photo, or the
@@ -12,10 +14,10 @@ import type { StopKind } from '../../lib/routeView';
  */
 type KeyKind = Exclude<StopKind, 'stop'>;
 
-const KIND: Record<KeyKind, { label: string; Icon: LucideIcon; dot: string }> = {
-  origin: { label: 'START', Icon: Flag, dot: '#34D399' },
-  interchange: { label: 'CHANGE TRAINS', Icon: Repeat, dot: '#FBBF24' },
-  destination: { label: 'DESTINATION', Icon: MapPin, dot: '#FB7185' },
+const KIND: Record<KeyKind, { label: MessageKey; Icon: LucideIcon; dot: string }> = {
+  origin: { label: 'route.banner.start', Icon: Flag, dot: '#34D399' },
+  interchange: { label: 'route.banner.change', Icon: Repeat, dot: '#FBBF24' },
+  destination: { label: 'route.banner.destination', Icon: MapPin, dot: '#FB7185' },
 };
 
 interface Props {
@@ -33,14 +35,17 @@ interface Props {
 
 export const StopBanner = memo(function StopBanner({ station, kind, lineColor, lineName, note, minutes, exits, onPress }: Props) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const k = KIND[kind];
+  const label = t(k.label);
+  const detail = note ?? lineName;
   const Icon = k.Icon;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${k.label.toLowerCase()}: ${station.name}. ${note ?? lineName}.${minutes !== null ? ` About ${minutes} minutes from the start.` : ''} Open station details`}
+      accessibilityLabel={t(minutes !== null ? 'route.banner.a11yMin' : 'route.banner.a11y', { kind: label.toLowerCase(), name: station.name, detail, minutes: minutes ?? 0 })}
       onPress={onPress}
-      style={({ pressed }) => [{ height: z(96), borderRadius: z(20), overflow: 'hidden', backgroundColor: '#3B27CF', opacity: pressed ? 0.92 : 1 }, cardShadow, { shadowColor: '#4F35E8', shadowOpacity: 0.2 }]}
+      style={({ pressed }) => [{ minHeight: z(96), borderRadius: z(20), overflow: 'hidden', backgroundColor: '#3B27CF', opacity: pressed ? 0.92 : 1 }, cardShadow, { shadowColor: '#4F35E8', shadowOpacity: 0.2 }]}
     >
       <StationThumb station={station} color={lineColor} width={4} height={1} radius={0} fill />
       <Gradient
@@ -56,15 +61,15 @@ export const StopBanner = memo(function StopBanner({ station, kind, lineColor, l
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6) }}>
           <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: k.dot }} />
           <Icon size={z(12)} color="#E5E1FF" strokeWidth={2.2} />
-          <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#E5E1FF', letterSpacing: 0.9 }}>{k.label}</Text>
+          <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#E5E1FF', letterSpacing: lang === 'en' ? 0.9 : 0 }}>{label}</Text>
         </View>
         <Text style={{ fontSize: z(19), fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.3, maxWidth: '68%' }} numberOfLines={1}>
           {station.name}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), maxWidth: '72%' }}>
           {note ? null : <View style={{ width: z(9), height: z(9), borderRadius: z(5), backgroundColor: lineColor, borderWidth: 1.5, borderColor: '#FFFFFF' }} />}
-          <Text style={{ fontSize: z(12.5), color: '#E9E6FF', fontWeight: '500' }} numberOfLines={1}>
-            {note ?? lineName}
+          <Text style={{ fontSize: z(12.5), color: '#E9E6FF', fontWeight: '500' }} numberOfLines={2}>
+            {detail}
           </Text>
         </View>
       </View>
@@ -78,7 +83,7 @@ export const StopBanner = memo(function StopBanner({ station, kind, lineColor, l
         {minutes !== null && minutes > 0 ? (
           <View style={chip(z)}>
             <Clock size={z(12)} color="#FFFFFF" strokeWidth={2} />
-            <Text style={chipText(z)}>~{minutes} min</Text>
+            <Text style={chipText(z)}>~{t('route.min', { n: minutes })}</Text>
           </View>
         ) : null}
       </View>

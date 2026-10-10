@@ -1,3 +1,4 @@
+import { enT, enTN, type T, type TN } from '../i18n';
 import type { Corridor, Gate, Landmark, NearbyConnection, Station } from '../types';
 
 /**
@@ -22,7 +23,10 @@ export interface StationCardInfo {
   lineColor: string;
 }
 
-const CONNECTION_LABEL: Record<NearbyConnection['kind'], string> = { brts: 'BRTS', bus: 'Bus stop', rail: 'Rail', other: 'Connection' };
+/** "BRTS" is a brand name and stays as it is; the other labels are translated. */
+function connectionLabel(kind: NearbyConnection['kind'], t: T): string {
+  return kind === 'brts' ? 'BRTS' : t(kind === 'bus' ? 'stations.conn.bus' : kind === 'rail' ? 'stations.conn.rail' : 'stations.conn.generic');
+}
 const CONNECTION_ORDER: NearbyConnection['kind'][] = ['rail', 'brts', 'bus', 'other'];
 
 const BADGE_CODE: Record<string, string> = { ns: 'NS', ew: 'EW', gift: 'GIFT' };
@@ -31,15 +35,15 @@ export function corridorCode(corridor: Corridor): string {
   return BADGE_CODE[corridor.id] ?? corridor.shortName.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
 }
 
-function lineLabel(c: Corridor): string {
-  return /branch|line$/i.test(c.shortName) ? c.shortName : `${c.shortName} Line`;
+function lineLabel(c: Corridor, t: T = enT): string {
+  return /branch|line$/i.test(c.shortName) ? c.shortName : t('stations.line.named', { name: c.shortName });
 }
 
 /** First nearby connection by usefulness (rail, then BRTS, then bus). */
-export function pickConnection(list: NearbyConnection[]): StationCardInfo['connection'] {
+export function pickConnection(list: NearbyConnection[], t: T = enT): StationCardInfo['connection'] {
   for (const kind of CONNECTION_ORDER) {
     const c = list.find((x) => x.kind === kind);
-    if (c) return { kind, label: CONNECTION_LABEL[kind], verified: c.verificationStatus === 'verified' };
+    if (c) return { kind, label: connectionLabel(kind, t), verified: c.verificationStatus === 'verified' };
   }
   return null;
 }
@@ -49,15 +53,15 @@ export function pickConnection(list: NearbyConnection[]): StationCardInfo['conne
  * a landmark named like the station (association inferred from the official name), an alias, or the
  * station's position on its line. It never states a street or area that is not in the data.
  */
-export function locationLine(station: Station, landmarks: Landmark[], corridors: Map<string, Corridor>): string {
+export function locationLine(station: Station, landmarks: Landmark[], corridors: Map<string, Corridor>, t: T = enT): string {
   const landmark = landmarks.find((l) => l.nearestStationId === station.id);
-  if (landmark) return `Near ${landmark.name}`;
-  if (station.aliases.length > 0) return `Also known as ${station.aliases[0]}`;
+  if (landmark) return t('stations.loc.near', { name: landmark.name });
+  if (station.aliases.length > 0) return t('stations.loc.alias', { name: station.aliases[0] });
   const cid = station.corridorIds[0];
   const c = cid ? corridors.get(cid) : undefined;
   const seq = cid ? station.sequenceByCorridor[cid] : undefined;
-  if (c && seq) return `Stop ${seq} of ${c.sequence.length} · Phase ${station.phase}`;
-  return `Phase ${station.phase}`;
+  if (c && seq) return t('stations.loc.stop', { seq, total: c.sequence.length, phase: station.phase });
+  return t('stations.loc.phase', { phase: station.phase });
 }
 
 export function stationCardInfo(
@@ -65,17 +69,18 @@ export function stationCardInfo(
   gates: Gate[],
   landmarks: Landmark[],
   corridors: Map<string, Corridor>,
+  t: T = enT,
 ): StationCardInfo {
   const own = station.corridorIds.map((id) => corridors.get(id)).filter((c): c is Corridor => !!c);
   const gateCount = gates.filter((g) => g.stationId === station.id).length;
   return {
     exits: gateCount > 0 ? gateCount : null,
     lifts: station.lifts.length,
-    connection: pickConnection(station.nearbyConnections),
-    location: locationLine(station, landmarks, corridors),
+    connection: pickConnection(station.nearbyConnections, t),
+    location: locationLine(station, landmarks, corridors, t),
     badges: own.map((c) => ({ code: corridorCode(c), color: c.color })),
-    lineName: own[0] ? lineLabel(own[0]) : 'Metro',
-    allLines: own.map(lineLabel).join(' · ') || 'Metro',
+    lineName: own[0] ? lineLabel(own[0], t) : t('stations.line.metro'),
+    allLines: own.map((c) => lineLabel(c, t)).join(' · ') || t('stations.line.metro'),
     lineColor: own[0]?.color ?? '#566074',
   };
 }
@@ -86,10 +91,10 @@ export function countLabel(n: number, one: string, many: string): string {
 }
 
 /** Spoken summary for the whole card (screen readers). */
-export function cardAccessibilityLabel(name: string, info: StationCardInfo): string {
+export function cardAccessibilityLabel(name: string, info: StationCardInfo, t: T = enT, tn: TN = enTN): string {
   const parts = [name, info.allLines, info.location];
-  parts.push(info.exits === null ? 'Exit gates not listed by GMRC' : countLabel(info.exits, 'exit gate', 'exit gates'));
-  if (info.lifts > 0) parts.push(countLabel(info.lifts, 'lift', 'lifts'));
-  if (info.connection) parts.push(`${info.connection.label}${info.connection.verified ? '' : ' (unverified)'}`);
-  return `${parts.join('. ')}. Open station details`;
+  parts.push(info.exits === null ? t('stations.a11y.exitsNa') : tn('stations.a11y.exits', info.exits));
+  if (info.lifts > 0) parts.push(tn('stations.a11y.lifts', info.lifts));
+  if (info.connection) parts.push(`${info.connection.label}${info.connection.verified ? '' : ` (${t('stations.unverified')})`}`);
+  return `${parts.join('. ')}. ${t('stations.a11y.open')}`;
 }

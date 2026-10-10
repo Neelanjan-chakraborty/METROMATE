@@ -18,24 +18,29 @@ import { useTransit } from '../../lib/transit/transitData';
 import { formatAtParam, minutesOfDay } from '../../lib/transit/format';
 import { getFare } from '../../lib/fareCalculator';
 import { getJourneyTime } from '../../lib/journeyTime';
-import { formatDate, plural, relativeDay } from '../../lib/format';
+import { formatDate, relativeDay } from '../../lib/format';
 import { colors } from '../../theme';
 import { QUICK_SLOTS, type QuickSlot } from '../../types';
+import { useT } from '../../i18n/useT';
+import type { MessageKey } from '../../i18n';
 
 type Target = 'from' | 'to' | null;
-const QUICK_LABEL: Record<QuickSlot, string> = { home: 'Home', campus: 'Campus', work: 'Work' };
+const QUICK_LABEL: Record<QuickSlot, MessageKey> = { home: 'home.quick.home', campus: 'home.quick.campus', work: 'home.quick.work' };
+/** The note under Quick routes. Kept as data (not text) so it follows a language change. */
+type QuickHint = { kind: 'choose'; slot: QuickSlot } | { kind: 'saved'; slot: QuickSlot; from: string; to: string } | { kind: 'removed'; slot: QuickSlot };
 
 export default function Home() {
   const { dataset, network, recents, quickRoutes, setQuickRoute, clearQuickRoute, storage } = useReady();
   const params = useLocalSearchParams<{ from?: string; to?: string; sky?: string }>();
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
 
   const [fromId, setFromId] = useState<string | null>(null);
   const [toId, setToId] = useState<string | null>(null);
   const [picker, setPicker] = useState<Target>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [quickHint, setQuickHint] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [quickHint, setQuickHint] = useState<QuickHint | null>(null);
   /** Minutes since midnight to depart at, or null for "leave now". */
   const [leaveMin, setLeaveMin] = useState<number | null>(null);
 
@@ -52,7 +57,7 @@ export default function Home() {
   const needBus = isBusId(fromId) || isBusId(toId) || recents.slice(0, 3).some((r) => isBusId(r.fromId) || isBusId(r.toId)) || quickRoutes.some((q) => isBusId(q.fromId) || isBusId(q.toId));
   const bus = useTransit(needBus);
   const transit = bus.status === 'ready' ? bus.transit : null;
-  const name = (id: string | null) => (id ? placeName(id, network.stations, transit) ?? (isBusId(id) ? 'Bus stop' : id) : null);
+  const name = (id: string | null) => (id ? placeName(id, network.stations, transit) ?? (isBusId(id) ? t('home.busStop') : id) : null);
   /** Metro-to-metro "leave now" trips keep the metro route screen; anything with a bus stop or a chosen time uses the multimodal planner. */
   const openRoute = (a: string, b: string, at: number | null = null) => {
     if (isBusId(a) || isBusId(b) || at !== null) router.push({ pathname: '/route', params: { from: a, to: b, mode: 'transit', ...(at !== null ? { at: formatAtParam(at) } : {}) } });
@@ -66,8 +71,8 @@ export default function Home() {
   };
 
   const find = () => {
-    if (!fromId || !toId) return setError('Choose both a start and a destination (a station or a bus stop).');
-    if (fromId === toId) return setError('Your start and destination are the same place.');
+    if (!fromId || !toId) return setError('home.error.chooseBoth');
+    if (fromId === toId) return setError('home.error.samePlace');
     setError(null);
     openRoute(fromId, toId, leaveMin);
   };
@@ -75,7 +80,7 @@ export default function Home() {
   // ---- quick routes: tap to open a saved one, or save the stations chosen above into an empty slot
   const quickItems: QuickItem[] = QUICK_SLOTS.map((slot) => {
     const q = quickRoutes.find((r) => r.slot === slot);
-    return { slot, label: QUICK_LABEL[slot], summary: q ? `${name(q.fromId)} → ${name(q.toId)}` : null };
+    return { slot, label: t(QUICK_LABEL[slot]), summary: q ? `${name(q.fromId)} → ${name(q.toId)}` : null };
   });
   const onQuick = (slot: QuickSlot) => {
     const q = quickRoutes.find((r) => r.slot === slot);
@@ -84,9 +89,9 @@ export default function Home() {
       return openRoute(q.fromId, q.toId);
     }
     if (!fromId || !toId || fromId === toId) {
-      return setQuickHint(`To save ${QUICK_LABEL[slot]}, choose two different places above, then tap ${QUICK_LABEL[slot]} again.`);
+      return setQuickHint({ kind: 'choose', slot });
     }
-    void setQuickRoute(slot, fromId, toId).then(() => setQuickHint(`Saved ${name(fromId)} → ${name(toId)} as ${QUICK_LABEL[slot]}.`));
+    void setQuickRoute(slot, fromId, toId).then(() => setQuickHint({ kind: 'saved', slot, from: name(fromId) ?? '', to: name(toId) ?? '' }));
   };
 
   // ---- recent trips: real journeys from the on-device database
@@ -97,11 +102,11 @@ export default function Home() {
       if (isBusId(r.fromId) || isBusId(r.toId)) {
         out.push({
           id: r.id,
-          fromName: placeName(r.fromId, network.stations, transit) ?? 'Bus stop',
-          toName: placeName(r.toId, network.stations, transit) ?? 'Bus stop',
-          chips: [{ color: '#0F6FC4', label: 'Bus + metro' }],
-          day: relativeDay(r.createdAt),
-          metric: 'Plan',
+          fromName: placeName(r.fromId, network.stations, transit) ?? t('home.busStop'),
+          toName: placeName(r.toId, network.stations, transit) ?? t('home.busStop'),
+          chips: [{ color: '#0F6FC4', label: t('home.trip.busMetro') }],
+          day: relativeDay(r.createdAt, undefined, lang),
+          metric: t('common.tab.plan'),
         });
         continue;
       }
@@ -110,18 +115,29 @@ export default function Home() {
       const time = getJourneyTime(network, route, dataset.fares);
       const fare = getFare(dataset.fares, r.fromId, r.toId);
       const metric =
-        time.status === 'estimated' ? `${time.minutes} min` : fare.status === 'available' && fare.travelMinutes !== null ? `${fare.travelMinutes} min` : plural(route.stopCount, 'stop');
+        time.status === 'estimated'
+          ? t('lib.duration.min', { n: time.minutes })
+          : fare.status === 'available' && fare.travelMinutes !== null
+            ? t('lib.duration.min', { n: fare.travelMinutes })
+            : tn('lib.stops', route.stopCount);
       out.push({
         id: r.id,
         fromName: network.stations.get(r.fromId)?.name ?? r.fromId,
         toName: network.stations.get(r.toId)?.name ?? r.toId,
         chips: route.segments.map((s) => ({ color: corridors.get(s.corridorId)?.color ?? colors.primary, label: corridors.get(s.corridorId)?.shortName ?? s.corridorId })),
-        day: relativeDay(r.createdAt),
+        day: relativeDay(r.createdAt, undefined, lang),
         metric,
       });
     }
     return out;
-  }, [recents, network, dataset, transit]);
+  }, [recents, network, dataset, transit, t, tn, lang]);
+
+  const quickHintText = (h: QuickHint) => {
+    const label = t(QUICK_LABEL[h.slot]);
+    if (h.kind === 'choose') return t('home.quick.hint.choose', { label });
+    if (h.kind === 'saved') return t('home.quick.hint.saved', { from: h.from, to: h.to, label });
+    return t('home.quick.hint.removed', { label });
+  };
 
   const openTrip = (id: number) => {
     const r = recents.find((x) => x.id === id);
@@ -151,7 +167,7 @@ export default function Home() {
             onTo={() => setPicker('to')}
             onSwap={swap}
             onFind={find}
-            error={error}
+            error={error ? t(error) : null}
             leaveAt={leaveMin === null ? null : formatAtParam(leaveMin)}
             onLeaveNow={() => setLeaveMin(null)}
             onLeaveAt={() => setLeaveMin((m) => m ?? Math.ceil((minutesOfDay(new Date()) + 5) / 5) * 5)}
@@ -160,33 +176,31 @@ export default function Home() {
 
           <ShortcutCards onMap={() => router.push('/map')} onStations={() => router.push('/stations')} />
 
-          <SectionHeader title="Quick routes" onSeeAll={() => router.push('/saved')} />
-          <QuickRoutes items={quickItems} onPress={onQuick} onClear={(slot) => void clearQuickRoute(slot).then(() => setQuickHint(`${QUICK_LABEL[slot]} shortcut removed.`))} />
-          {quickHint ? <Text style={styles.hint}>{quickHint}</Text> : null}
+          <SectionHeader title={t('home.section.quick')} onSeeAll={() => router.push('/saved')} />
+          <QuickRoutes items={quickItems} onPress={onQuick} onClear={(slot) => void clearQuickRoute(slot).then(() => setQuickHint({ kind: 'removed', slot }))} />
+          {quickHint ? <Text style={[styles.hint, lang !== 'en' && styles.hintIndic]}>{quickHintText(quickHint)}</Text> : null}
 
-          <SectionHeader title="Recent trips" onSeeAll={() => router.push('/saved')} />
+          <SectionHeader title={t('home.section.recent')} onSeeAll={() => router.push('/saved')} />
           <RecentTrips trips={trips} onOpen={openTrip} />
 
           {storage === 'memory' ? (
             <View style={{ marginHorizontal: z(16), marginTop: z(16) }}>
-              <Notice tone="warn" title="Saved routes won’t be kept">
-                The on-device database could not be opened, so favourites, quick routes and recent trips last only until you close the app.
+              <Notice tone="warn" title={t('home.memory.title')}>
+                {t('home.memory.body')}
               </Notice>
             </View>
           ) : null}
 
-          <Pressable onPress={() => router.push('/data')} style={styles.dataLink} accessibilityRole="button" accessibilityLabel="About the data and its sources">
+          <Pressable onPress={() => router.push('/data')} style={styles.dataLink} accessibilityRole="button" accessibilityLabel={t('home.dataLink.a11y')}>
             <Database size={15} color={colors.slate} />
-            <Text style={styles.dataText}>
-              Offline GMRC data · source page updated {formatDate(dataset.info.sourcePageLastUpdated)} · Data &amp; sources
-            </Text>
+            <Text style={[styles.dataText, lang !== 'en' && styles.dataTextIndic]}>{t('home.dataLink', { date: formatDate(dataset.info.sourcePageLastUpdated, lang) })}</Text>
           </Pressable>
         </View>
       </ScrollView>
 
       <StationPicker
         visible={picker !== null}
-        title={picker === 'from' ? 'Start from' : 'Go to'}
+        title={picker === 'from' ? t('home.picker.startFrom') : t('home.picker.goTo')}
         onClose={() => setPicker(null)}
         onSelect={(id) => {
           if (picker === 'from') setFromId(id);
@@ -200,6 +214,8 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   hint: { marginHorizontal: 20, marginTop: 10, fontSize: 13.5, color: colors.primaryDark, fontWeight: '600' },
+  hintIndic: { lineHeight: 20 },
   dataLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, marginTop: 14, paddingHorizontal: 16, flexWrap: 'wrap' },
   dataText: { fontSize: 12.5, color: colors.slate, textAlign: 'center' },
+  dataTextIndic: { lineHeight: 19 },
 });

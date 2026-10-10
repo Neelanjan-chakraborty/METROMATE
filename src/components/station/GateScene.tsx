@@ -3,6 +3,7 @@ import { Platform, View } from 'react-native';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop, Text as SvgText } from 'react-native-svg';
 import { mixColor } from '../../lib/skyPalette';
 import type { GateFeatures } from '../../lib/stationView';
+import { useT } from '../../i18n/useT';
 
 /*
  * An illustration of one entry/exit gate. It is deliberately generic: GMRC publishes gate NUMBERS, the
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export const GateScene = memo(function GateScene({ gate, underground, lineColor, night }: Props) {
+  const { t } = useT();
   const sky1 = mixColor('#C9E0F7', '#1B1B55', night);
   const sky2 = mixColor('#EEF5FC', '#3A3A86', night);
   const tower = mixColor('#E4E8F5', '#46468F', night * 0.8);
@@ -36,9 +38,11 @@ export const GateScene = memo(function GateScene({ gate, underground, lineColor,
   const hasLift = gate.lifts.length > 0;
   const link = gate.connections[0] ?? null;
   const hx = hasLift ? 118 : 140; // entrance hall x
+  const liftNums = gate.lifts.map((l) => String(l).padStart(2, '0')).join(` ${t('station.scene.and')} `);
+  const linkKind = link ? (link.kind === 'brts' ? 'BRTS' : link.kind === 'rail' ? t('station.kind.rail') : t('station.kind.bus')) : '';
 
   return (
-    <View accessible accessibilityRole="image" accessibilityLabel={`Illustration of Gate ${gate.number}${hasLift ? ` with lift ${gate.lifts.map((l) => String(l).padStart(2, '0')).join(' and ')}` : ''}. Not the real layout.`}>
+    <View accessible accessibilityRole="image" accessibilityLabel={hasLift ? t('station.scene.a11yLift', { gate: gate.number, lifts: liftNums }) : t('station.scene.a11y', { gate: gate.number })}>
       <Svg width="100%" height={undefined} viewBox="0 0 360 200" style={{ aspectRatio: 360 / 200 }}>
         <Defs>
           <LinearGradient id="gs-sky" x1="0" y1="0" x2="0" y2="1">
@@ -115,7 +119,7 @@ export const GateScene = memo(function GateScene({ gate, underground, lineColor,
         <G transform={`translate(${hx + 42} ${underground ? 76 : 70})`}>
           <Rect x={-30} y={-13} width={60} height={24} rx={8} fill="#FFD84A" stroke="#E5B800" strokeWidth={1} />
           <SvgText x={0} y={4.5} fontSize={13} fontWeight="800" fill="#3B2E00" textAnchor="middle" fontFamily={font}>
-            {`Gate ${gate.number}`}
+            {t('station.gates.gate', { n: gate.number })}
           </SvgText>
           <Rect x={-1.2} y={11} width={2.4} height={underground ? 22 : 3} fill="#9A8420" />
         </G>
@@ -145,7 +149,7 @@ export const GateScene = memo(function GateScene({ gate, underground, lineColor,
             <Circle cx={30} cy={118} r={8} fill="#6A55F0" />
             <Path d={link.kind === 'rail' ? 'M26 121 H34 M27 113 H33 V120 H27 Z' : 'M26 121 H34 M26.5 114 H33.5 V120 H26.5 Z'} stroke="#FFFFFF" strokeWidth={1.3} fill="none" strokeLinejoin="round" />
             <SvgText x={44} y={122} fontSize={9.5} fontWeight="700" fill="#4F35E8" fontFamily={font}>
-              {`${link.kind === 'brts' ? 'BRTS' : link.kind === 'rail' ? 'Rail' : 'Bus'} link ?`}
+              {t('station.scene.link', { kind: linkKind })}
             </SvgText>
           </G>
         ) : null}

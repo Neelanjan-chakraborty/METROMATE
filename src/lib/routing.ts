@@ -7,6 +7,7 @@ import type {
   RouteSegment,
   Station,
 } from '../types';
+import { enT, type T } from '../i18n/translate';
 
 export interface Network {
   stations: Map<string, Station>;
@@ -48,9 +49,9 @@ const key = (stationId: string, corridorId: string | null) => `${stationId}|${co
  * Deterministic least-stops route. Ties are broken by fewer train changes.
  * Cost = stops * 1000 + changes, searched over (station, corridor) states.
  */
-export function findRoute(net: Network, originId: string | null | undefined, destinationId: string | null | undefined): RouteOutcome {
+export function findRoute(net: Network, originId: string | null | undefined, destinationId: string | null | undefined, t: T = enT): RouteOutcome {
   if (!originId || !destinationId) {
-    return { ok: false, code: 'MISSING_INPUT', message: 'Choose both a starting station and a destination.' };
+    return { ok: false, code: 'MISSING_INPUT', message: t('route.lib.err.missing') };
   }
   const origin = net.stations.get(originId);
   const destination = net.stations.get(destinationId);
@@ -58,11 +59,11 @@ export function findRoute(net: Network, originId: string | null | undefined, des
     return {
       ok: false,
       code: 'UNKNOWN_STATION',
-      message: 'One of the selected stations is not in the offline data. Pick a station from the list.',
+      message: t('route.lib.err.unknown'),
     };
   }
   if (originId === destinationId) {
-    return { ok: false, code: 'SAME_STATION', message: 'Your start and destination are the same station.' };
+    return { ok: false, code: 'SAME_STATION', message: t('route.lib.err.same') };
   }
 
   const best = new Map<string, Label>();
@@ -105,7 +106,7 @@ export function findRoute(net: Network, originId: string | null | undefined, des
     return {
       ok: false,
       code: 'NO_ROUTE',
-      message: `No route between ${origin.name} and ${destination.name} was found in the offline network data.`,
+      message: t('route.lib.err.noRoute', { from: origin.name, to: destination.name }),
     };
   }
 

@@ -5,6 +5,7 @@ import { AGENCY_LOOK } from '../../lib/transit/format';
 import { lodFor, pathD, type BusMapGeometry, type LegEnd, type LegLine, type MetroLayer } from '../../lib/transit/geoMap';
 import { AGENCY_IDS, type AgencyId } from '../../lib/transit/types';
 import { colors } from '../../theme';
+import { useT } from '../../i18n/useT';
 import { bus } from '../../theme/bus';
 
 /*
@@ -48,6 +49,7 @@ function tapPoint(e: GestureResponderEvent, scale: number): { x: number; y: numb
 }
 
 function BusMapImpl({ geo, metro, layers, selectedRoute, journey, scale, pickedStop, corridorColor, onTap }: BusMapProps) {
+  const { t } = useT();
   const { width: W, height: H } = geo.proj;
   const minSep = lodFor(scale);
   const focus = selectedRoute !== null || journey !== null;
@@ -73,7 +75,7 @@ function BusMapImpl({ geo, metro, layers, selectedRoute, journey, scale, pickedS
   return (
     <Pressable
       accessibilityRole="image"
-      accessibilityLabel="Map of bus routes and the metro around Ahmedabad and Gandhinagar. Tap a line or a stop for details."
+      accessibilityLabel={t('map.busMap.a11y')}
       onPress={(e) => {
         const p = tapPoint(e, scale);
         if (p) onTap(p.x, p.y);
@@ -174,7 +176,7 @@ function BusMapImpl({ geo, metro, layers, selectedRoute, journey, scale, pickedS
         <G>
           <Rect x={px(12, scale)} y={H - px(26, scale)} width={barUnits} height={lineW(3)} fill="#4B5563" />
           <SvgText x={px(12, scale)} y={H - px(32, scale)} fontFamily={FONT} fontSize={px(10.5, scale)} fontWeight="700" fill="#4B5563">
-            10 km
+            {t('map.scale')}
           </SvgText>
         </G>
       </Svg>

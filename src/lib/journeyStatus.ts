@@ -4,6 +4,9 @@
  * trustworthy one, and "approaching" / "stopped" are inferred from the passenger's own position.
  */
 
+import { enT, type T } from '../i18n/translate';
+import type { MessageKey } from '../i18n/messages';
+
 export type Movement = 'at-station' | 'approaching' | 'moving' | 'stopped' | 'estimated' | 'signal-lost' | 'unknown';
 
 export interface SpeedFix {
@@ -61,6 +64,19 @@ export const MOVEMENT_LABEL: Record<Movement, string> = {
   unknown: 'Position only',
 };
 
+const MOVEMENT_KEY: Record<Movement, MessageKey> = {
+  'at-station': 'live.move.atStation',
+  approaching: 'live.move.approaching',
+  moving: 'live.move.moving',
+  stopped: 'live.move.stopped',
+  estimated: 'live.move.estimated',
+  'signal-lost': 'live.move.signalLost',
+  unknown: 'live.move.unknown',
+};
+
+/** The movement label in the active language (English by default, identical to MOVEMENT_LABEL). */
+export const movementLabel = (m: Movement, t: T = enT): string => t(MOVEMENT_KEY[m]);
+
 // ------------------------------------------------------------------ messages
 
 export type Tone = 'ok' | 'info' | 'warn' | 'alert';
@@ -80,21 +96,21 @@ export interface StatusInput {
   hasPosition?: boolean;
 }
 
-export function statusMessage(i: StatusInput): { text: string; tone: Tone } {
-  if (i.arrived) return { text: `You’ve arrived at ${i.destinationName}.`, tone: 'ok' };
-  if (i.hasPosition === false) return { text: 'Waiting for your position. Tap “I’m here” on a station to follow by check-in.', tone: 'info' };
-  if (i.source === 'demo') return { text: 'Demo ride: simulated, not your location.', tone: 'warn' };
-  if (i.movement === 'signal-lost') return { text: 'GPS signal lost. Showing your last position; nothing is guessed.', tone: 'warn' };
-  if (i.movement === 'estimated') return { text: 'No GPS underground. This position is an estimate; it will correct when GPS returns.', tone: 'info' };
-  if (i.nextIsInterchange && i.nextName) return { text: `Change trains at ${i.nextName}.`, tone: 'info' };
+export function statusMessage(i: StatusInput, t: T = enT): { text: string; tone: Tone } {
+  if (i.arrived) return { text: t('live.status.arrivedAt', { name: i.destinationName }), tone: 'ok' };
+  if (i.hasPosition === false) return { text: t('live.status.waiting'), tone: 'info' };
+  if (i.source === 'demo') return { text: t('live.status.demo'), tone: 'warn' };
+  if (i.movement === 'signal-lost') return { text: t('live.status.signalLost'), tone: 'warn' };
+  if (i.movement === 'estimated') return { text: t('live.status.estimated'), tone: 'info' };
+  if (i.nextIsInterchange && i.nextName) return { text: t('live.status.changeAt', { name: i.nextName }), tone: 'info' };
   if (i.etaUpdated) {
-    return { text: i.behindMin ? `Your arrival time has been updated (about ${i.behindMin} min later than first estimated).` : 'Your arrival time has been updated.', tone: 'info' };
+    return { text: i.behindMin ? t('live.status.etaUpdatedBehind', { n: i.behindMin }) : t('live.status.etaUpdated'), tone: 'info' };
   }
-  if (i.movement === 'approaching' && i.nextName) return { text: `Approaching ${i.nextName}.`, tone: 'ok' };
-  if (i.movement === 'at-station') return { text: i.nextName ? `At the station. Next: ${i.nextName}.` : 'At the station.', tone: 'ok' };
-  if (i.movement === 'stopped') return { text: 'The train seems to be stopped. Live service information isn’t available in MetroMate.', tone: 'warn' };
-  if (i.inTunnel) return { text: 'Underground. Heading for the next station.', tone: 'ok' };
-  return { text: 'On your way to the next station.', tone: 'ok' };
+  if (i.movement === 'approaching' && i.nextName) return { text: t('live.status.approaching', { name: i.nextName }), tone: 'ok' };
+  if (i.movement === 'at-station') return { text: i.nextName ? t('live.status.atStationNext', { name: i.nextName }) : t('live.status.atStation'), tone: 'ok' };
+  if (i.movement === 'stopped') return { text: t('live.status.stopped'), tone: 'warn' };
+  if (i.inTunnel) return { text: t('live.status.underground'), tone: 'ok' };
+  return { text: t('live.status.onYourWay'), tone: 'ok' };
 }
 
 // ----------------------------------------------------------------- milestones
@@ -133,4 +149,24 @@ export function milestonesBetween(prev: Snapshot | null, cur: Snapshot, ctx: { s
   if (curNext !== prevNext && ctx.interchangeIdx.has(curNext)) out.push({ kind: 'interchange', idx: curNext });
   if (cur.arriving && !prev.arriving && !cur.arrived) out.push({ kind: 'approaching', idx: last });
   return out.slice(0, 3);
+}
+
+/** Toast text for a milestone, given the route's station names (the last one is the destination). */
+export function milestoneText(m: Milestone, names: string[], t: T = enT): string {
+  switch (m.kind) {
+    case 'passed':
+      return t('live.milestone.passed', { name: names[m.idx] });
+    case 'halfway':
+      return t('live.milestone.halfway');
+    case 'tunnel-in':
+      return t('live.milestone.tunnelIn');
+    case 'tunnel-out':
+      return t('live.milestone.tunnelOut');
+    case 'interchange':
+      return t('live.milestone.interchange', { name: names[m.idx] });
+    case 'approaching':
+      return t('live.milestone.approaching', { name: names[names.length - 1] });
+    case 'arrived':
+      return t('live.milestone.arrived');
+  }
 }

@@ -1,4 +1,5 @@
 import type { FareOutcome, FarePair, FareTable } from '../types';
+import { enT, type T } from '../i18n/translate';
 
 export const FARE_UNAVAILABLE_MESSAGE = 'Fare unavailable offline';
 
@@ -19,9 +20,9 @@ export function findFarePair(fares: FareTable, fromId: string, toId: string): Fa
  * Looks up a verified origin–destination fare. Fares are NEVER derived from the number of stops:
  * if no verified pair exists the result is "unavailable".
  */
-export function getFare(fares: FareTable, fromId: string, toId: string): FareOutcome {
+export function getFare(fares: FareTable, fromId: string, toId: string, t: T = enT): FareOutcome {
   const pair = findFarePair(fares, fromId, toId);
-  if (!pair) return { status: 'unavailable', message: FARE_UNAVAILABLE_MESSAGE };
+  if (!pair) return { status: 'unavailable', message: t('route.lib.fareUnavailable') };
   return {
     status: 'available',
     amountInr: pair.amountInr,

@@ -1,4 +1,5 @@
 import type { Corridor, Facilities, Gate, NearbyConnection, Station, TimetableLine, TimetableMetadata } from '../types';
+import { enT, type MessageKey, type T } from '../i18n';
 import { hopMinutes } from './eta';
 import { toMinutes } from './serviceNow';
 
@@ -17,30 +18,53 @@ export interface Amenity {
   label: string;
 }
 
-/** GMRC's facility wording -> an icon key and a one- or two-word label. First match wins. */
-const FACILITY_RULES: [RegExp, AmenityKey, string][] = [
-  [/escalator/i, 'escalator', 'Escalators'],
-  [/signage/i, 'signage', 'Signage'],
-  [/smart card|contactless/i, 'card', 'Smart card'],
-  [/vending|recharge/i, 'tickets', 'Ticket machines'],
-  [/drinking/i, 'water', 'Drinking water'],
-  [/first aid/i, 'firstaid', 'First aid'],
-  [/seating/i, 'seating', 'Seating'],
-  [/^lifts?$/i, 'lift', 'Lifts'],
-  [/information display/i, 'display', 'Info displays'],
-  [/washroom.*differently|differently.*washroom/i, 'accToilets', 'Accessible toilets'],
-  [/washroom/i, 'toilets', 'Washrooms'],
-  [/wide automatic/i, 'wideGates', 'Wide gates'],
-  [/tactile/i, 'tactile', 'Tactile path'],
-  [/ramp/i, 'ramp', 'Ramp'],
-  [/wheelchair available/i, 'wheelchair', 'Wheelchair'],
-  [/braille/i, 'braille', 'Braille lifts'],
-  [/reserved space/i, 'trainSpace', 'Train space'],
-  [/low height/i, 'lowCounter', 'Low counter'],
+/** GMRC's facility wording -> an icon key. First match wins; the label comes from the message catalog. */
+const FACILITY_RULES: [RegExp, Exclude<AmenityKey, 'other' | 'gates'>][] = [
+  [/escalator/i, 'escalator'],
+  [/signage/i, 'signage'],
+  [/smart card|contactless/i, 'card'],
+  [/vending|recharge/i, 'tickets'],
+  [/drinking/i, 'water'],
+  [/first aid/i, 'firstaid'],
+  [/seating/i, 'seating'],
+  [/^lifts?$/i, 'lift'],
+  [/information display/i, 'display'],
+  [/washroom.*differently|differently.*washroom/i, 'accToilets'],
+  [/washroom/i, 'toilets'],
+  [/wide automatic/i, 'wideGates'],
+  [/tactile/i, 'tactile'],
+  [/ramp/i, 'ramp'],
+  [/wheelchair available/i, 'wheelchair'],
+  [/braille/i, 'braille'],
+  [/reserved space/i, 'trainSpace'],
+  [/low height/i, 'lowCounter'],
 ];
 
-export function amenityFor(text: string): Amenity {
-  for (const [re, key, label] of FACILITY_RULES) if (re.test(text.trim())) return { key, label };
+/** One- or two-word label for each amenity (English: "Escalators", "Smart card", ...). */
+const AMENITY_LABEL: Record<Exclude<AmenityKey, 'other' | 'gates'>, MessageKey> = {
+  lift: 'station.amenity.lifts',
+  ramp: 'station.amenity.ramp',
+  escalator: 'station.amenity.escalator',
+  signage: 'station.amenity.signage',
+  card: 'station.amenity.card',
+  tickets: 'station.amenity.tickets',
+  water: 'station.amenity.water',
+  firstaid: 'station.amenity.firstaid',
+  seating: 'station.amenity.seating',
+  display: 'station.amenity.display',
+  toilets: 'station.amenity.toilets',
+  wideGates: 'station.amenity.wideGates',
+  tactile: 'station.amenity.tactile',
+  wheelchair: 'station.amenity.wheelchair',
+  braille: 'station.amenity.braille',
+  trainSpace: 'station.amenity.trainSpace',
+  accToilets: 'station.amenity.accToilets',
+  lowCounter: 'station.amenity.lowCounter',
+};
+
+/** An unknown facility falls back to the first two words of GMRC's own wording (data, so not translated). */
+export function amenityFor(text: string, t: T = enT): Amenity {
+  for (const [re, key] of FACILITY_RULES) if (re.test(text.trim())) return { key, label: t(AMENITY_LABEL[key]) };
   return { key: 'other', label: text.split(/\s+/).slice(0, 2).join(' ') };
 }
 
@@ -51,17 +75,17 @@ export interface StationAmenities {
   network: { general: Amenity[]; accessibility: Amenity[] };
 }
 
-export function stationAmenities(station: Station, gates: Gate[], facilities: Facilities): StationAmenities {
+export function stationAmenities(station: Station, gates: Gate[], facilities: Facilities, t: T = enT): StationAmenities {
   const here: StationAmenities['here'] = [];
   const nGates = new Set(gates.map((g) => g.gateNumber)).size;
   if (station.lifts.length > 0) {
-    here.push({ key: 'lift', label: station.lifts.length === 1 ? 'Lift' : 'Lifts', count: station.lifts.length });
-    here.push({ key: 'ramp', label: 'Wheelchair ramp' });
+    here.push({ key: 'lift', label: t(station.lifts.length === 1 ? 'station.amenity.lift' : 'station.amenity.lifts'), count: station.lifts.length });
+    here.push({ key: 'ramp', label: t('station.amenity.wheelchairRamp') });
   }
-  if (nGates > 0) here.push({ key: 'gates', label: nGates === 1 ? 'Gate' : 'Gates', count: nGates });
+  if (nGates > 0) here.push({ key: 'gates', label: t(nGates === 1 ? 'station.amenity.gate' : 'station.amenity.gates'), count: nGates });
   const hasLift = station.lifts.length > 0;
-  const general = facilities.general.map(amenityFor).filter((a) => !(a.key === 'lift' && hasLift));
-  const accessibility = facilities.accessibility.map(amenityFor).filter((a) => !(a.key === 'ramp' && hasLift));
+  const general = facilities.general.map((f) => amenityFor(f, t)).filter((a) => !(a.key === 'lift' && hasLift));
+  const accessibility = facilities.accessibility.map((f) => amenityFor(f, t)).filter((a) => !(a.key === 'ramp' && hasLift));
   return { here, network: { general, accessibility } };
 }
 

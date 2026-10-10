@@ -5,8 +5,9 @@ import { Bus, Search, TrainFront, X } from 'lucide-react-native';
 import { colors, radius, space, type } from '../theme';
 import { searchPlaces, type PlaceHit, type PlaceScope } from '../lib/transit/places';
 import { useTransit } from '../lib/transit/transitData';
-import { AGENCY_LOOK } from '../lib/transit/format';
+import { AGENCY_LOOK, agencyLabel } from '../lib/transit/format';
 import { useReady } from '../state/useReady';
+import { useT } from '../i18n/useT';
 import { CorridorDot, Muted } from './ui';
 
 interface Props {
@@ -30,6 +31,8 @@ export function StationPicker({ visible, title, onClose, onSelect, allowBus = tr
 
 function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible'>) {
   const { dataset } = useReady();
+  const { t, tn, lang } = useT();
+  const indic = lang !== 'en';
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<PlaceScope>('all');
   const bus = useTransit(!!allowBus);
@@ -42,7 +45,7 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
       return (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Bus stop ${item.name}, ${item.agencies.map((a) => AGENCY_LOOK[a].label).join(' and ')}`}
+          accessibilityLabel={t('home.picker.stop.a11y', { name: item.name, agencies: item.agencies.map((a) => agencyLabel(a, t)).join(` ${t('lib.and')} `) })}
           onPress={() => {
             onSelect(item.id);
             onClose();
@@ -57,10 +60,10 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
             <View style={styles.corridors}>
               {item.agencies.map((a) => (
                 <View key={a} style={[styles.agency, { backgroundColor: AGENCY_LOOK[a].soft }]}>
-                  <Text style={[styles.agencyText, { color: AGENCY_LOOK[a].color }]}>{AGENCY_LOOK[a].label}</Text>
+                  <Text style={[styles.agencyText, { color: AGENCY_LOOK[a].color }, indic && styles.indicTiny]}>{agencyLabel(a, t)}</Text>
                 </View>
               ))}
-              <Text style={type.tiny}>{item.routes} {item.routes === 1 ? 'route' : 'routes'}</Text>
+              <Text style={[type.tiny, indic && styles.indicTiny]}>{tn('lib.routes', item.routes)}</Text>
             </View>
           </View>
         </Pressable>
@@ -68,14 +71,14 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
     }
     const note =
       item.matchedOn === 'alias'
-        ? `Also known as “${item.matchedText}”`
+        ? t('home.picker.alias', { name: item.matchedText })
         : item.matchedOn === 'landmark'
-          ? `Nearest station to ${item.matchedText} (from the station name; unverified)`
+          ? t('home.picker.landmark', { place: item.matchedText })
           : null;
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${item.station.name}${item.station.isInterchange ? ', interchange' : ''}`}
+        accessibilityLabel={item.station.isInterchange ? t('home.picker.stationInterchange.a11y', { name: item.station.name }) : item.station.name}
         onPress={() => {
           onSelect(item.station.id);
           onClose();
@@ -93,13 +96,13 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
               return c ? (
                 <View key={cid} style={styles.corridorTag}>
                   <CorridorDot color={c.color} size={8} />
-                  <Text style={type.tiny}>{c.shortName}</Text>
+                  <Text style={[type.tiny, indic && styles.indicTiny]}>{c.shortName}</Text>
                 </View>
               ) : null;
             })}
-            {item.station.isInterchange ? <Text style={[type.tiny, { color: colors.warn, fontWeight: '700' }]}>Interchange</Text> : null}
+            {item.station.isInterchange ? <Text style={[type.tiny, indic && styles.indicTiny, { color: colors.warn, fontWeight: '700' }]}>{t('home.picker.interchange')}</Text> : null}
           </View>
-          {note ? <Text style={[type.tiny, { marginTop: 2 }]}>{note}</Text> : null}
+          {note ? <Text style={[type.tiny, indic && styles.indicTiny, { marginTop: 2 }]}>{note}</Text> : null}
         </View>
       </Pressable>
     );
@@ -113,7 +116,7 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
             <Text style={type.h2} accessibilityRole="header">
               {title}
             </Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={10} style={styles.close}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('common.close')} onPress={onClose} hitSlop={10} style={styles.close}>
               <X size={22} color={colors.text} />
             </Pressable>
           </View>
@@ -122,17 +125,17 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder={allowBus ? 'Search station, bus stop or place' : 'Search station or place (e.g. GIFT City)'}
+              placeholder={allowBus ? t('home.picker.searchAll') : t('home.picker.searchMetro')}
               placeholderTextColor={colors.faint}
               style={styles.input}
               autoFocus
               autoCorrect={false}
               autoCapitalize="none"
               returnKeyType="search"
-              accessibilityLabel={allowBus ? 'Search stations and bus stops' : 'Search stations'}
+              accessibilityLabel={allowBus ? t('home.picker.searchAll.a11y') : t('home.picker.searchMetro.a11y')}
             />
             {query ? (
-              <Pressable accessibilityLabel="Clear search" onPress={() => setQuery('')} hitSlop={10}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('home.picker.clear.a11y')} onPress={() => setQuery('')} hitSlop={10}>
                 <X size={16} color={colors.muted} />
               </Pressable>
             ) : null}
@@ -140,14 +143,14 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
           {allowBus ? (
             <View style={styles.scopes} accessibilityRole="radiogroup">
               {(['all', 'metro', 'bus'] as PlaceScope[]).map((sc) => (
-                <Pressable key={sc} accessibilityRole="radio" accessibilityState={{ selected: scope === sc, checked: scope === sc }} aria-checked={scope === sc} accessibilityLabel={`Search ${sc === 'all' ? 'everything' : sc === 'metro' ? 'metro stations only' : 'bus stops only'}`} onPress={() => setScope(sc)} style={[styles.scope, scope === sc && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
-                  <Text style={[styles.scopeText, scope === sc && { color: colors.white }]}>{sc === 'all' ? 'All' : sc === 'metro' ? 'Metro' : 'Bus stops'}</Text>
+                <Pressable key={sc} accessibilityRole="radio" accessibilityState={{ selected: scope === sc, checked: scope === sc }} aria-checked={scope === sc} accessibilityLabel={t(`home.picker.scope.${sc}.a11y`)} onPress={() => setScope(sc)} hitSlop={{ top: 5, bottom: 5 }} style={[styles.scope, scope === sc && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+                  <Text style={[styles.scopeText, indic && styles.indicScope, scope === sc && { color: colors.white }]}>{t(`home.picker.scope.${sc}`)}</Text>
                 </Pressable>
               ))}
             </View>
           ) : null}
-          {allowBus && bus.status === 'loading' && scope !== 'metro' ? <Muted style={{ marginHorizontal: space.lg, marginBottom: space.xs }}>Loading bus stops…</Muted> : null}
-          {allowBus && bus.status === 'error' ? <Muted style={{ marginHorizontal: space.lg, marginBottom: space.xs }}>Bus stops could not be loaded; metro stations still work.</Muted> : null}
+          {allowBus && bus.status === 'loading' && scope !== 'metro' ? <Muted style={{ marginHorizontal: space.lg, marginBottom: space.xs }}>{t('home.picker.loadingBus')}</Muted> : null}
+          {allowBus && bus.status === 'error' ? <Muted style={{ marginHorizontal: space.lg, marginBottom: space.xs }}>{t('home.picker.busError')}</Muted> : null}
           <FlatList
             data={hits}
             keyExtractor={(h) => (h.kind === 'stop' ? h.id : h.station.id)}
@@ -156,9 +159,9 @@ function PickerBody({ title, onClose, onSelect, allowBus }: Omit<Props, 'visible
             ItemSeparatorComponent={() => <View style={styles.sep} />}
             ListEmptyComponent={
               <View style={{ padding: space.xl }}>
-                <Text style={[type.h3, { textAlign: 'center' }]}>{allowBus ? 'No matching station or bus stop' : 'No matching station'}</Text>
+                <Text style={[type.h3, { textAlign: 'center' }]}>{allowBus ? t('home.picker.empty.both') : t('home.picker.empty.metro')}</Text>
                 <Muted style={{ textAlign: 'center', marginTop: 4 }}>
-                  {allowBus && !query ? 'Type a station or bus stop name.' : 'Try a shorter name, or an alternative spelling such as “Amraiwadi” or “PDPU”.'}
+                  {allowBus && !query ? t('home.picker.typeName') : t('home.picker.tryShorter')}
                 </Muted>
               </View>
             }
@@ -191,10 +194,13 @@ const styles = StyleSheet.create({
   stopRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   busIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: '#E3F1FC', alignItems: 'center', justifyContent: 'center' },
   metroIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  agency: { paddingHorizontal: 8, height: 20, borderRadius: 10, justifyContent: 'center' },
+  agency: { paddingHorizontal: 8, minHeight: 20, borderRadius: 10, justifyContent: 'center' },
+  /** Hindi and Gujarati need a taller line than the 12 dp default. */
+  indicTiny: { lineHeight: 18 },
+  indicScope: { lineHeight: 20 },
   agencyText: { fontSize: 11, fontWeight: '800' },
   scopes: { flexDirection: 'row', gap: space.sm, marginHorizontal: space.lg, marginBottom: space.sm },
-  scope: { minHeight: 34, paddingHorizontal: space.md, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', backgroundColor: colors.white },
+  scope: { minHeight: 34, paddingVertical: 2, paddingHorizontal: space.md, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, justifyContent: 'center', backgroundColor: colors.white },
   scopeText: { fontSize: 13, fontWeight: '700', color: colors.text },
   corridors: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: 3, flexWrap: 'wrap' },
   corridorTag: { flexDirection: 'row', alignItems: 'center', gap: 4 },

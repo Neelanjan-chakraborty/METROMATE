@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Clock, MapPin, Repeat, Ticket, TrainFront, type LucideIcon } from 'lucide-react-native';
 import { useHomeScale } from '../home/scale';
 import { CARD_LINE, NAVY, SLATE, VIOLET, cardShadow } from './primitives';
-import { overview } from '../../lib/routeView';
+import { corridorLabel, overview } from '../../lib/routeView';
+import { useT } from '../../i18n/useT';
 import type { Corridor, RouteResult, Station } from '../../types';
 
 interface Props {
@@ -16,11 +17,10 @@ interface Props {
   fare: string | null;
 }
 
-const lineLabel = (c?: Corridor) => (c ? (/branch|line$/i.test(c.shortName) ? c.shortName : `${c.shortName} Line`) : 'Metro');
-
 /** From / To, a proportional line overview, and four icon tiles (time, stops, changes, fare). */
 export function RouteSummary({ route, stations, corridors, minutes, fare }: Props) {
   const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
   const from = stations.get(route.originId);
   const to = stations.get(route.destinationId);
   const first = corridors.get(route.segments[0].corridorId);
@@ -31,12 +31,12 @@ export function RouteSummary({ route, stations, corridors, minutes, fare }: Prop
   return (
     <View style={[styles.card, { borderRadius: z(24), padding: z(16), gap: z(16) }, cardShadow]}>
       <View style={{ flexDirection: 'row', gap: z(12) }}>
-        <End z={z} label="FROM" name={from?.name ?? route.originId} color={first?.color ?? VIOLET} line={lineLabel(first)} dot="#4F35E8" />
+        <End z={z} lang={lang} label={t('route.summary.from')} name={from?.name ?? route.originId} color={first?.color ?? VIOLET} line={corridorLabel(first, t)} dot="#4F35E8" />
         <View style={{ width: 1, backgroundColor: CARD_LINE }} />
-        <End z={z} label="TO" name={to?.name ?? route.destinationId} color={last?.color ?? VIOLET} line={lineLabel(last)} dot="#E5484D" pin />
+        <End z={z} lang={lang} label={t('route.summary.to')} name={to?.name ?? route.destinationId} color={last?.color ?? VIOLET} line={corridorLabel(last, t)} dot="#E5484D" pin />
       </View>
 
-      <View accessible accessibilityLabel={`Journey: ${bars.map((b) => `${b.stops} ${b.stops === 1 ? 'stop' : 'stops'} on the ${corridors.get(b.corridorId)?.shortName ?? ''} line`).join(', then change, ')}`}>
+      <View accessible accessibilityLabel={t('route.summary.a11y.journey', { parts: bars.map((b) => tn('route.summary.a11y.part', b.stops, { line: corridors.get(b.corridorId)?.shortName ?? '' })).join(t('route.summary.a11y.then')) })}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={[styles.node, { width: z(16), height: z(16), borderRadius: z(8), borderColor: '#4F35E8' }]} />
           {bars.map((b, i) => (
@@ -54,33 +54,33 @@ export function RouteSummary({ route, stations, corridors, minutes, fare }: Prop
         <View style={{ flexDirection: 'row', marginTop: z(6), paddingHorizontal: z(8) }}>
           {bars.map((b, i) => (
             <Text key={i} style={{ flex: b.share, textAlign: 'center', fontSize: z(12), color: SLATE, fontWeight: '600' }} numberOfLines={1}>
-              {b.stops} {b.stops === 1 ? 'stop' : 'stops'}
+              {tn('route.stops', b.stops)}
             </Text>
           ))}
         </View>
       </View>
 
       <View style={{ flexDirection: 'row', gap: z(8) }}>
-        <Tile z={z} Icon={Clock} tint="#4F35E8" bg="#EFEDFF" value={minutes !== null ? `~${minutes}` : '—'} unit={minutes !== null ? 'min' : undefined} label={minutes !== null ? 'Estimated' : 'Time n/a'} a11y={minutes !== null ? `About ${minutes} minutes in the train, an estimate` : 'Journey time not available offline'} />
-        <Tile z={z} Icon={TrainFront} tint="#0E9F6E" bg="#E4F7EF" value={String(route.stopCount)} label={route.stopCount === 1 ? 'Stop' : 'Stops'} a11y={`${route.stopCount} stops`} />
-        <Tile z={z} Icon={Repeat} tint="#B45309" bg="#FEF3C7" value={changes === 0 ? '0' : String(changes)} label={changes === 1 ? 'Change' : 'Changes'} a11y={changes === 0 ? 'No change of train' : `${changes} ${changes === 1 ? 'change' : 'changes'} of train`} />
-        <Tile z={z} Icon={Ticket} tint="#0F6FC4" bg="#E3F1FC" value={fare ?? 'N/A'} label="Fare" a11y={fare ? `Fare ${fare}` : 'Fare unavailable offline'} />
+        <Tile z={z} Icon={Clock} tint="#4F35E8" bg="#EFEDFF" value={minutes !== null ? `~${minutes}` : '—'} unit={minutes !== null ? t('route.unit.min') : undefined} label={minutes !== null ? t('route.summary.estimated') : t('route.summary.timeNa')} a11y={minutes !== null ? t('route.summary.a11y.time', { minutes }) : t('route.summary.a11y.timeNa')} />
+        <Tile z={z} Icon={TrainFront} tint="#0E9F6E" bg="#E4F7EF" value={String(route.stopCount)} label={tn('route.summary.stops', route.stopCount)} a11y={tn('route.stops', route.stopCount)} />
+        <Tile z={z} Icon={Repeat} tint="#B45309" bg="#FEF3C7" value={changes === 0 ? '0' : String(changes)} label={tn('route.summary.changes', changes)} a11y={changes === 0 ? t('route.summary.a11y.noChange') : tn('route.summary.a11y.changes', changes)} />
+        <Tile z={z} Icon={Ticket} tint="#0F6FC4" bg="#E3F1FC" value={fare ?? t('route.summary.na')} label={t('route.summary.fare')} a11y={fare ? t('route.summary.a11y.fare', { fare }) : t('route.lib.fareUnavailable')} />
       </View>
     </View>
   );
 }
 
-function End({ z, label, name, color, line, dot, pin }: { z: (n: number) => number; label: string; name: string; color: string; line: string; dot: string; pin?: boolean }) {
+function End({ z, lang, label, name, color, line, dot, pin }: { z: (n: number) => number; lang: string; label: string; name: string; color: string; line: string; dot: string; pin?: boolean }) {
   return (
     <View style={{ flex: 1, minWidth: 0, gap: z(4) }} accessible accessibilityLabel={`${label.toLowerCase()} ${name}, ${line}`}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6) }}>
         {pin ? <MapPin size={z(13)} color={dot} strokeWidth={2.4} /> : <View style={{ width: z(11), height: z(11), borderRadius: z(6), borderWidth: z(3), borderColor: dot }} />}
-        <Text style={{ fontSize: z(11), fontWeight: '800', color: SLATE, letterSpacing: 1 }}>{label}</Text>
+        <Text style={{ fontSize: z(11), fontWeight: '800', color: SLATE, letterSpacing: lang === 'en' ? 1 : 0 }}>{label}</Text>
       </View>
       <Text style={{ fontSize: z(21), fontWeight: '800', color: NAVY, letterSpacing: -0.4, lineHeight: z(25) }} numberOfLines={2}>
         {name}
       </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), alignSelf: 'flex-start', paddingHorizontal: z(9), height: z(24), borderRadius: z(12), backgroundColor: `${color}1A`, maxWidth: '100%' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), alignSelf: 'flex-start', paddingHorizontal: z(9), minHeight: z(24), borderRadius: z(12), backgroundColor: `${color}1A`, maxWidth: '100%' }}>
         <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: color }} />
         <Text style={{ fontSize: z(12), fontWeight: '600', color: NAVY, flexShrink: 1 }} numberOfLines={1}>
           {line}
@@ -96,11 +96,11 @@ function Tile({ z, Icon, tint, bg, value, unit, label, a11y }: { z: (n: number) 
       <View style={{ width: z(30), height: z(30), borderRadius: z(15), backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
         <Icon size={z(16)} color={tint} strokeWidth={2.1} />
       </View>
-      <Text style={{ fontSize: z(19), fontWeight: '800', color: NAVY }} numberOfLines={1}>
+      <Text style={{ fontSize: z(value.length > 6 ? 14 : 19), fontWeight: '800', color: NAVY, textAlign: 'center' }} numberOfLines={2}>
         {value}
         {unit ? <Text style={{ fontSize: z(11.5), fontWeight: '700', color: SLATE }}> {unit}</Text> : null}
       </Text>
-      <Text style={{ fontSize: z(11.5), color: SLATE }} numberOfLines={1}>
+      <Text style={{ fontSize: z(11.5), color: SLATE, textAlign: 'center', paddingHorizontal: z(2) }}>
         {label}
       </Text>
     </View>

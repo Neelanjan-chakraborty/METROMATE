@@ -8,7 +8,8 @@ import { BusHero } from '../../components/bus/BusHero';
 import { HERO_H, HERO_W, LIFT } from '../../components/bus/busHeroGeometry';
 import { useHeroState } from '../../components/home/useHeroClock';
 import { useHomeScale } from '../../components/home/scale';
-import { AGENCY_LOOK, dayOffset, formatClockMinutes } from '../../lib/transit/format';
+import { agencyFull, agencyLabel, agencyShort, dayOffset, formatClockMinutes } from '../../lib/transit/format';
+import { useT } from '../../i18n/useT';
 import { searchStops } from '../../lib/transit/places';
 import { buildRouteIndex, searchRoutes, type RouteInfo } from '../../lib/transit/routeIndex';
 import { useTransit } from '../../lib/transit/transitData';
@@ -20,9 +21,29 @@ const AGENCY_ORDER: AgencyId[] = ['AJL', 'AMTS', 'GTSL'];
 
 type Item = { kind: 'route'; r: RouteInfo } | { kind: 'stop'; stop: number; name: string; agencies: AgencyId[]; routes: number } | { kind: 'head'; text: string };
 
+/** Renders `**bold**` markers in a message as bold text. */
+function Rich({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
+        i % 2 ? (
+          <Text key={i} style={{ fontWeight: '800' }}>
+            {part}
+          </Text>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
+
 export default function BusScreen() {
   const insets = useSafeAreaInsets();
   const { z, width } = useHomeScale();
+  const { t, tn, lang } = useT();
+  // Indic scripts join letters into conjuncts; negative or positive tracking breaks them
+  const track = (n: number) => (lang === 'en' ? n : 0);
   const state = useTransit(true);
   const { sky } = useLocalSearchParams<{ sky?: string }>();
   const { look, animate } = useHeroState(sky);
@@ -40,12 +61,12 @@ export default function BusScreen() {
       const stops = searchStops(transit, q, 8);
       const routes = searchRoutes(ri, q, 40).filter((r) => r.trips > 0);
       return [
-        ...(routes.length ? [{ kind: 'head', text: 'Routes' } as Item, ...routes.map((r) => ({ kind: 'route', r }) as Item)] : []),
-        ...(stops.length ? [{ kind: 'head', text: 'Stops' } as Item, ...stops.map((s) => ({ kind: 'stop', stop: s.stop, name: s.name, agencies: s.agencies, routes: s.routes }) as Item)] : []),
+        ...(routes.length ? [{ kind: 'head', text: t('bus.head.routes') } as Item, ...routes.map((r) => ({ kind: 'route', r }) as Item)] : []),
+        ...(stops.length ? [{ kind: 'head', text: t('bus.head.stops') } as Item, ...stops.map((s) => ({ kind: 'stop', stop: s.stop, name: s.name, agencies: s.agencies, routes: s.routes }) as Item)] : []),
       ];
     }
     return ri.byAgency[agency].filter((r) => r.trips > 0).map((r) => ({ kind: 'route', r }) as Item);
-  }, [transit, ri, query, agency]);
+  }, [transit, ri, query, agency, t]);
 
   const counts = useMemo(() => Object.fromEntries(AGENCY_IDS.map((a) => [a, ri ? ri.byAgency[a].filter((r) => r.trips > 0).length : 0])) as Record<AgencyId, number>, [ri]);
 
@@ -53,7 +74,7 @@ export default function BusScreen() {
     ({ item }: { item: Item }) => {
       if (item.kind === 'head') {
         return (
-          <Text style={{ marginHorizontal: 20, marginTop: z(10), marginBottom: z(4), fontSize: z(12), fontWeight: '800', letterSpacing: 0.6, color: bus.inkSoft }} accessibilityRole="header">
+          <Text style={{ marginHorizontal: 20, marginTop: z(10), marginBottom: z(4), fontSize: z(12), fontWeight: '800', letterSpacing: lang === 'en' ? 0.6 : 0, color: bus.inkSoft }} accessibilityRole="header">
             {item.text.toUpperCase()}
           </Text>
         );
@@ -62,14 +83,14 @@ export default function BusScreen() {
         return (
           <Row
             z={z}
-            label={`Stop ${item.name}, ${item.routes} routes`}
+            label={t('bus.stopRow.a11y', { name: item.name, routes: tn('bus.routes', item.routes) })}
             lead={
               <View style={{ width: z(46), height: z(34), borderRadius: z(10), backgroundColor: bus.soft, alignItems: 'center', justifyContent: 'center' }}>
                 <MapPin size={z(19)} color={bus.red} strokeWidth={2} />
               </View>
             }
             title={item.name}
-            sub={`${item.agencies.map((a) => AGENCY_LOOK[a].label).join(' · ')} · ${item.routes} route${item.routes === 1 ? '' : 's'}`}
+            sub={`${item.agencies.map((a) => agencyLabel(a, t)).join(' · ')} · ${tn('bus.routes', item.routes)}`}
             onPress={() => router.push({ pathname: '/bus/stop/[id]', params: { id: transit!.data.stops.id[item.stop] } })}
           />
         );
@@ -79,15 +100,15 @@ export default function BusScreen() {
       return (
         <Row
           z={z}
-          label={`${AGENCY_LOOK[r.agency].label} route ${r.short}, ${r.long}, ${r.trips} trips a day`}
+          label={t('bus.routeRow.a11y', { agency: agencyLabel(r.agency, t), short: r.short, long: r.long, trips: tn('bus.tripsADay', r.trips) })}
           lead={<RouteBadge agency={r.agency} short={r.short} />}
           title={r.dirs.length > 1 && r.dirs[0].origin !== r.dirs[0].headsign ? `${r.dirs[0].origin} ⇄ ${r.dirs[0].headsign}` : r.dirs.length ? `${r.dirs[0].origin} → ${ends[0]}` : r.long}
-          sub={`${r.trips} trips a day${r.first !== null && r.last !== null ? ` · ${clock(r.first)}–${clock(r.last)}` : ''}`}
+          sub={`${tn('bus.tripsADay', r.trips)}${r.first !== null && r.last !== null ? ` · ${clock(r.first)}–${clock(r.last)}` : ''}`}
           onPress={() => router.push({ pathname: '/bus/route/[id]', params: { id: String(r.index) } })}
         />
       );
     },
-    [z, transit],
+    [z, transit, t, tn, lang],
   );
 
   const header = (
@@ -96,11 +117,11 @@ export default function BusScreen() {
         <BusHero height={heroH} look={look} animate={animate} />
         <View style={{ position: 'absolute', left: 0, right: 0, top: 0, flexDirection: 'row', alignItems: 'flex-start', paddingTop: insets.top + z(12), paddingHorizontal: 20, gap: z(10) }}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={{ fontSize: z(31), fontWeight: '800', color: titleInk, letterSpacing: -0.6 }} accessibilityRole="header" numberOfLines={1}>
-              Bus
+            <Text style={{ fontSize: z(31), fontWeight: '800', color: titleInk, letterSpacing: track(-0.6) }} accessibilityRole="header" numberOfLines={1}>
+              {t('common.tab.bus')}
             </Text>
             <Text style={{ fontSize: z(13), color: look.night > 0.5 ? 'rgba(255,255,255,0.85)' : bus.inkSoft }} numberOfLines={1}>
-              BRTS · AMTS · Gandhinagar
+              BRTS · AMTS · {agencyShort('GTSL')}
             </Text>
           </View>
           <ScheduledTag />
@@ -113,15 +134,15 @@ export default function BusScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Route number, stop or place"
+            placeholder={t('bus.search.placeholder')}
             placeholderTextColor="#9A8785"
             style={[{ flex: 1, minWidth: 0, fontSize: z(15), color: bus.ink, paddingVertical: 0 }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null]}
             autoCorrect={false}
             autoCapitalize="none"
-            accessibilityLabel="Search bus routes and stops"
+            accessibilityLabel={t('bus.search.a11y')}
           />
           {query ? (
-            <Pressable accessibilityLabel="Clear search" onPress={() => setQuery('')} hitSlop={10}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('bus.search.clear')} onPress={() => setQuery('')} hitSlop={14}>
               <X size={z(18)} color={bus.inkSoft} />
             </Pressable>
           ) : null}
@@ -129,8 +150,8 @@ export default function BusScreen() {
       </View>
 
       <View style={{ flexDirection: 'row', gap: z(10), marginHorizontal: 16, marginTop: z(14) }}>
-        <Quick z={z} Icon={Repeat} label="Plan bus + metro" onPress={() => router.navigate('/')} />
-        <Quick z={z} Icon={MapIcon} label="Bus map" onPress={() => router.navigate({ pathname: '/map', params: { view: 'bus' } })} />
+        <Quick z={z} Icon={Repeat} label={t('bus.quick.plan')} onPress={() => router.navigate('/')} />
+        <Quick z={z} Icon={MapIcon} label={t('bus.quick.map')} onPress={() => router.navigate({ pathname: '/map', params: { view: 'bus' } })} />
       </View>
 
       {!query ? (
@@ -138,18 +159,18 @@ export default function BusScreen() {
           {AGENCY_ORDER.map((a) => {
             const on = agency === a;
             return (
-              <Pressable key={a} accessibilityRole="radio" accessibilityState={{ selected: on, checked: on }} accessibilityLabel={`${AGENCY_LOOK[a].full}, ${counts[a]} routes`} onPress={() => setAgency(a)} style={[styles.chip, { height: z(50), borderRadius: z(25) }, on && { backgroundColor: bus.red, borderColor: bus.red }]}>
+              <Pressable key={a} accessibilityRole="radio" accessibilityState={{ selected: on, checked: on }} accessibilityLabel={`${agencyFull(a, t)}, ${tn('bus.routes', counts[a])}`} onPress={() => setAgency(a)} style={[styles.chip, { minHeight: z(50), borderRadius: z(25) }, on && { backgroundColor: bus.red, borderColor: bus.red }]}>
                 <Text style={{ fontSize: z(13.5), fontWeight: '800', color: on ? '#FFFFFF' : bus.ink }} numberOfLines={1} adjustsFontSizeToFit>
-                  {AGENCY_LOOK[a].label === 'Gandhinagar bus' ? 'Gandhinagar' : AGENCY_LOOK[a].label}
+                  {agencyShort(a)}
                 </Text>
-                <Text style={{ fontSize: z(11.5), color: on ? 'rgba(255,255,255,0.88)' : bus.inkSoft }}>{counts[a]} routes</Text>
+                <Text style={{ fontSize: z(11.5), color: on ? 'rgba(255,255,255,0.88)' : bus.inkSoft }}>{tn('bus.routes', counts[a])}</Text>
               </Pressable>
             );
           })}
         </View>
       ) : null}
-      {!transit && state.status === 'loading' ? <Text style={{ marginHorizontal: 20, marginTop: z(16), fontSize: z(14), color: bus.inkSoft }}>Loading the timetable stored on your phone…</Text> : null}
-      {state.status === 'error' ? <Text style={{ marginHorizontal: 20, marginTop: z(16), fontSize: z(14), color: bus.dark }}>Bus data could not be loaded. Restart the app and try again.</Text> : null}
+      {!transit && state.status === 'loading' ? <Text style={{ marginHorizontal: 20, marginTop: z(16), fontSize: z(14), color: bus.inkSoft }}>{t('bus.loading.timetable')}</Text> : null}
+      {state.status === 'error' ? <Text style={{ marginHorizontal: 20, marginTop: z(16), fontSize: z(14), color: bus.dark }}>{t('bus.loadError.inline')}</Text> : null}
     </View>
   );
 
@@ -158,14 +179,14 @@ export default function BusScreen() {
       <BusCard>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(8), marginBottom: z(8) }}>
           <Info size={z(19)} color={bus.red} strokeWidth={2} />
-          <Text style={{ fontSize: z(16), fontWeight: '800', color: bus.ink }}>About the bus data</Text>
+          <Text style={{ fontSize: z(16), fontWeight: '800', color: bus.ink }}>{t('bus.about.title')}</Text>
         </View>
         <Text style={styles.about}>
-          Covers <Text style={{ fontWeight: '800' }}>AMTS</Text> city buses, <Text style={{ fontWeight: '800' }}>BRTS</Text> (Janmarg) and <Text style={{ fontWeight: '800' }}>Gandhinagar</Text> buses. State GSRTC timetables are not included.
+          <Rich text={t('bus.about.coverage')} />
         </Text>
         {transit ? (
           <Text style={styles.about}>
-            Times come from an unofficial third-party timetable feed, valid {transit.data.meta.source.validFrom} to {transit.data.meta.source.validTo}. They are scheduled, not live: buses may run early, late or not at all.
+            {t('bus.about.source', { from: transit.data.meta.source.validFrom, to: transit.data.meta.source.validTo })}
           </Text>
         ) : null}
       </BusCard>
@@ -189,8 +210,8 @@ export default function BusScreen() {
         ListEmptyComponent={
           transit ? (
             <View style={{ padding: z(24) }}>
-              <Text style={{ textAlign: 'center', fontSize: z(15), fontWeight: '700', color: bus.ink }}>No matching route or stop</Text>
-              <Text style={{ textAlign: 'center', fontSize: z(13), color: bus.inkSoft, marginTop: 4 }}>Try a route number like 101 or a place like Maninagar.</Text>
+              <Text style={{ textAlign: 'center', fontSize: z(15), fontWeight: '700', color: bus.ink }}>{t('bus.empty.title')}</Text>
+              <Text style={{ textAlign: 'center', fontSize: z(13), color: bus.inkSoft, marginTop: 4 }}>{t('bus.empty.hint')}</Text>
             </View>
           ) : null
         }
@@ -215,7 +236,7 @@ function Row({ z, label, lead, title, sub, onPress }: { z: (n: number) => number
         <Text style={{ fontSize: z(15), fontWeight: '700', color: bus.ink }} numberOfLines={1}>
           {title}
         </Text>
-        <Text style={{ fontSize: z(12.5), color: bus.inkSoft, marginTop: 1 }} numberOfLines={1}>
+        <Text style={{ fontSize: z(12.5), color: bus.inkSoft, marginTop: 1 }} numberOfLines={2}>
           {sub}
         </Text>
       </View>
@@ -226,9 +247,9 @@ function Row({ z, label, lead, title, sub, onPress }: { z: (n: number) => number
 
 function Quick({ z, Icon, label, onPress }: { z: (n: number) => number; Icon: typeof Search; label: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.quick, { height: z(48), borderRadius: z(24), gap: z(8), opacity: pressed ? 0.88 : 1 }]}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.quick, { minHeight: z(48), paddingVertical: z(6), paddingHorizontal: z(10), borderRadius: z(24), gap: z(8), opacity: pressed ? 0.88 : 1 }]}>
       <Icon size={z(19)} color={bus.dark} strokeWidth={2.1} />
-      <Text style={{ fontSize: z(14.5), fontWeight: '800', color: bus.dark }}>{label}</Text>
+      <Text style={{ flexShrink: 1, textAlign: 'center', fontSize: z(14.5), fontWeight: '800', color: bus.dark }}>{label}</Text>
     </Pressable>
   );
 }

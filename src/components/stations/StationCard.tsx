@@ -3,7 +3,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowUpDown, Bus, ChevronRight, DoorOpen, MapPin, TrainFront, type LucideIcon } from 'lucide-react-native';
 import { colors } from '../../theme';
-import { cardAccessibilityLabel, countLabel, type StationCardInfo } from '../../lib/stationCards';
+import { cardAccessibilityLabel, type StationCardInfo } from '../../lib/stationCards';
+import { useT } from '../../i18n/useT';
+import { lineHeightFor } from '../station/lineHeight';
 import { useHomeScale } from '../home/scale';
 import { StationThumb, type ThumbStation } from './StationThumb';
 
@@ -23,12 +25,14 @@ interface Props {
 
 export const StationCard = memo(function StationCard({ station, info, matchNote }: Props) {
   const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
   const st = useMemo(() => makeStyles(z), [z]);
+  const lh = (size: number) => lineHeightFor(lang, z(size));
   const ConnIcon = info.connection ? CONNECTION_ICON[info.connection.kind] : null;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={cardAccessibilityLabel(station.name, info)}
+      accessibilityLabel={cardAccessibilityLabel(station.name, info, t, tn)}
       onPress={() => router.push({ pathname: '/station/[id]', params: { id: station.id } })}
       style={({ pressed }) => [st.card, pressed && { backgroundColor: '#F8F8FF' }]}
     >
@@ -47,21 +51,19 @@ export const StationCard = memo(function StationCard({ station, info, matchNote 
         </View>
         <View style={st.lineRow}>
           <View style={[st.dot, { backgroundColor: info.lineColor }]} />
-          <Text style={st.line} numberOfLines={1}>
-            {info.lineName}
-          </Text>
-          {station.isInterchange ? <Text style={st.interchange}>Interchange</Text> : null}
+          <Text style={[st.line, { lineHeight: lh(12.5) }]}>{info.lineName}</Text>
+          {station.isInterchange ? <Text style={[st.interchange, { lineHeight: lh(11.5) }]}>{t('stations.interchange')}</Text> : null}
         </View>
         <View style={st.lineRow}>
           <MapPin size={z(14)} color="#6C93D8" strokeWidth={2.2} />
-          <Text style={st.place} numberOfLines={1}>
+          <Text style={[st.place, { lineHeight: lh(12.5) }]} numberOfLines={2}>
             {matchNote ?? info.location}
           </Text>
         </View>
         <View style={st.chips}>
-          <Chip st={st} z={z} Icon={DoorOpen} label={info.exits === null ? 'Exits n/a' : countLabel(info.exits, 'Exit', 'Exits')} faded={info.exits === null} />
-          {info.lifts > 0 ? <Chip st={st} z={z} Icon={ArrowUpDown} label={countLabel(info.lifts, 'Lift', 'Lifts')} /> : null}
-          {info.connection && ConnIcon ? <Chip st={st} z={z} Icon={ConnIcon} label={info.connection.label} dashed={!info.connection.verified} /> : null}
+          <Chip st={st} lh={lh(12)} z={z} Icon={DoorOpen} label={info.exits === null ? t('stations.chip.exitsNa') : tn('stations.chip.exits', info.exits)} faded={info.exits === null} />
+          {info.lifts > 0 ? <Chip st={st} lh={lh(12)} z={z} Icon={ArrowUpDown} label={tn('stations.chip.lifts', info.lifts)} /> : null}
+          {info.connection && ConnIcon ? <Chip st={st} lh={lh(12)} z={z} Icon={ConnIcon} label={info.connection.label} dashed={!info.connection.verified} /> : null}
         </View>
       </View>
     </Pressable>
@@ -70,13 +72,11 @@ export const StationCard = memo(function StationCard({ station, info, matchNote 
 
 type S = ReturnType<typeof makeStyles>;
 
-function Chip({ st, z, Icon, label, dashed, faded }: { st: S; z: (n: number) => number; Icon: LucideIcon; label: string; dashed?: boolean; faded?: boolean }) {
+function Chip({ st, lh, z, Icon, label, dashed, faded }: { st: S; lh: number | undefined; z: (n: number) => number; Icon: LucideIcon; label: string; dashed?: boolean; faded?: boolean }) {
   return (
     <View style={[st.chip, dashed && st.chipDashed, faded && { opacity: 0.6 }]}>
       <Icon size={z(14)} color="#4F4C9E" strokeWidth={1.9} />
-      <Text style={st.chipText} numberOfLines={1}>
-        {label}
-      </Text>
+      <Text style={[st.chipText, { lineHeight: lh }]}>{label}</Text>
     </View>
   );
 }
@@ -109,8 +109,8 @@ function makeStyles(z: (n: number) => number) {
     interchange: { fontSize: z(11.5), fontWeight: '700', color: colors.warn },
     place: { flex: 1, fontSize: z(12.5), color: SLATE },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: z(6), marginTop: z(3) },
-    chip: { flexDirection: 'row', alignItems: 'center', gap: z(5), height: z(25), paddingHorizontal: z(8), borderRadius: z(8), backgroundColor: CHIP_BG, borderWidth: 1, borderColor: CHIP_BG },
+    chip: { flexDirection: 'row', alignItems: 'center', gap: z(5), minHeight: z(25), paddingVertical: z(2), paddingHorizontal: z(8), borderRadius: z(8), flexShrink: 1, backgroundColor: CHIP_BG, borderWidth: 1, borderColor: CHIP_BG },
     chipDashed: { backgroundColor: '#FFFFFF', borderColor: '#B9BEDD', borderStyle: 'dashed' },
-    chipText: { fontSize: z(12), fontWeight: '500', color: '#3F4670' },
+    chipText: { flexShrink: 1, fontSize: z(12), fontWeight: '500', color: '#3F4670' },
   });
 }

@@ -1,4 +1,5 @@
 import { normalize } from '../search';
+import { enT, type T } from '../../i18n/translate';
 import type { TransitIndex } from './transitIndex';
 import type { AgencyId } from './types';
 
@@ -91,7 +92,11 @@ export function buildRouteIndex(ix: TransitIndex): RouteIndex {
 
 // ---------------------------------------------------------------- headways
 
+export type BandId = 'early' | 'morning' | 'midday' | 'evening' | 'night';
+
 export interface HeadwayBand {
+  id: BandId;
+  /** Part of the day with its hours, e.g. "Early 04:00–07:00", in the language of the translator passed to `headwayBands`. */
   label: string;
   fromMin: number;
   toMin: number;
@@ -102,23 +107,23 @@ export interface HeadwayBand {
   max: number | null;
 }
 
-const BANDS: [string, number, number][] = [
-  ['Early 04:00–07:00', 240, 420],
-  ['Morning 07:00–10:00', 420, 600],
-  ['Midday 10:00–16:00', 600, 960],
-  ['Evening 16:00–20:00', 960, 1200],
-  ['Night 20:00 onwards', 1200, 1740],
+const BANDS: [BandId, number, number][] = [
+  ['early', 240, 420],
+  ['morning', 420, 600],
+  ['midday', 600, 960],
+  ['evening', 960, 1200],
+  ['night', 1200, 1740],
 ];
 
 /** How often scheduled buses leave a pattern's first stop in each part of the day. */
-export function headwayBands(ix: TransitIndex, pattern: number): HeadwayBand[] {
+export function headwayBands(ix: TransitIndex, pattern: number, t: T = enT): HeadwayBand[] {
   const starts = ix.data.patterns.startT[pattern];
-  return BANDS.map(([label, a, b]) => {
-    const inBand = starts.filter((t) => t >= a && t < b);
+  return BANDS.map(([id, a, b]) => {
+    const inBand = starts.filter((s) => s >= a && s < b);
     const gaps: number[] = [];
     for (let i = 1; i < inBand.length; i++) gaps.push(inBand[i] - inBand[i - 1]);
     gaps.sort((x, y) => x - y);
-    return { label, fromMin: a, toMin: b, trips: inBand.length, median: gaps.length ? gaps[Math.floor(gaps.length / 2)] : null, min: gaps.length ? gaps[0] : null, max: gaps.length ? gaps[gaps.length - 1] : null };
+    return { id, label: t(`bus.band.${id}`), fromMin: a, toMin: b, trips: inBand.length, median: gaps.length ? gaps[Math.floor(gaps.length / 2)] : null, min: gaps.length ? gaps[0] : null, max: gaps.length ? gaps[gaps.length - 1] : null };
   });
 }
 

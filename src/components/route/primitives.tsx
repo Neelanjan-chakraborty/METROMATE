@@ -4,6 +4,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { ChevronDown, Info, TriangleAlert, type LucideIcon } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { useHomeScale } from '../home/scale';
+import { useT } from '../../i18n/useT';
 
 export const NAVY = colors.text;
 export const SLATE = colors.slate;
@@ -49,7 +50,7 @@ export function Accordion({ icon: Icon, tint, tintBg, title, subtitle, children,
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ fontSize: z(16.5), fontWeight: '800', color: NAVY }}>{title}</Text>
-          <Text style={{ fontSize: z(12.5), color: SLATE, marginTop: 1 }} numberOfLines={1}>
+          <Text style={{ fontSize: z(12.5), color: SLATE, marginTop: 1 }} numberOfLines={2}>
             {subtitle}
           </Text>
         </View>
@@ -65,6 +66,7 @@ export function Accordion({ icon: Icon, tint, tintBg, title, subtitle, children,
 /** A one-line notice that opens to the full text. `tone` picks amber (warn) or violet (info). */
 export function ExpandAlert({ title, text, tone = 'warn' }: { title: string; text: string; tone?: 'warn' | 'info' }) {
   const { z } = useHomeScale();
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const warn = tone === 'warn';
   const fg = warn ? '#7A3B06' : '#2E1FA8';
@@ -72,7 +74,7 @@ export function ExpandAlert({ title, text, tone = 'warn' }: { title: string; tex
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${title}. ${open ? text : 'Tap for details'}`}
+      accessibilityLabel={`${title}. ${open ? text : t('route.expand.details')}`}
       accessibilityState={{ expanded: open }}
       aria-expanded={open}
       onPress={() => setOpen((o) => !o)}

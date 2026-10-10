@@ -4,7 +4,8 @@ import { ArrowRight, ChevronDown, ChevronUp, TrainFront } from 'lucide-react-nat
 import { useHomeScale } from '../home/scale';
 import { StopBanner } from './StopBanner';
 import { NAVY, SLATE, VIOLET } from './primitives';
-import { stopsOf, type StopView } from '../../lib/routeView';
+import { corridorLabel, stopsOf, type StopView } from '../../lib/routeView';
+import { useT } from '../../i18n/useT';
 import type { Corridor, RouteResult, Station } from '../../types';
 
 /** Segments with more in-between stops than this start collapsed. */
@@ -25,15 +26,13 @@ interface Props {
  */
 export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, onStation }: Props) {
   const { z } = useHomeScale();
+  const { t, tn } = useT();
   const [open, setOpen] = useState<Record<number, boolean>>({});
   const stops = stopsOf(route, minutes);
   const name = (id: string) => stations.get(id)?.name ?? id;
   const lineOf = (si: number) => corridors.get(route.segments[si]?.corridorId ?? '');
   const colorOf = (si: number) => lineOf(si)?.color ?? VIOLET;
-  const lineName = (si: number) => {
-    const c = lineOf(si);
-    return c ? (/branch|line$/i.test(c.shortName) ? c.shortName : `${c.shortName} Line`) : 'Metro';
-  };
+  const lineName = (si: number) => corridorLabel(lineOf(si), t);
 
   const rows: React.ReactNode[] = [];
   let i = 0;
@@ -55,7 +54,7 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
             kind={s.kind}
             lineColor={colorOf(si)}
             lineName={lineName(s.kind === 'destination' ? s.segment : si)}
-            note={s.kind === 'interchange' ? `Switch to ${lineName(si)}` : null}
+            note={s.kind === 'interchange' ? t('route.timeline.switchTo', { line: lineName(si) }) : null}
             minutes={s.minutes}
             exits={s.kind === 'interchange' ? null : exitsOf(s.id)}
             onPress={() => onStation(s.id)}
@@ -66,7 +65,7 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
         const seg = route.segments[si];
         rows.push(
           <Row key={`h${si}`} z={z} top={colorOf(si)} bottom={colorOf(si)} dot="none">
-            <View style={[styles.segChip, { borderColor: colorOf(si), paddingHorizontal: z(10), height: z(32), borderRadius: z(16) }]} accessible accessibilityLabel={`${lineName(si)} towards ${name(seg.directionTerminalId)}, ${seg.stops} ${seg.stops === 1 ? 'stop' : 'stops'}`}>
+            <View style={[styles.segChip, { borderColor: colorOf(si), paddingHorizontal: z(10), minHeight: z(32), borderRadius: z(16) }]} accessible accessibilityLabel={t('route.timeline.chip.a11y', { line: lineName(si), to: name(seg.directionTerminalId), stops: tn('route.stops', seg.stops) })}>
               <TrainFront size={z(14)} color={colorOf(si)} strokeWidth={2.1} />
               <Text style={{ fontSize: z(12.5), fontWeight: '700', color: NAVY, flexShrink: 0 }} numberOfLines={1}>
                 {lineName(si)}
@@ -76,7 +75,7 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
                 {name(seg.directionTerminalId)}
               </Text>
               <Text style={{ fontSize: z(12), fontWeight: '800', color: colorOf(si), flexShrink: 0 }} numberOfLines={1}>
-                · {seg.stops} {seg.stops === 1 ? 'stop' : 'stops'}
+                · {tn('route.stops', seg.stops)}
               </Text>
             </View>
           </Row>,
@@ -95,12 +94,12 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
         <Row key={`c${si}`} z={z} top={colorOf(si)} bottom={colorOf(si)} dot="none">
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Show ${run.length} stops in between`}
+            accessibilityLabel={tn('route.timeline.showBetween', run.length)}
             accessibilityState={{ expanded: false }}
             onPress={() => setOpen((o) => ({ ...o, [si]: true }))}
-            style={[styles.more, { height: z(40), borderRadius: z(14), paddingHorizontal: z(12) }]}
+            style={[styles.more, { minHeight: z(44), borderRadius: z(14), paddingHorizontal: z(12), paddingVertical: z(4) }]}
           >
-            <Text style={{ fontSize: z(13.5), fontWeight: '700', color: VIOLET, flex: 1 }}>{run.length} stops in between</Text>
+            <Text style={{ fontSize: z(13.5), fontWeight: '700', color: VIOLET, flex: 1 }}>{tn('route.timeline.between', run.length)}</Text>
             <ChevronDown size={z(18)} color={VIOLET} />
           </Pressable>
         </Row>,
@@ -111,14 +110,14 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
           <Row key={`s${r.id}`} z={z} top={colorOf(si)} bottom={colorOf(si)} dot="stop" stopColor={colorOf(si)}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`${name(r.id)}${r.minutes !== null ? `, about ${r.minutes} minutes` : ''}. Open station details`}
+              accessibilityLabel={r.minutes !== null ? t('route.timeline.stop.a11yMin', { name: name(r.id), minutes: r.minutes }) : t('route.timeline.stop.a11y', { name: name(r.id) })}
               onPress={() => onStation(r.id)}
               style={[styles.stop, { minHeight: z(40) }]}
             >
               <Text style={{ flex: 1, fontSize: z(15.5), fontWeight: '600', color: NAVY }} numberOfLines={1}>
                 {name(r.id)}
               </Text>
-              {r.minutes !== null ? <Text style={{ fontSize: z(12.5), color: SLATE }}>{r.minutes} min</Text> : null}
+              {r.minutes !== null ? <Text style={{ fontSize: z(12.5), color: SLATE }}>{t('route.min', { n: r.minutes })}</Text> : null}
             </Pressable>
           </Row>,
         ),
@@ -126,8 +125,8 @@ export function JourneyTimeline({ route, stations, corridors, minutes, exitsOf, 
       if (run.length > COLLAPSE_OVER)
         rows.push(
           <Row key={`x${si}`} z={z} top={colorOf(si)} bottom={colorOf(si)} dot="none">
-            <Pressable accessibilityRole="button" accessibilityLabel="Hide stops in between" accessibilityState={{ expanded: true }} onPress={() => setOpen((o) => ({ ...o, [si]: false }))} style={[styles.stop, { minHeight: z(34) }]}>
-              <Text style={{ flex: 1, fontSize: z(13), fontWeight: '700', color: VIOLET }}>Hide stops</Text>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('route.timeline.hide.a11y')} accessibilityState={{ expanded: true }} onPress={() => setOpen((o) => ({ ...o, [si]: false }))} style={[styles.stop, { minHeight: z(34) }]}>
+              <Text style={{ flex: 1, fontSize: z(13), fontWeight: '700', color: VIOLET }}>{t('route.timeline.hide')}</Text>
               <ChevronUp size={z(16)} color={VIOLET} />
             </Pressable>
           </Row>,

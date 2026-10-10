@@ -15,6 +15,10 @@ import { useReady } from '../../state/useReady';
 import { formatDate, mapsSearchUrl } from '../../lib/format';
 import { nearbyBusStops } from '../../lib/transit/nearby';
 import { useTransit } from '../../lib/transit/transitData';
+import { useT } from '../../i18n/useT';
+import type { Language, MessageKey } from '../../i18n';
+import type { VerificationStatus } from '../../types';
+import { lineHeightFor, spacingFor } from '../../components/station/lineHeight';
 import { gateFeatures, hopEstimate, neighboursOn, stationAmenities, stationService } from '../../lib/stationView';
 
 export default function StationScreen() {
@@ -22,6 +26,7 @@ export default function StationScreen() {
   const { dataset, network, stationPoints } = useReady();
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const { look, focused } = useHeroState(sky);
   const bus = useTransit(true);
 
@@ -33,10 +38,10 @@ export default function StationScreen() {
     return (
       <Screen>
         <View style={{ padding: 16, gap: 16 }}>
-          <Notice tone="warn" title="Station not found">
-            This station is not in the offline data.
+          <Notice tone="warn" title={t('station.notFound.title')}>
+            {t('station.notFound.body')}
           </Notice>
-          <Button label="Back to stations" onPress={goBack} />
+          <Button label={t('station.notFound.back')} onPress={goBack} />
         </View>
       </Screen>
     );
@@ -47,9 +52,10 @@ export default function StationScreen() {
   const own = station.corridorIds.map((cid) => corridors.get(cid)).filter((c): c is NonNullable<typeof c> => !!c);
   const color = own[0]?.color ?? VIOLET;
   const underground = station.stationType === 'underground';
-  const typeLabel = station.stationType === 'unknown' ? null : underground ? 'Underground' : 'Elevated';
+  const typeLabel = station.stationType === 'unknown' ? null : t(underground ? 'station.type.underground' : 'station.type.elevated');
+  const coordStatusLabel = (v: VerificationStatus) => t(`station.coord.${v}` as MessageKey);
   const service = stationService(dataset.timetable, station.id, new Date());
-  const amenities = stationAmenities(station, gates, dataset.facilities);
+  const amenities = stationAmenities(station, gates, dataset.facilities, t);
   const gateList = gateFeatures(station, gates);
   const tabs = own.map((c) => neighboursOn(c, station.id));
   const coord = (sid: string) => stationPoints.get(sid) ?? null;
@@ -57,7 +63,7 @@ export default function StationScreen() {
   const links = station.nearbyConnections.filter((c) => c.gateNumber === null);
   const lineCards: LineCardData[] = own.map((c) => ({
     id: c.id,
-    name: /branch|line$/i.test(c.shortName) ? c.shortName : `${c.shortName} Line`,
+    name: /branch|line$/i.test(c.shortName) ? c.shortName : t('station.line.named', { name: c.shortName }),
     color: c.color,
     ends: `${nameOf(c.backwardTerminalId)} ⇄ ${nameOf(c.forwardTerminalId)}`,
     phase: station.phase,
@@ -85,17 +91,17 @@ export default function StationScreen() {
 
             {station.interchangeNote ? (
               <View style={{ marginHorizontal: 16 }}>
-                <ExpandAlert tone="info" title="Changing trains here" text={station.interchangeNote} />
+                <ExpandAlert tone="info" title={t('station.interchange.title')} text={station.interchangeNote} />
               </View>
             ) : null}
             {station.serviceNote ? (
               <View style={{ marginHorizontal: 16 }}>
-                <ExpandAlert title="Check before you go" text={station.serviceNote} />
+                <ExpandAlert title={t('station.serviceNote.title')} text={station.serviceNote} />
               </View>
             ) : null}
             {underground ? (
               <View style={{ marginHorizontal: 16 }}>
-                <ExpandAlert tone="info" title="No GPS underground" text="GPS does not work underground, so Live tracking will show “signal lost” here." />
+                <ExpandAlert tone="info" title={t('station.gps.title')} text={t('station.gps.body')} />
               </View>
             ) : null}
 
@@ -120,7 +126,7 @@ export default function StationScreen() {
               <StationTimingsAccordion lines={service.lines} timetable={dataset.timetable} corridors={corridors} nameOf={nameOf} />
               <Pressable
                 accessibilityRole="button"
-                accessibilityLabel="Metro map. See the whole network"
+                accessibilityLabel={t('station.map.a11y')}
                 onPress={() => router.push('/map')}
                 style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: z(14), padding: z(14), borderRadius: z(20), backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, opacity: pressed ? 0.9 : 1 }, cardShadow, { shadowOpacity: 0.05 }]}
               >
@@ -128,29 +134,30 @@ export default function StationScreen() {
                   <MapIcon size={z(23)} color="#0F6FC4" strokeWidth={1.9} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: z(16.5), fontWeight: '800', color: NAVY }}>Metro map</Text>
-                  <Text style={{ fontSize: z(12.5), color: SLATE }}>See the whole network</Text>
+                  <Text style={{ fontSize: z(16.5), fontWeight: '800', color: NAVY, lineHeight: lineHeightFor(lang, z(16.5), 1.3) }}>{t('station.map.title')}</Text>
+                  <Text style={{ fontSize: z(12.5), color: SLATE, lineHeight: lineHeightFor(lang, z(12.5)) }}>{t('station.map.sub')}</Text>
                 </View>
                 <ChevronRight size={z(22)} color="#5A5FA8" />
               </Pressable>
-              <Accordion icon={Info} tint="#475569" tintBg="#EEF1F6" title="About this data" subtitle="Source, position, how recent">
-                <Fact z={z} label="Source" value={source?.name ?? station.sourceMetadata.sourceId} />
-                <Fact z={z} label="Checked" value={`${formatDate(station.sourceMetadata.verifiedAt)} · GMRC page updated ${formatDate(dataset.info.sourcePageLastUpdated)}`} />
+              <Accordion icon={Info} tint="#475569" tintBg="#EEF1F6" title={t('station.about.title')} subtitle={t('station.about.sub')}>
+                <Fact z={z} lang={lang} label={t('station.about.source')} value={source?.name ?? station.sourceMetadata.sourceId} />
+                <Fact z={z} lang={lang} label={t('station.about.checked')} value={t('station.about.checkedValue', { date: formatDate(station.sourceMetadata.verifiedAt, lang), pageDate: formatDate(dataset.info.sourcePageLastUpdated, lang) })} />
                 <Fact
                   z={z}
-                  label="Position"
+                  lang={lang}
+                  label={t('station.about.position')}
                   value={
                     station.latitude !== null
-                      ? `${station.latitude.toFixed(5)}, ${station.longitude!.toFixed(5)} · ${station.coordinateStatus}, from an unofficial map pin, so it may be off by a block`
-                      : 'Not available'
+                      ? t('station.about.positionValue', { coords: `${station.latitude.toFixed(5)}, ${station.longitude!.toFixed(5)}`, status: coordStatusLabel(station.coordinateStatus) })
+                      : t('station.about.na')
                   }
                 />
-                {station.aliases.length > 0 ? <Fact z={z} label="Also called" value={station.aliases.join(', ')} /> : null}
-                <Fact z={z} label="Notes" value={station.sourceMetadata.notes} />
+                {station.aliases.length > 0 ? <Fact z={z} lang={lang} label={t('station.about.alias')} value={station.aliases.join(', ')} /> : null}
+                <Fact z={z} lang={lang} label={t('station.about.notes')} value={station.sourceMetadata.notes} />
                 {station.sourceMetadata.sourceUrl ? (
-                  <Pressable onPress={() => openUrl(station.sourceMetadata.sourceUrl!)} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36 }}>
+                  <Pressable onPress={() => openUrl(station.sourceMetadata.sourceUrl!)} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}>
                     <ExternalLink size={z(14)} color={VIOLET} />
-                    <Text style={{ color: VIOLET, fontWeight: '700', fontSize: z(13) }}>GMRC website (needs internet)</Text>
+                    <Text style={{ flexShrink: 1, color: VIOLET, fontWeight: '700', fontSize: z(13), lineHeight: lineHeightFor(lang, z(13)) }}>{t('station.about.website')}</Text>
                   </Pressable>
                 ) : null}
               </Accordion>
@@ -162,11 +169,11 @@ export default function StationScreen() {
   );
 }
 
-function Fact({ z, label, value }: { z: (n: number) => number; label: string; value: string }) {
+function Fact({ z, lang, label, value }: { z: (n: number) => number; lang: Language; label: string; value: string }) {
   return (
     <View style={{ gap: 1 }}>
-      <Text style={{ fontSize: z(11), fontWeight: '800', color: SLATE, letterSpacing: 0.6 }}>{label.toUpperCase()}</Text>
-      <Text style={{ fontSize: z(13), color: NAVY }}>{value}</Text>
+      <Text style={{ fontSize: z(11), fontWeight: '800', color: SLATE, letterSpacing: spacingFor(lang, 0.6), lineHeight: lineHeightFor(lang, z(11)) }}>{label.toUpperCase()}</Text>
+      <Text style={{ fontSize: z(13), color: NAVY, lineHeight: lineHeightFor(lang, z(13)) }}>{value}</Text>
     </View>
   );
 }

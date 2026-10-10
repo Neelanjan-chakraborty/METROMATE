@@ -1,3 +1,4 @@
+import { enT, type T } from '../../i18n/translate';
 import type { TransitIndex } from './transitIndex';
 import type { AgencyId } from './types';
 
@@ -84,4 +85,11 @@ export function groupDepartures(deps: Departure[]): DepartureGroup[] {
     else groups.set(k, { route: x.route, short: x.short, agency: x.agency, headsign: x.headsign, times: [x.time] });
   }
   return [...groups.values()];
+}
+
+/** "now" / "in 12 min" / "later": how far off a scheduled departure is. `minutes` is the (possibly fractional) wait. */
+export function waitText(minutes: number, t: T = enT): string {
+  const wait = Math.max(0, Math.round(minutes));
+  if (wait <= 0) return t('bus.when.now');
+  return wait < 90 ? t('bus.when.inMin', { n: wait }) : t('bus.when.later');
 }

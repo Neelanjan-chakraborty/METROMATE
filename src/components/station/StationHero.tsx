@@ -7,6 +7,9 @@ import { Gradient } from '../route/primitives';
 import { StationThumb, type ThumbStation } from '../stations/StationThumb';
 import { stationPhoto } from '../stations/photos';
 import type { StationService } from '../../lib/stationView';
+import { useT } from '../../i18n/useT';
+import type { Language, MessageKey } from '../../i18n';
+import { lineHeightFor } from './lineHeight';
 
 interface Props {
   station: ThumbStation & { isInterchange: boolean };
@@ -18,20 +21,22 @@ interface Props {
   onMaps: () => void;
 }
 
-const STATE = {
-  running: { text: 'Trains running', dot: '#34D399' },
-  'not-started': { text: 'Not started yet', dot: '#FBBF24' },
-  ended: { text: 'Service ended', dot: '#CBD5E1' },
-  unknown: { text: 'Timings unknown', dot: '#CBD5E1' },
-} as const;
+const STATE: Record<StationService['state'], { text: MessageKey; dot: string }> = {
+  running: { text: 'station.hero.running', dot: '#34D399' },
+  'not-started': { text: 'station.hero.notStarted', dot: '#FBBF24' },
+  ended: { text: 'station.hero.ended', dot: '#CBD5E1' },
+  unknown: { text: 'station.hero.unknown', dot: '#CBD5E1' },
+};
 
 /** The station's photo (or drawn illustration) full-bleed, with the name and today's service state over a violet fade. */
 export function StationHero({ station, color, service, typeLabel, onBack, onMaps }: Props) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const insets = useSafeAreaInsets();
   const photo = stationPhoto(station.id);
   const st = STATE[service.state];
-  const h = insets.top + z(236);
+  // Hindi and Gujarati chips and titles are taller, so the banner gets a little more room.
+  const h = insets.top + z(236) + (lang === 'en' ? 0 : z(24));
   return (
     <View style={{ height: h, backgroundColor: '#3B27CF', overflow: 'hidden' }}>
       <StationThumb station={station} color={color} width={4} height={3} radius={0} fill />
@@ -39,10 +44,10 @@ export function StationHero({ station, color, service, typeLabel, onBack, onMaps
       <Gradient id="sh-bot" vertical stops={[{ at: 0.35, color: '#2B1FC4', opacity: 0 }, { at: 1, color: '#2B1FC4', opacity: 0.94 }]} />
 
       <View style={{ position: 'absolute', top: insets.top + z(8), left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
-        <RoundBtn z={z} label="Back" onPress={onBack}>
+        <RoundBtn z={z} label={t('station.hero.back')} onPress={onBack}>
           <ChevronLeft size={z(22)} color="#1E1B4B" />
         </RoundBtn>
-        <RoundBtn z={z} label="Open in Maps (needs internet)" onPress={onMaps}>
+        <RoundBtn z={z} label={t('station.hero.maps')} onPress={onMaps}>
           <ExternalLink size={z(19)} color="#4F35E8" />
         </RoundBtn>
       </View>
@@ -53,27 +58,27 @@ export function StationHero({ station, color, service, typeLabel, onBack, onMaps
             {station.name}
           </Text>
           {station.isInterchange ? (
-            <View accessible accessibilityLabel="Interchange station" style={{ width: z(30), height: z(30), borderRadius: z(15), backgroundColor: '#F59E0B', alignItems: 'center', justifyContent: 'center' }}>
+            <View accessible accessibilityLabel={t('station.hero.interchange')} style={{ width: z(30), height: z(30), borderRadius: z(15), backgroundColor: '#F59E0B', alignItems: 'center', justifyContent: 'center' }}>
               <Repeat size={z(16)} color="#FFFFFF" strokeWidth={2.4} />
             </View>
           ) : null}
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(8), flexWrap: 'wrap' }}>
-          <Chip z={z}>
+          <Chip z={z} lang={lang}>
             <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: st.dot }} />
-            <Text style={chipText(z)}>{st.text}</Text>
+            <Text style={chipText(z, lang)}>{t(st.text)}</Text>
           </Chip>
           {service.first && service.last ? (
-            <Chip z={z} label={`Line hours ${service.first} to ${service.last}`}>
+            <Chip z={z} lang={lang} label={t('station.hero.hoursA11y', { first: service.first, last: service.last })}>
               <Clock size={z(13)} color="#FFFFFF" strokeWidth={2} />
-              <Text style={chipText(z)}>
+              <Text style={chipText(z, lang)}>
                 {service.first} – {service.last}
               </Text>
             </Chip>
           ) : null}
           {typeLabel ? (
-            <Chip z={z}>
-              <Text style={chipText(z)}>{typeLabel}</Text>
+            <Chip z={z} lang={lang}>
+              <Text style={chipText(z, lang)}>{typeLabel}</Text>
             </Chip>
           ) : null}
         </View>
@@ -82,12 +87,12 @@ export function StationHero({ station, color, service, typeLabel, onBack, onMaps
       <Pressable
         disabled={!photo}
         accessibilityRole={photo ? 'link' : 'text'}
-        accessibilityLabel={photo ? `Photo credit: ${photo.credit}, ${photo.license}. Opens Wikimedia Commons` : 'Illustration, not a photo of this station'}
+        accessibilityLabel={photo ? t('station.hero.photoA11y', { credit: photo.credit, license: photo.license }) : t('station.hero.illustrationA11y')}
         onPress={() => photo && Linking.openURL(photo.pageUrl).catch(() => undefined)}
-        style={{ position: 'absolute', right: 16, top: insets.top + z(58), paddingHorizontal: z(9), height: z(22), borderRadius: z(11), backgroundColor: 'rgba(20,12,80,0.5)', justifyContent: 'center' }}
+        style={{ position: 'absolute', right: 16, top: insets.top + z(58), paddingHorizontal: z(9), minHeight: z(22), borderRadius: z(11), backgroundColor: 'rgba(20,12,80,0.5)', justifyContent: 'center' }}
       >
-        <Text style={{ fontSize: z(10.5), color: '#FFFFFF' }} numberOfLines={1}>
-          {photo ? `Photo: ${photo.credit} · ${photo.license}` : 'Illustration'}
+        <Text style={{ fontSize: z(10.5), color: '#FFFFFF', lineHeight: lineHeightFor(lang, z(10.5)) }} numberOfLines={1}>
+          {photo ? t('station.hero.photo', { credit: photo.credit, license: photo.license }) : t('station.hero.illustration')}
         </Text>
       </Pressable>
     </View>
@@ -103,13 +108,13 @@ function RoundBtn({ z, label, onPress, children }: { z: (n: number) => number; l
   );
 }
 
-function Chip({ z, children, label }: { z: (n: number) => number; children: React.ReactNode; label?: string }) {
+function Chip({ z, children, label, lang }: { z: (n: number) => number; children: React.ReactNode; label?: string; lang: Language }) {
   return (
-    <View accessible={!!label} accessibilityLabel={label} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), height: z(26), paddingHorizontal: z(10), borderRadius: z(13), backgroundColor: 'rgba(255,255,255,0.18)' }}>
+    <View accessible={!!label} accessibilityLabel={label} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), minHeight: z(26), paddingHorizontal: z(10), paddingVertical: lang === 'en' ? 0 : z(2), borderRadius: z(13), backgroundColor: 'rgba(255,255,255,0.18)' }}>
       {children}
     </View>
   );
 }
 
-const chipText = (z: (n: number) => number) => ({ fontSize: z(12), fontWeight: '700' as const, color: '#FFFFFF' });
+const chipText = (z: (n: number) => number, lang: Language) => ({ fontSize: z(12), fontWeight: '700' as const, color: '#FFFFFF', lineHeight: lineHeightFor(lang, z(12)) });
 const styles = StyleSheet.create({ shadow: { shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 4 } });

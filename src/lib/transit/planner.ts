@@ -3,6 +3,7 @@ import { bandAt } from '../serviceNow';
 import { brtsFare, type FareSummary } from './fares';
 import { buildMetroPatterns, metroBoarding, METRO_CHANGE_MIN, type MetroPattern } from './metroNetwork';
 import { agenciesOf, type TransitIndex } from './transitIndex';
+import { enT, type T } from '../../i18n/translate';
 import { busStopId, gtfsStopId, isBusId, type AgencyId } from './types';
 
 /*
@@ -389,7 +390,7 @@ function placeRef(ctx: PlannerContext, node: number): PlaceRef {
   return { id: s.id, name: s.name, kind: 'station' };
 }
 
-function build(ctx: PlannerContext, found: ReturnType<typeof search>, dest: number, k: number, departAt: number): TransitPlan {
+function build(ctx: PlannerContext, found: ReturnType<typeof search>, dest: number, k: number, departAt: number, t: T): TransitPlan {
   const { ix } = ctx;
   const legs: TransitLeg[] = [];
   let node = dest;
@@ -480,9 +481,9 @@ function build(ctx: PlannerContext, found: ReturnType<typeof search>, dest: numb
       } else unavailable.add('BRTS');
     } else unavailable.add(l.agency);
   }
-  if (legs.some((l) => l.mode === 'metro')) warnings.push('Metro times are estimates from GMRC’s published frequency, not a train timetable.');
-  if (legs.some((l) => l.mode === 'bus')) warnings.push('Bus times are scheduled, not live. Buses can run late.');
-  if (walkMeters > 0) warnings.push('Walking times are rough estimates from straight-line distance; station positions are approximate.');
+  if (legs.some((l) => l.mode === 'metro')) warnings.push(t('route.lib.plan.metroEstimates'));
+  if (legs.some((l) => l.mode === 'bus')) warnings.push(t('route.lib.plan.busScheduled'));
+  if (walkMeters > 0) warnings.push(t('route.lib.plan.walkRough'));
   return {
     legs,
     departAt,
@@ -497,18 +498,22 @@ function build(ctx: PlannerContext, found: ReturnType<typeof search>, dest: numb
 
 // -------------------------------------------------------------------- API
 
-export function planTransit(ctx: PlannerContext, q: Query, today?: string): PlanResult {
-  if (q.from === q.to) return { status: 'same-place', plans: [], nextDay: false, departAt: q.departAt, notes: ['Your start and destination are the same place.'] };
+/**
+ * Plans the trip. The user-visible `notes` and each plan's `warnings` are written with `t` (English by default), so the
+ * caller passes the active language's translator; the search itself does not depend on it.
+ */
+export function planTransit(ctx: PlannerContext, q: Query, today?: string, t: T = enT): PlanResult {
+  if (q.from === q.to) return { status: 'same-place', plans: [], nextDay: false, departAt: q.departAt, notes: [t('route.lib.plan.samePlace')] };
   const o = nodeOf(ctx, q.from);
   const d = nodeOf(ctx, q.to);
-  if (o === null || d === null) return { status: 'unknown-place', plans: [], nextDay: false, departAt: q.departAt, notes: ['One of the places is not in the offline data.'] };
+  if (o === null || d === null) return { status: 'unknown-place', plans: [], nextDay: false, departAt: q.departAt, notes: [t('route.lib.plan.unknownPlace')] };
   const notes: string[] = [];
   if (today && today > ctx.ix.data.meta.source.validTo) {
-    return { status: 'expired', plans: [], nextDay: false, departAt: q.departAt, notes: [`The bus timetable in this app is valid to ${ctx.ix.data.meta.source.validTo}. Update the app for current bus times.`] };
+    return { status: 'expired', plans: [], nextDay: false, departAt: q.departAt, notes: [t('route.lib.plan.expired', { date: ctx.ix.data.meta.source.validTo })] };
   }
   const attempt = (depart: number, date: Date, waitFirst: number) => {
     const found = search(ctx, o, d, depart, date, waitFirst);
-    const plans = found.reached.map((k) => build(ctx, found, d, k, depart)).filter((p) => p.legs.length > 0);
+    const plans = found.reached.map((k) => build(ctx, found, d, k, depart, t)).filter((p) => p.legs.length > 0);
     // a later plan must be strictly earlier to be worth showing
     const out: TransitPlan[] = [];
     for (const p of plans) if (!out.length || p.arriveAt < out[out.length - 1].arriveAt - 0.5) out.push(p);
@@ -542,10 +547,10 @@ export function planTransit(ctx: PlannerContext, q: Query, today?: string): Plan
       nextDay = true;
       departAt = 0;
       plans = plans.map(justInTime);
-      notes.push('No service is left today for this trip. These are the first services tomorrow.');
+      notes.push(t('route.lib.plan.nextDay'));
     }
   }
-  if (plans.length === 0) notes.push('No route was found with up to three changes. Try different stops, or check that buses or the metro run at this time.');
+  if (plans.length === 0) notes.push(t('route.lib.plan.noRoute'));
   return { status: plans.length ? 'ok' : 'no-route', plans, nextDay, departAt, notes };
 }
 

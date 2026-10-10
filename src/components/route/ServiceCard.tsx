@@ -4,6 +4,8 @@ import { ArrowRight, Info, TrainFront } from 'lucide-react-native';
 import { useHomeScale } from '../home/scale';
 import { Gradient } from './primitives';
 import { bandPeriod, serviceNow, type ServiceNow } from '../../lib/serviceNow';
+import { useT } from '../../i18n/useT';
+import type { T } from '../../i18n/translate';
 import type { Corridor, TimetableLine } from '../../types';
 
 interface Props {
@@ -29,6 +31,7 @@ function useNow(ms = 30_000): Date {
  */
 export function ServiceCard({ lines, corridors, nameOf, onTrack }: Props) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const now = useNow();
   const [sel, setSel] = useState(0);
   const cur = lines[Math.min(sel, lines.length - 1)];
@@ -36,41 +39,42 @@ export function ServiceCard({ lines, corridors, nameOf, onTrack }: Props) {
   if (!cur || !s) return null;
   const color = corridors.get(cur.line.corridorId)?.color ?? '#FFFFFF';
 
-  const state = STATE[s.state](s);
+  const state = STATE[s.state](s, t);
   const band = s.band;
   const freq =
     band && band.kind !== 'bus-only'
-      ? { top: band.kind === 'average' ? 'About every' : 'Every', big: String(band.minutes), unit: 'min', sub: bandPeriod(band) }
+      ? { top: t(band.kind === 'average' ? 'route.service.aboutEvery' : 'route.service.every'), big: String(band.minutes), unit: t('route.unit.min'), sub: bandPeriod(band, t) }
       : band
-        ? { top: 'Metro trains', big: 'Bus only', unit: '', sub: 'in this window' }
-        : { top: 'Trains run', big: '—', unit: '', sub: s.state === 'running' ? 'see timetable' : 'not scheduled now' };
+        ? { top: t('route.service.metroTrains'), big: t('route.service.busOnly'), unit: '', sub: t('route.service.inWindow') }
+        : { top: t('route.service.trainsRun'), big: '—', unit: '', sub: s.state === 'running' ? t('route.service.seeTimetable') : t('route.service.notScheduled') };
 
   return (
-    <View style={[styles.card, { borderRadius: z(24), padding: z(16), gap: z(14) }]} accessibilityLabel="Train timings from the published GMRC schedule. Not live.">
+    <View style={[styles.card, { borderRadius: z(24), padding: z(16), gap: z(14) }]} accessibilityLabel={t('route.service.a11y')}>
       <Gradient id="svc" stops={[{ at: 0, color: '#2B1FC4' }, { at: 1, color: '#5B3FEF' }]} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(10) }}>
         <View style={{ width: z(38), height: z(38), borderRadius: z(12), backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
           <TrainFront size={z(21)} color="#4F35E8" strokeWidth={2} />
         </View>
-        <Text style={{ fontSize: z(15), fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.6 }}>TRAIN TIMINGS</Text>
+        <Text style={{ fontSize: z(15), fontWeight: '800', color: '#FFFFFF', letterSpacing: lang === 'en' ? 0.6 : 0 }}>{t('route.service.title')}</Text>
         <View style={{ flex: 1 }} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), paddingHorizontal: z(10), height: z(26), borderRadius: z(13), backgroundColor: 'rgba(255,255,255,0.16)' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), paddingHorizontal: z(10), minHeight: z(26), borderRadius: z(13), backgroundColor: 'rgba(255,255,255,0.16)', flexShrink: 1 }}>
           <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: state.dot }} />
-          <Text style={{ fontSize: z(12), fontWeight: '700', color: '#FFFFFF' }}>{state.text}</Text>
+          <Text style={{ fontSize: z(12), fontWeight: '700', color: '#FFFFFF', flexShrink: 1 }}>{state.text}</Text>
         </View>
       </View>
 
       {lines.length > 1 ? (
-        <View style={{ flexDirection: 'row', gap: z(8) }} accessibilityRole="radiogroup">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: z(8) }} accessibilityRole="radiogroup">
           {lines.map((l, i) => (
             <Pressable
               key={l.line.id}
               accessibilityRole="radio"
               accessibilityState={{ selected: i === sel, checked: i === sel }}
               aria-checked={i === sel}
-              accessibilityLabel={`Timings for ${l.line.label}`}
+              accessibilityLabel={t('route.service.timingsFor', { line: l.line.label })}
+              hitSlop={8}
               onPress={() => setSel(i)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), height: z(30), paddingHorizontal: z(12), borderRadius: z(15), backgroundColor: i === sel ? '#FFFFFF' : 'rgba(255,255,255,0.14)' }}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), minHeight: z(30), paddingHorizontal: z(12), borderRadius: z(15), backgroundColor: i === sel ? '#FFFFFF' : 'rgba(255,255,255,0.14)' }}
             >
               <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: corridors.get(l.line.corridorId)?.color ?? '#fff', borderWidth: 1, borderColor: '#FFFFFF' }} />
               <Text style={{ fontSize: z(12.5), fontWeight: '700', color: i === sel ? '#3A27C9' : '#FFFFFF' }}>{l.line.label.split(' — ')[0]}</Text>
@@ -82,9 +86,9 @@ export function ServiceCard({ lines, corridors, nameOf, onTrack }: Props) {
       <View style={{ flexDirection: 'row', alignItems: 'stretch' }}>
         <Stat z={z} top={freq.top} big={freq.big} unit={freq.unit} sub={freq.sub} grow={1.15} />
         <View style={styles.divider} />
-        <Stat z={z} top="First train" big={s.first ?? '—'} sub={s.first ? 'daily' : undefined} />
+        <Stat z={z} top={t('route.service.firstTrain')} big={s.first ?? '—'} sub={s.first ? t('route.service.daily') : undefined} />
         <View style={styles.divider} />
-        <Stat z={z} top="Last train" big={s.last ?? '—'} sub={s.last ? 'daily' : undefined} />
+        <Stat z={z} top={t('route.service.lastTrain')} big={s.last ?? '—'} sub={s.last ? t('route.service.daily') : undefined} />
       </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(10) }}>
@@ -92,23 +96,23 @@ export function ServiceCard({ lines, corridors, nameOf, onTrack }: Props) {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6) }}>
             <View style={{ width: z(9), height: z(9), borderRadius: z(5), backgroundColor: color, borderWidth: 1.5, borderColor: '#FFFFFF' }} />
             <Text style={{ fontSize: z(12.5), color: '#E9E6FF', fontWeight: '600', flexShrink: 1 }} numberOfLines={1}>
-              Towards {nameOf(s.towardsTerminalId)}
+              {t('route.service.towards', { name: nameOf(s.towardsTerminalId) })}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(5) }}>
             <Info size={z(12)} color="#C9C3FF" />
             <Text style={{ fontSize: z(11.5), color: '#C9C3FF', flexShrink: 1 }} numberOfLines={2}>
-              GMRC schedule, not live · first/last from {nameOf(s.fromTerminalId)}
+              {t('route.service.scheduleNote', { name: nameOf(s.fromTerminalId) })}
             </Text>
           </View>
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Track my ride live"
+          accessibilityLabel={t('route.service.trackA11y')}
           onPress={onTrack}
-          style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: z(8), height: z(44), paddingHorizontal: z(14), borderRadius: z(14), borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)', backgroundColor: 'rgba(255,255,255,0.1)', opacity: pressed ? 0.8 : 1 }]}
+          style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: z(8), minHeight: z(44), paddingHorizontal: z(14), borderRadius: z(14), borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.7)', backgroundColor: 'rgba(255,255,255,0.1)', opacity: pressed ? 0.8 : 1 }]}
         >
-          <Text style={{ fontSize: z(14), fontWeight: '700', color: '#FFFFFF' }}>Track ride</Text>
+          <Text style={{ fontSize: z(14), fontWeight: '700', color: '#FFFFFF', flexShrink: 1 }}>{t('route.service.track')}</Text>
           <ArrowRight size={z(17)} color="#FFFFFF" strokeWidth={2.2} />
         </Pressable>
       </View>
@@ -116,17 +120,17 @@ export function ServiceCard({ lines, corridors, nameOf, onTrack }: Props) {
   );
 }
 
-const STATE: Record<ServiceNow['state'], (s: ServiceNow) => { text: string; dot: string }> = {
-  running: () => ({ text: 'Running now', dot: '#34D399' }),
-  'not-started': (s) => ({ text: `Starts ${s.first ?? 'later'}`, dot: '#FBBF24' }),
-  ended: () => ({ text: 'Ended for today', dot: '#CBD5E1' }),
+const STATE: Record<ServiceNow['state'], (s: ServiceNow, t: T) => { text: string; dot: string }> = {
+  running: (_s, t) => ({ text: t('route.service.running'), dot: '#34D399' }),
+  'not-started': (s, t) => ({ text: s.first ? t('route.service.starts', { time: s.first }) : t('route.service.startsLater'), dot: '#FBBF24' }),
+  ended: (_s, t) => ({ text: t('route.service.ended'), dot: '#CBD5E1' }),
 };
 
 function Stat({ z, top, big, unit, sub, grow = 1 }: { z: (n: number) => number; top: string; big: string; unit?: string; sub?: string | null; grow?: number }) {
   const small = big.length > 4;
   return (
     <View style={{ flex: grow, paddingHorizontal: z(4), gap: z(2) }} accessible accessibilityLabel={`${top} ${big}${unit ? ' ' + unit : ''}${sub ? ', ' + sub : ''}`}>
-      <Text style={{ fontSize: z(12), color: '#D8D3FF', fontWeight: '600' }} numberOfLines={1}>
+      <Text style={{ fontSize: z(12), color: '#D8D3FF', fontWeight: '600' }} numberOfLines={2}>
         {top}
       </Text>
       <Text style={{ fontSize: z(small ? 22 : 31), fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.5, lineHeight: z(small ? 34 : 38) }} numberOfLines={1}>
@@ -134,7 +138,7 @@ function Stat({ z, top, big, unit, sub, grow = 1 }: { z: (n: number) => number; 
         {unit ? <Text style={{ fontSize: z(14), fontWeight: '700', color: '#C9F5E2' }}> {unit}</Text> : null}
       </Text>
       {sub ? (
-        <Text style={{ fontSize: z(11.5), color: '#C9C3FF' }} numberOfLines={1}>
+        <Text style={{ fontSize: z(11.5), color: '#C9C3FF' }} numberOfLines={2}>
           {sub}
         </Text>
       ) : null}

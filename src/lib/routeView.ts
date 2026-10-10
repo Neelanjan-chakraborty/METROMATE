@@ -1,5 +1,7 @@
 import type { Corridor, RouteResult, Station, TimetableLine } from '../types';
 import { hopMinutes } from './eta';
+import { enT, enTN, type T, type TN } from '../i18n/translate';
+import { GNLU_WARNING, PHASE_WARNING } from './routing';
 
 /** View-model helpers for the Route screen. Pure so they can be tested. */
 
@@ -61,23 +63,48 @@ export function overview(route: RouteResult): { corridorId: string; stops: numbe
   return route.segments.map((x) => ({ corridorId: x.corridorId, stops: x.stops, share: x.stops / total }));
 }
 
-/** Plain-text summary for the system share sheet. */
-export function shareSummary(route: RouteResult, stations: Map<string, Station>, corridors: Map<string, Corridor>): string {
+/** Plain-text summary for the system share sheet. The default translators give the English text. */
+export function shareSummary(route: RouteResult, stations: Map<string, Station>, corridors: Map<string, Corridor>, t: T = enT, tn: TN = enTN): string {
   const name = (id: string) => stations.get(id)?.name ?? id;
-  const lines = [`${name(route.originId)} → ${name(route.destinationId)} (Ahmedabad Metro)`];
+  const lines = [t('route.lib.share.header', { from: name(route.originId), to: name(route.destinationId) })];
   route.segments.forEach((seg, i) => {
     const c = corridors.get(seg.corridorId)?.shortName ?? seg.corridorId;
-    lines.push(`${i === 0 ? 'Board' : 'Change to'} the ${c} line at ${name(seg.fromStationId)}, towards ${name(seg.directionTerminalId)}: ${seg.stops} ${seg.stops === 1 ? 'stop' : 'stops'} to ${name(seg.toStationId)}.`);
+    lines.push(
+      t(i === 0 ? 'route.lib.share.board' : 'route.lib.share.change', {
+        line: c,
+        from: name(seg.fromStationId),
+        towards: name(seg.directionTerminalId),
+        stops: tn('route.stops', seg.stops),
+        to: name(seg.toStationId),
+      }),
+    );
   });
-  lines.push(`${route.stopCount} stops, ${route.interchanges.length === 0 ? 'no change' : `${route.interchanges.length} ${route.interchanges.length === 1 ? 'change' : 'changes'}`}. Planned with MetroMate from GMRC's published map; not a live train status.`);
+  const changes = route.interchanges.length === 0 ? t('route.lib.noChange') : tn('route.lib.changes', route.interchanges.length);
+  lines.push(t('route.lib.share.summary', { stops: tn('route.stops', route.stopCount), changes }));
   return lines.join('\n');
 }
 
 /** A short heading for a route warning; the full text is shown when it is opened. */
-export function warningTitle(text: string): string {
-  if (text.startsWith('GMRC’s fare rules')) return 'Confirm your ticket before travelling';
-  if (text.startsWith('GNLU is marked')) return 'GNLU: check the train display';
+export function warningTitle(text: string, t: T = enT): string {
+  if (text.startsWith('GMRC’s fare rules')) return t('route.lib.warn.confirmTicket');
+  if (text.startsWith('GNLU is marked')) return t('route.lib.warn.gnlu');
   const colon = text.indexOf(': ');
-  if (colon > 0 && colon < 40) return `${text.slice(0, colon)}: check before you go`;
+  if (colon > 0 && colon < 40) return t('route.lib.warn.checkBeforeGo', { place: text.slice(0, colon) });
   return text.length > 48 ? `${text.slice(0, 45)}…` : text;
+}
+
+/**
+ * The full text of a route warning. The two warnings the app writes itself are translated; a warning that comes
+ * from the data (a station's service note) is shown exactly as the data gives it.
+ */
+export function warningText(text: string, t: T = enT): string {
+  if (text === PHASE_WARNING) return t('route.lib.warn.phaseText');
+  if (text === GNLU_WARNING) return t('route.lib.warn.gnluText');
+  return text;
+}
+
+/** "North–South Line" (or the short name as GMRC gives it when it already says "line" / "branch"); "Metro" when unknown. */
+export function corridorLabel(c: Pick<Corridor, 'shortName'> | null | undefined, t: T = enT): string {
+  if (!c) return t('route.line.metro');
+  return /branch|line$/i.test(c.shortName) ? c.shortName : t('route.line.name', { name: c.shortName });
 }

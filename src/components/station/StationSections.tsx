@@ -10,19 +10,23 @@ import type { Landmark as LandmarkT, NearbyConnection } from '../../types';
 import { AGENCY_LOOK } from '../../lib/transit/format';
 import { walkMinutes } from '../../lib/transit/planner';
 import type { NearbyStop } from '../../lib/transit/nearby';
+import { useT } from '../../i18n/useT';
+import type { Language } from '../../i18n';
+import { lineHeightFor, spacingFor } from './lineHeight';
 
 type Z = (n: number) => number;
 
 /** A white card with an icon tile and a title, the shell for every section below the actions. */
 export function Section({ icon: Icon, tint, tintBg, title, right, children }: { icon: LucideIcon; tint: string; tintBg: string; title: string; right?: React.ReactNode; children: React.ReactNode }) {
   const { z } = useHomeScale();
+  const { lang } = useT();
   return (
     <View style={[{ marginHorizontal: 16, borderRadius: z(22), padding: z(14), gap: z(12), backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE }, cardShadow, { shadowOpacity: 0.05 }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(12) }}>
         <View style={{ width: z(40), height: z(40), borderRadius: z(13), backgroundColor: tintBg, alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={z(21)} color={tint} strokeWidth={1.9} />
         </View>
-        <Text style={{ flex: 1, fontSize: z(17.5), fontWeight: '800', color: NAVY }} accessibilityRole="header">
+        <Text style={{ flex: 1, fontSize: z(17.5), fontWeight: '800', color: NAVY, lineHeight: lineHeightFor(lang, z(17.5), 1.35) }} accessibilityRole="header">
           {title}
         </Text>
         {right}
@@ -34,10 +38,11 @@ export function Section({ icon: Icon, tint, tintBg, title, right, children }: { 
 
 export function PillButton({ label, icon: Icon, onPress }: { label: string; icon: LucideIcon; onPress: () => void }) {
   const { z } = useHomeScale();
+  const { lang } = useT();
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), height: z(34), paddingHorizontal: z(11), borderRadius: z(17), borderWidth: 1, borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), minHeight: Math.max(44, z(34)), paddingHorizontal: z(11), borderRadius: z(17), borderWidth: 1, borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
       <Icon size={z(15)} color={VIOLET} strokeWidth={2} />
-      <Text style={{ fontSize: z(12.5), fontWeight: '700', color: VIOLET }}>{label}</Text>
+      <Text style={{ fontSize: z(12.5), fontWeight: '700', color: VIOLET, lineHeight: lineHeightFor(lang, z(12.5)) }}>{label}</Text>
     </Pressable>
   );
 }
@@ -46,21 +51,24 @@ export function PillButton({ label, icon: Icon, onPress }: { label: string; icon
 
 export function ActionButtons({ onStart, onGo }: { onStart: () => void; onGo: () => void }) {
   const { z } = useHomeScale();
-  const base = { flex: 1, flexDirection: 'row' as const, alignItems: 'center' as const, gap: z(12), height: z(66), paddingHorizontal: z(16), borderRadius: z(20) };
+  const { t, lang } = useT();
+  const base = { flex: 1, flexDirection: 'row' as const, alignItems: 'center' as const, gap: z(12), minHeight: z(66), paddingVertical: z(8), paddingHorizontal: z(16), borderRadius: z(20) };
+  const title = { fontSize: z(16.5), fontWeight: '800' as const, lineHeight: lineHeightFor(lang, z(16.5), 1.3) };
+  const sub = { fontSize: z(12), lineHeight: lineHeightFor(lang, z(12)) };
   return (
     <View style={{ flexDirection: 'row', gap: z(12), marginHorizontal: 16 }}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Start from here. Plan a route" onPress={onStart} style={({ pressed }) => [base, { backgroundColor: '#E7E3FF', opacity: pressed ? 0.85 : 1 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('station.action.startA11y')} onPress={onStart} style={({ pressed }) => [base, { backgroundColor: '#E7E3FF', opacity: pressed ? 0.85 : 1 }]}>
         <Flag size={z(24)} color={VIOLET} strokeWidth={2} />
-        <View>
-          <Text style={{ fontSize: z(16.5), fontWeight: '800', color: '#2E1FA8' }}>Start here</Text>
-          <Text style={{ fontSize: z(12), color: '#5A5FA8' }}>Plan a route</Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[title, { color: '#2E1FA8' }]}>{t('station.action.start')}</Text>
+          <Text style={[sub, { color: '#5A5FA8' }]}>{t('station.action.startSub')}</Text>
         </View>
       </Pressable>
-      <Pressable accessibilityRole="button" accessibilityLabel="Go here. Route to this station" onPress={onGo} style={({ pressed }) => [base, { backgroundColor: VIOLET, opacity: pressed ? 0.9 : 1, shadowColor: VIOLET, shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 5 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t('station.action.goA11y')} onPress={onGo} style={({ pressed }) => [base, { backgroundColor: VIOLET, opacity: pressed ? 0.9 : 1, shadowColor: VIOLET, shadowOpacity: 0.3, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 5 }]}>
         <MapPin size={z(24)} color="#FFFFFF" strokeWidth={2} />
-        <View>
-          <Text style={{ fontSize: z(16.5), fontWeight: '800', color: '#FFFFFF' }}>Go here</Text>
-          <Text style={{ fontSize: z(12), color: '#DCD6FF' }}>Route to here</Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[title, { color: '#FFFFFF' }]}>{t('station.action.go')}</Text>
+          <Text style={[sub, { color: '#DCD6FF' }]}>{t('station.action.goSub')}</Text>
         </View>
       </Pressable>
     </View>
@@ -80,23 +88,24 @@ export interface LineCardData {
 
 export function LineCards({ lines }: { lines: LineCardData[] }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   return (
     <View style={{ flexDirection: 'row', gap: z(10), marginHorizontal: 16 }}>
       {lines.map((l) => (
-        <View key={l.id} accessible accessibilityLabel={`${l.name}, phase ${l.phase}${l.type ? ', ' + l.type : ''}. Between ${l.ends}`} style={[{ flex: 1, minWidth: 0, padding: z(12), borderRadius: z(18), backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, gap: z(6) }, cardShadow, { shadowOpacity: 0.05 }]}>
+        <View key={l.id} accessible accessibilityLabel={l.type ? t('station.line.a11yTyped', { name: l.name, phase: l.phase, type: l.type, ends: l.ends }) : t('station.line.a11y', { name: l.name, phase: l.phase, ends: l.ends })} style={[{ flex: 1, minWidth: 0, padding: z(12), borderRadius: z(18), backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, gap: z(6) }, cardShadow, { shadowOpacity: 0.05 }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(8) }}>
             <View style={{ width: z(14), height: z(14), borderRadius: z(7), backgroundColor: l.color }} />
-            <Text style={{ flex: 1, fontSize: z(14.5), fontWeight: '800', color: NAVY }} numberOfLines={1}>
+            <Text style={{ flex: 1, fontSize: z(14.5), fontWeight: '800', color: NAVY, lineHeight: lineHeightFor(lang, z(14.5), 1.35) }} numberOfLines={2}>
               {l.name}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: z(6), flexWrap: 'wrap' }}>
-            <Tag z={z} label={`Phase ${l.phase}`} color="#B54708" bg="#FFF1E3" />
-            {l.type ? <Tag z={z} label={l.type} color="#2E1FA8" bg="#EFEDFF" /> : null}
+            <Tag z={z} lang={lang} label={t('station.line.phase', { phase: l.phase })} color="#B54708" bg="#FFF1E3" />
+            {l.type ? <Tag z={z} lang={lang} label={l.type} color="#2E1FA8" bg="#EFEDFF" /> : null}
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(5) }}>
             <ArrowLeftRight size={z(12)} color={SLATE} />
-            <Text style={{ flex: 1, fontSize: z(12), color: SLATE }} numberOfLines={2}>
+            <Text style={{ flex: 1, fontSize: z(12), color: SLATE, lineHeight: lineHeightFor(lang, z(12)) }} numberOfLines={2}>
               {l.ends}
             </Text>
           </View>
@@ -106,10 +115,10 @@ export function LineCards({ lines }: { lines: LineCardData[] }) {
   );
 }
 
-function Tag({ z, label, color, bg }: { z: Z; label: string; color: string; bg: string }) {
+function Tag({ z, lang, label, color, bg }: { z: Z; lang: Language; label: string; color: string; bg: string }) {
   return (
-    <View style={{ paddingHorizontal: z(8), height: z(21), borderRadius: z(10.5), backgroundColor: bg, justifyContent: 'center' }}>
-      <Text style={{ fontSize: z(11), fontWeight: '700', color }}>{label}</Text>
+    <View style={{ paddingHorizontal: z(8), minHeight: z(21), borderRadius: z(10.5), backgroundColor: bg, justifyContent: 'center' }}>
+      <Text style={{ fontSize: z(11), fontWeight: '700', color, lineHeight: lineHeightFor(lang, z(11)) }}>{label}</Text>
     </View>
   );
 }
@@ -126,6 +135,7 @@ export interface StripNode {
 /** previous - this - next station on a line, with estimated minutes; tap a neighbour to open it. */
 export function NeighbourStrip({ tabs, nameOf, minutesOf, here, onOpen, onMap }: { tabs: Neighbours[]; nameOf: (id: string) => string; minutesOf: (a: string, b: string) => number | null; here: { id: string; name: string }; onOpen: (id: string) => void; onMap: () => void }) {
   const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
   const [sel, setSel] = useState(0);
   const n = tabs[Math.min(sel, tabs.length - 1)];
   if (!n) return null;
@@ -135,23 +145,23 @@ export function NeighbourStrip({ tabs, nameOf, minutesOf, here, onOpen, onMap }:
     if (!nb) return <EndNode z={z} color={color} />;
     const m = minutesOf(here.id, nb.id);
     return (
-      <Pressable accessibilityRole="button" accessibilityLabel={`${nameOf(nb.id)}${m !== null ? `, about ${m} minutes` : ''}, towards ${nameOf(nb.towardsId)}. Open station`} onPress={() => onOpen(nb.id)} style={{ flex: 1, alignItems: 'center', gap: z(3) }}>
+      <Pressable accessibilityRole="button" accessibilityLabel={m !== null ? t('station.strip.nodeA11yMin', { name: nameOf(nb.id), minutes: tn('station.minutes', m), towards: nameOf(nb.towardsId) }) : t('station.strip.nodeA11y', { name: nameOf(nb.id), towards: nameOf(nb.towardsId) })} onPress={() => onOpen(nb.id)} style={{ flex: 1, alignItems: 'center', gap: z(3) }}>
         <View style={{ width: z(24), height: z(24), borderRadius: z(12), backgroundColor: '#FFFFFF', borderWidth: z(5), borderColor: '#B7BDEB', marginTop: z(10) }} />
         <Text style={{ fontSize: z(14), fontWeight: '700', color: NAVY, textAlign: 'center' }} numberOfLines={2}>
           {nameOf(nb.id)}
         </Text>
-        <Text style={{ fontSize: z(12), color: SLATE }}>{m !== null ? `~${m} min` : ' '}</Text>
+        <Text style={{ fontSize: z(12), color: SLATE, lineHeight: lineHeightFor(lang, z(12)) }}>{m !== null ? t('station.strip.min', { m }) : ' '}</Text>
       </Pressable>
     );
   };
   return (
-    <Section icon={TrainFront} tint="#4F35E8" tintBg="#EFEDFF" title="Next & nearby" right={<PillButton label="Line map" icon={MapIcon} onPress={onMap} />}>
+    <Section icon={TrainFront} tint="#4F35E8" tintBg="#EFEDFF" title={t('station.strip.title')} right={<PillButton label={t('station.strip.lineMap')} icon={MapIcon} onPress={onMap} />}>
       {tabs.length > 1 ? (
         <View style={{ flexDirection: 'row', gap: z(8) }} accessibilityRole="radiogroup">
-          {tabs.map((t, i) => (
-            <Pressable key={t.corridor.id} accessibilityRole="radio" accessibilityState={{ selected: i === sel, checked: i === sel }} aria-checked={i === sel} accessibilityLabel={t.corridor.shortName} onPress={() => setSel(i)} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), height: z(32), paddingHorizontal: z(12), borderRadius: z(16), backgroundColor: i === sel ? VIOLET : '#F3F4FA' }}>
-              <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: t.corridor.color, borderWidth: 1, borderColor: '#FFFFFF' }} />
-              <Text style={{ fontSize: z(12.5), fontWeight: '700', color: i === sel ? '#FFFFFF' : NAVY }}>{t.corridor.shortName}</Text>
+          {tabs.map((tab, i) => (
+            <Pressable key={tab.corridor.id} accessibilityRole="radio" accessibilityState={{ selected: i === sel, checked: i === sel }} aria-checked={i === sel} accessibilityLabel={tab.corridor.shortName} onPress={() => setSel(i)} style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), minHeight: Math.max(44, z(32)), paddingHorizontal: z(12), borderRadius: z(16), backgroundColor: i === sel ? VIOLET : '#F3F4FA' }}>
+              <View style={{ width: z(8), height: z(8), borderRadius: z(4), backgroundColor: tab.corridor.color, borderWidth: 1, borderColor: '#FFFFFF' }} />
+              <Text style={{ fontSize: z(12.5), fontWeight: '700', color: i === sel ? '#FFFFFF' : NAVY }}>{tab.corridor.shortName}</Text>
             </Pressable>
           ))}
         </View>
@@ -160,15 +170,15 @@ export function NeighbourStrip({ tabs, nameOf, minutesOf, here, onOpen, onMap }:
         <View style={{ position: 'absolute', left: z(24), right: z(24), top: z(22), height: z(5), borderRadius: z(3), backgroundColor: color, opacity: 0.55 }} />
         <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
           {node('prev')}
-          <View style={{ flex: 1.1, alignItems: 'center', gap: z(3) }} accessible accessibilityLabel={`${here.name}, you are viewing this station`}>
+          <View style={{ flex: 1.1, alignItems: 'center', gap: z(3) }} accessible accessibilityLabel={t('station.strip.hereA11y', { name: here.name })}>
             <View style={{ width: z(46), height: z(46), borderRadius: z(23), backgroundColor: color, alignItems: 'center', justifyContent: 'center', borderWidth: z(3), borderColor: '#FFFFFF', shadowColor: color, shadowOpacity: 0.45, shadowRadius: 8, elevation: 5 }}>
               <TrainFront size={z(22)} color="#FFFFFF" strokeWidth={2} />
             </View>
             <Text style={{ fontSize: z(15), fontWeight: '800', color: NAVY, textAlign: 'center' }} numberOfLines={2}>
               {here.name}
             </Text>
-            <View style={{ paddingHorizontal: z(9), height: z(21), borderRadius: z(11), backgroundColor: '#FFF1E3', justifyContent: 'center' }}>
-              <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#B54708' }}>YOU’RE HERE</Text>
+            <View style={{ paddingHorizontal: z(9), minHeight: z(21), borderRadius: z(11), backgroundColor: '#FFF1E3', justifyContent: 'center' }}>
+              <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#B54708', textAlign: 'center', lineHeight: lineHeightFor(lang, z(10.5)) }}>{t('station.strip.here')}</Text>
             </View>
           </View>
           {node('next')}
@@ -183,23 +193,25 @@ export function NeighbourStrip({ tabs, nameOf, minutesOf, here, onOpen, onMap }:
 }
 
 function EndNode({ z, color }: { z: Z; color: string }) {
+  const { t, lang } = useT();
   return (
-    <View style={{ flex: 1, alignItems: 'center', gap: z(3), opacity: 0.7 }} accessible accessibilityLabel="End of the line in this direction">
+    <View style={{ flex: 1, alignItems: 'center', gap: z(3), opacity: 0.7 }} accessible accessibilityLabel={t('station.strip.endA11y')}>
       <View style={{ width: z(24), height: z(24), borderRadius: z(12), backgroundColor: '#F3F4FA', borderWidth: z(3), borderColor: color, alignItems: 'center', justifyContent: 'center', marginTop: z(10) }}>
         <Flag size={z(11)} color={color} />
       </View>
-      <Text style={{ fontSize: z(13), fontWeight: '600', color: SLATE }}>End of line</Text>
+      <Text style={{ fontSize: z(13), fontWeight: '600', color: SLATE, textAlign: 'center', lineHeight: lineHeightFor(lang, z(13)) }}>{t('station.strip.end')}</Text>
       <Text style={{ fontSize: z(12), color: SLATE }}> </Text>
     </View>
   );
 }
 
 function Dir({ z, label, left }: { z: Z; label: string | null; left?: boolean }) {
+  const { t, lang } = useT();
   if (!label) return <View />;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(4) }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(4), flexShrink: 1, maxWidth: '50%' }}>
       {left ? <ChevronLeft size={z(13)} color={SLATE} /> : null}
-      <Text style={{ fontSize: z(11.5), color: SLATE }}>Towards {label}</Text>
+      <Text style={{ flexShrink: 1, fontSize: z(11.5), color: SLATE, lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.strip.towards', { name: label })}</Text>
       {left ? null : <ChevronRight size={z(13)} color={SLATE} />}
     </View>
   );
@@ -209,18 +221,19 @@ function Dir({ z, label, left }: { z: Z; label: string | null; left?: boolean })
 
 export function GatesSection({ gates, underground, lineColor, night, towards, hasServiceNote }: { gates: GateFeatures[]; underground: boolean; lineColor: string; night: number; towards: { name: string; color: string }[]; hasServiceNote: boolean }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const [sel, setSel] = useState(0);
   const g = gates[Math.min(sel, gates.length - 1)];
   return (
-    <Section icon={Layers} tint="#4F35E8" tintBg="#EFEDFF" title="Gates & platforms">
+    <Section icon={Layers} tint="#4F35E8" tintBg="#EFEDFF" title={t('station.gates.title')}>
       {!g ? (
-        <Text style={{ fontSize: z(13), color: SLATE }}>{hasServiceNote ? 'GMRC’s gate table does not list this station.' : 'No gate information is published for this station.'}</Text>
+        <Text style={{ fontSize: z(13), color: SLATE, lineHeight: lineHeightFor(lang, z(13)) }}>{hasServiceNote ? t('station.gates.notListed') : t('station.gates.none')}</Text>
       ) : (
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: z(8) }} accessibilityRole="radiogroup">
             {gates.map((x, i) => (
-              <Pressable key={x.number} accessibilityRole="radio" accessibilityState={{ selected: i === sel, checked: i === sel }} aria-checked={i === sel} accessibilityLabel={`Gate ${x.number}`} onPress={() => setSel(i)} style={{ minWidth: z(76), height: z(38), borderRadius: z(19), alignItems: 'center', justifyContent: 'center', paddingHorizontal: z(14), backgroundColor: i === sel ? VIOLET : '#F3F4FA' }}>
-                <Text style={{ fontSize: z(14), fontWeight: '700', color: i === sel ? '#FFFFFF' : '#46508C' }}>Gate {x.number}</Text>
+              <Pressable key={x.number} accessibilityRole="radio" accessibilityState={{ selected: i === sel, checked: i === sel }} aria-checked={i === sel} accessibilityLabel={t('station.gates.gate', { n: x.number })} onPress={() => setSel(i)} style={{ minWidth: z(76), minHeight: Math.max(44, z(38)), borderRadius: z(19), alignItems: 'center', justifyContent: 'center', paddingHorizontal: z(14), backgroundColor: i === sel ? VIOLET : '#F3F4FA' }}>
+                <Text style={{ fontSize: z(14), fontWeight: '700', color: i === sel ? '#FFFFFF' : '#46508C', lineHeight: lineHeightFor(lang, z(14)) }}>{t('station.gates.gate', { n: x.number })}</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -228,27 +241,27 @@ export function GatesSection({ gates, underground, lineColor, night, towards, ha
             <GateScene gate={g} underground={underground} lineColor={lineColor} night={night} />
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: z(14) }}>
-            {g.lifts.length > 0 ? <Legend z={z} k="lift" label={`Lift ${g.lifts.map((l) => String(l).padStart(2, '0')).join(', ')}`} /> : null}
-            {g.lifts.length > 0 ? <Legend z={z} k="ramp" label="Wheelchair ramp" /> : null}
+            {g.lifts.length > 0 ? <Legend z={z} k="lift" label={t('station.gates.lift', { nums: g.lifts.map((l) => String(l).padStart(2, '0')).join(', ') })} /> : null}
+            {g.lifts.length > 0 ? <Legend z={z} k="ramp" label={t('station.amenity.wheelchairRamp')} /> : null}
             {g.connections.map((c) => (
-              <Legend key={c.note} z={z} k="gates" link={c.kind} label={`${c.kind === 'brts' ? 'BRTS' : c.kind === 'rail' ? 'Rail' : 'Bus'} link (unverified)`} dashed />
+              <Legend key={c.note} z={z} k="gates" link={c.kind} label={t('station.gates.link', { kind: c.kind === 'brts' ? 'BRTS' : c.kind === 'rail' ? t('station.kind.rail') : t('station.kind.bus') })} dashed />
             ))}
-            {g.lifts.length === 0 && g.connections.length === 0 ? <Text style={{ fontSize: z(12.5), color: SLATE }}>No lift or link is listed for this gate.</Text> : null}
+            {g.lifts.length === 0 && g.connections.length === 0 ? <Text style={{ fontSize: z(12.5), color: SLATE, lineHeight: lineHeightFor(lang, z(12.5)) }}>{t('station.gates.noLiftLink')}</Text> : null}
           </View>
         </>
       )}
       <View style={{ gap: z(8) }}>
-        <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: 0.8 }}>TRAINS STOP TOWARDS</Text>
+        <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: spacingFor(lang, 0.8), lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.gates.towards')}</Text>
         <View style={{ flexDirection: 'row', gap: z(8), flexWrap: 'wrap' }}>
-          {towards.map((t) => (
-            <View key={t.name} style={{ flexDirection: 'row', alignItems: 'center', gap: z(7), height: z(36), paddingHorizontal: z(12), borderRadius: z(18), backgroundColor: '#F8F8FD', borderWidth: 1.5, borderColor: t.color }}>
-              <ArrowRight size={z(14)} color={t.color} strokeWidth={2.4} />
-              <Text style={{ fontSize: z(13), fontWeight: '700', color: NAVY }}>{t.name}</Text>
+          {towards.map((tw) => (
+            <View key={tw.name} style={{ flexDirection: 'row', alignItems: 'center', gap: z(7), minHeight: z(36), paddingHorizontal: z(12), borderRadius: z(18), backgroundColor: '#F8F8FD', borderWidth: 1.5, borderColor: tw.color }}>
+              <ArrowRight size={z(14)} color={tw.color} strokeWidth={2.4} />
+              <Text style={{ flexShrink: 1, fontSize: z(13), fontWeight: '700', color: NAVY }}>{tw.name}</Text>
             </View>
           ))}
         </View>
       </View>
-      <Text style={{ fontSize: z(11.5), color: SLATE }}>Illustration, not the real layout. GMRC publishes gate numbers but not which street each gate faces, nor platform numbers; follow the signs.</Text>
+      <Text style={{ fontSize: z(11.5), color: SLATE, lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.gates.caption')}</Text>
     </Section>
   );
 }
@@ -256,12 +269,13 @@ export function GatesSection({ gates, underground, lineColor, night, towards, ha
 function Legend({ z, k, label, dashed, link }: { z: Z; k: Amenity['key']; label: string; dashed?: boolean; link?: NearbyConnection['kind'] }) {
   const l = AMENITY_LOOK[k];
   const LinkIcon = link === 'rail' ? TrainFront : Bus;
+  const { lang } = useT();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(7) }}>
       <View style={{ width: z(28), height: z(28), borderRadius: z(9), backgroundColor: l.bg, alignItems: 'center', justifyContent: 'center', borderWidth: dashed ? 1.5 : 0, borderStyle: 'dashed', borderColor: l.fg }}>
         {link ? <LinkIcon size={z(15)} color={l.fg} strokeWidth={1.9} /> : <AmenityIcon k={k} size={z(15)} color={l.fg} />}
       </View>
-      <Text style={{ fontSize: z(12.5), color: NAVY, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ flexShrink: 1, fontSize: z(12.5), color: NAVY, fontWeight: '600', lineHeight: lineHeightFor(lang, z(12.5)) }}>{label}</Text>
     </View>
   );
 }
@@ -270,12 +284,13 @@ function Legend({ z, k, label, dashed, link }: { z: Z; k: Amenity['key']; label:
 
 export function AmenitiesSection({ data }: { data: StationAmenities }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const network = [...data.network.general, ...data.network.accessibility];
   return (
-    <Section icon={Building2} tint="#4F35E8" tintBg="#EFEDFF" title="Amenities">
+    <Section icon={Building2} tint="#4F35E8" tintBg="#EFEDFF" title={t('station.amenities.title')}>
       {data.here.length > 0 ? (
         <View style={{ gap: z(8) }}>
-          <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: 0.8 }}>AT THIS STATION</Text>
+          <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: spacingFor(lang, 0.8), lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.amenities.here')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: z(10) }}>
             {data.here.map((a) => (
               <Tile key={a.key} z={z} k={a.key} label={a.label} count={a.count} />
@@ -284,13 +299,13 @@ export function AmenitiesSection({ data }: { data: StationAmenities }) {
         </View>
       ) : null}
       <View style={{ gap: z(8) }}>
-        <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: 0.8 }}>ACROSS THE NETWORK</Text>
+        <Text style={{ fontSize: z(11.5), fontWeight: '800', color: SLATE, letterSpacing: spacingFor(lang, 0.8), lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.amenities.network')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: z(8), paddingVertical: z(2) }}>
           {network.map((a) => (
             <Tile key={a.key + a.label} z={z} k={a.key} label={a.label} faded small />
           ))}
         </ScrollView>
-        <Text style={{ fontSize: z(11.5), color: SLATE }}>Faded icons are listed by GMRC for the whole network; they are not confirmed for this station.</Text>
+        <Text style={{ fontSize: z(11.5), color: SLATE, lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.amenities.note')}</Text>
       </View>
     </Section>
   );
@@ -298,9 +313,10 @@ export function AmenitiesSection({ data }: { data: StationAmenities }) {
 
 function Tile({ z, k, label, count, faded, small }: { z: Z; k: Amenity['key']; label: string; count?: number; faded?: boolean; small?: boolean }) {
   const look = AMENITY_LOOK[k];
+  const { t, lang } = useT();
   const box = small ? 46 : 56;
   return (
-    <View accessible accessibilityLabel={`${count ? count + ' ' : ''}${label}${faded ? ', listed network-wide, not confirmed for this station' : ''}`} style={{ width: z(small ? 66 : 72), alignItems: 'center', gap: z(5), opacity: faded ? 0.6 : 1 }}>
+    <View accessible accessibilityLabel={`${count ? count + ' ' : ''}${label}${faded ? `, ${t('station.amenities.faded')}` : ''}`} style={{ width: z(small ? 66 : 72), alignItems: 'center', gap: z(5), opacity: faded ? 0.6 : 1 }}>
       <View style={{ width: z(box), height: z(box), borderRadius: z(small ? 15 : 17), backgroundColor: look.bg, alignItems: 'center', justifyContent: 'center', borderWidth: faded ? 1.5 : 0, borderStyle: 'dashed', borderColor: look.fg }}>
         <AmenityIcon k={k} size={z(small ? 22 : 26)} color={look.fg} />
         {count ? (
@@ -309,7 +325,7 @@ function Tile({ z, k, label, count, faded, small }: { z: Z; k: Amenity['key']; l
           </View>
         ) : null}
       </View>
-      <Text style={{ fontSize: z(small ? 10.5 : 11.5), color: NAVY, textAlign: 'center', fontWeight: '500' }} numberOfLines={2}>
+      <Text style={{ fontSize: z(small ? 10.5 : 11.5), color: NAVY, textAlign: 'center', fontWeight: '500', lineHeight: lineHeightFor(lang, z(small ? 10.5 : 11.5), 1.4) }} numberOfLines={3}>
         {label}
       </Text>
     </View>
@@ -333,14 +349,15 @@ const PLACE_ICON: Record<PlaceKind, { Icon: LucideIcon; fg: string; bg: string }
 
 export function NearbySection({ places, links, onMaps }: { places: LandmarkT[]; links: NearbyConnection[]; onMaps: () => void }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   if (places.length === 0 && links.length === 0) return null;
   return (
-    <Section icon={MapPin} tint="#4F35E8" tintBg="#EFEDFF" title="Nearby" right={<PillButton label="Maps" icon={MapPin} onPress={onMaps} />}>
+    <Section icon={MapPin} tint="#4F35E8" tintBg="#EFEDFF" title={t('station.nearby.title')} right={<PillButton label={t('station.nearby.maps')} icon={MapPin} onPress={onMaps} />}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: z(10) }}>
         {places.map((p) => {
           const k = PLACE_ICON[placeKind(p.category)];
           return (
-            <View key={p.id} accessible accessibilityLabel={`${p.name}. Near this station, from the station name; distance not verified`} style={{ width: z(140), borderRadius: z(16), overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
+            <View key={p.id} accessible accessibilityLabel={t('station.nearby.placeA11y', { name: p.name })} style={{ width: z(140), borderRadius: z(16), overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
               <View style={{ height: z(64), backgroundColor: k.bg, alignItems: 'center', justifyContent: 'center' }}>
                 <k.Icon size={z(30)} color={k.fg} strokeWidth={1.8} />
               </View>
@@ -348,13 +365,13 @@ export function NearbySection({ places, links, onMaps }: { places: LandmarkT[]; 
                 <Text style={{ fontSize: z(13), fontWeight: '700', color: NAVY }} numberOfLines={2}>
                   {p.name}
                 </Text>
-                <Text style={{ fontSize: z(11), color: SLATE }}>Distance not verified</Text>
+                <Text style={{ fontSize: z(11), color: SLATE, lineHeight: lineHeightFor(lang, z(11)) }}>{t('station.nearby.distance')}</Text>
               </View>
             </View>
           );
         })}
         {links.map((c) => (
-          <View key={c.note} accessible accessibilityLabel={`${c.note}. From an unofficial map, unverified`} style={{ width: z(140), borderRadius: z(16), overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
+          <View key={c.note} accessible accessibilityLabel={t('station.nearby.linkA11y', { note: c.note })} style={{ width: z(140), borderRadius: z(16), overflow: 'hidden', borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#D9D3FF', backgroundColor: '#FFFFFF' }}>
             <View style={{ height: z(64), backgroundColor: '#EFEDFF', alignItems: 'center', justifyContent: 'center' }}>
               {c.kind === 'rail' ? <TrainFront size={z(30)} color="#4F35E8" strokeWidth={1.8} /> : <Bus size={z(30)} color="#4F35E8" strokeWidth={1.8} />}
             </View>
@@ -362,12 +379,12 @@ export function NearbySection({ places, links, onMaps }: { places: LandmarkT[]; 
               <Text style={{ fontSize: z(12.5), fontWeight: '700', color: NAVY }} numberOfLines={3}>
                 {c.note}
               </Text>
-              <Text style={{ fontSize: z(11), color: SLATE }}>Unverified</Text>
+              <Text style={{ fontSize: z(11), color: SLATE, lineHeight: lineHeightFor(lang, z(11)) }}>{t('station.nearby.unverified')}</Text>
             </View>
           </View>
         ))}
       </ScrollView>
-      <Text style={{ fontSize: z(11.5), color: SLATE }}>Dashed = not verified. “Maps” opens your maps app (needs internet).</Text>
+      <Text style={{ fontSize: z(11.5), color: SLATE, lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.nearby.caption')}</Text>
     </Section>
   );
 }
@@ -378,16 +395,17 @@ export function NearbySection({ places, links, onMaps }: { places: LandmarkT[]; 
 /** Real bus stops (from the timetable feed) within a few hundred metres of the station pin, with the routes serving them. */
 export function BusesSection({ stops, loading, onPlan }: { stops: NearbyStop[]; loading: boolean; onPlan: (stopId: string) => void }) {
   const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
   return (
-    <Section icon={Bus} tint="#0F6FC4" tintBg="#E3F1FC" title="Buses nearby">
+    <Section icon={Bus} tint="#0F6FC4" tintBg="#E3F1FC" title={t('station.buses.title')}>
       {loading ? (
-        <Text style={{ fontSize: z(13), color: SLATE }}>Loading bus stops…</Text>
+        <Text style={{ fontSize: z(13), color: SLATE, lineHeight: lineHeightFor(lang, z(13)) }}>{t('station.buses.loading')}</Text>
       ) : stops.length === 0 ? (
-        <Text style={{ fontSize: z(13), color: SLATE }}>The bus timetable lists no stop within 600 m of this station.</Text>
+        <Text style={{ fontSize: z(13), color: SLATE, lineHeight: lineHeightFor(lang, z(13)) }}>{t('station.buses.none')}</Text>
       ) : (
         <View style={{ gap: z(10) }}>
           {stops.map((s) => (
-            <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={`${s.name}, about ${Math.max(1, Math.round(walkMinutes(s.m)))} minutes walk. Routes ${s.routes.slice(0, 8).map((r) => r.short).join(', ')}. Plan a journey from this stop`} onPress={() => onPlan(s.id)} style={({ pressed }) => ({ flexDirection: 'row', gap: z(12), padding: z(12), borderRadius: z(16), backgroundColor: '#F8FAFD', borderWidth: 1, borderColor: CARD_LINE, opacity: pressed ? 0.9 : 1 })}>
+            <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={t('station.buses.a11y', { name: s.name, minutes: tn('station.minutes', Math.max(1, Math.round(walkMinutes(s.m)))), routes: s.routes.slice(0, 8).map((r) => r.short).join(', ') })} onPress={() => onPlan(s.id)} style={({ pressed }) => ({ flexDirection: 'row', gap: z(12), padding: z(12), borderRadius: z(16), backgroundColor: '#F8FAFD', borderWidth: 1, borderColor: CARD_LINE, opacity: pressed ? 0.9 : 1 })}>
               <View style={{ width: z(40), height: z(40), borderRadius: z(13), backgroundColor: '#E3F1FC', alignItems: 'center', justifyContent: 'center' }}>
                 <Bus size={z(20)} color="#0F6FC4" strokeWidth={1.9} />
               </View>
@@ -396,12 +414,12 @@ export function BusesSection({ stops, loading, onPlan }: { stops: NearbyStop[]; 
                   {s.name}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), flexWrap: 'wrap' }}>
-                  <Text style={{ fontSize: z(12), color: SLATE }}>
-                    ~{Math.max(1, Math.round(walkMinutes(s.m)))} min walk · ~{s.m} m
+                  <Text style={{ fontSize: z(12), color: SLATE, lineHeight: lineHeightFor(lang, z(12)) }}>
+                    {t('station.buses.walk', { min: Math.max(1, Math.round(walkMinutes(s.m))), m: s.m })}
                   </Text>
                   {s.named ? (
-                    <View style={{ paddingHorizontal: z(7), height: z(20), borderRadius: z(10), backgroundColor: '#E4F7EF', justifyContent: 'center' }}>
-                      <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#0B7A54' }}>“Metro” in the stop name</Text>
+                    <View style={{ paddingHorizontal: z(7), minHeight: z(20), borderRadius: z(10), backgroundColor: '#E4F7EF', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#0B7A54', lineHeight: lineHeightFor(lang, z(10.5)) }}>{t('station.buses.metroName')}</Text>
                     </View>
                   ) : null}
                 </View>
@@ -411,7 +429,7 @@ export function BusesSection({ stops, loading, onPlan }: { stops: NearbyStop[]; 
                       <Text style={{ fontSize: z(11), fontWeight: '800', color: AGENCY_LOOK[r.agency].color }}>{r.short}</Text>
                     </View>
                   ))}
-                  {s.routes.length > 8 ? <Text style={{ fontSize: z(11.5), color: SLATE, alignSelf: 'center' }}>+{s.routes.length - 8} more</Text> : null}
+                  {s.routes.length > 8 ? <Text style={{ fontSize: z(11.5), color: SLATE, alignSelf: 'center', lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.buses.more', { n: s.routes.length - 8 })}</Text> : null}
                 </View>
               </View>
               <ChevronRight size={z(18)} color="#5A5FA8" style={{ alignSelf: 'center' }} />
@@ -419,7 +437,7 @@ export function BusesSection({ stops, loading, onPlan }: { stops: NearbyStop[]; 
           ))}
         </View>
       )}
-      <Text style={{ fontSize: z(11.5), color: SLATE }}>From the bus timetable feed (unofficial, scheduled). Distances use the station’s approximate pin; red = BRTS, blue = city bus. Tap a stop to plan from it.</Text>
+      <Text style={{ fontSize: z(11.5), color: SLATE, lineHeight: lineHeightFor(lang, z(11.5)) }}>{t('station.buses.caption')}</Text>
     </Section>
   );
 }

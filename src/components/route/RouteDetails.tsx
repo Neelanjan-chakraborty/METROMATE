@@ -5,6 +5,7 @@ import { useHomeScale } from '../home/scale';
 import { Accordion, CARD_LINE, NAVY, SLATE, VIOLET } from './primitives';
 import { bandAt, bandText, serviceNow } from '../../lib/serviceNow';
 import { formatDate } from '../../lib/format';
+import { useT } from '../../i18n/useT';
 import type { Corridor, FareRules, TimetableLine, TimetableMetadata } from '../../types';
 
 /** The three "tap to open" sections: train schedule, ticket rules and fares, and good-to-know notes. */
@@ -21,9 +22,10 @@ export function ScheduleAccordion({
   nameOf: (id: string) => string;
 }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const now = new Date();
   return (
-    <Accordion icon={Clock} tint="#4F35E8" tintBg="#EFEDFF" title="Train schedule" subtitle="First & last train, how often trains run">
+    <Accordion icon={Clock} tint="#4F35E8" tintBg="#EFEDFF" title={t('route.details.schedule.title')} subtitle={t('route.details.schedule.subtitle')}>
       {lines.map(({ line, stationIds }) => {
         const s = serviceNow(line, stationIds, now);
         const current = bandAt(line, now);
@@ -35,17 +37,17 @@ export function ScheduleAccordion({
               <Text style={{ flex: 1, fontSize: z(14.5), fontWeight: '800', color: NAVY }}>{line.label.replace(' — ', ' · ')}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: z(8) }}>
-              <Mini z={z} label="First train" value={s.first ?? '—'} sub={`from ${nameOf(s.fromTerminalId)}`} />
-              <Mini z={z} label="Last train" value={s.last ?? '—'} sub={`from ${nameOf(s.fromTerminalId)}`} />
-              <Mini z={z} label="Whole line" value={`${line.endToEndMinutes} min`} sub={`${line.distanceKm} km`} />
+              <Mini z={z} label={t('route.service.firstTrain')} value={s.first ?? '—'} sub={t('route.details.from', { name: nameOf(s.fromTerminalId) })} />
+              <Mini z={z} label={t('route.service.lastTrain')} value={s.last ?? '—'} sub={t('route.details.from', { name: nameOf(s.fromTerminalId) })} />
+              <Mini z={z} label={t('route.details.wholeLine')} value={t('route.min', { n: line.endToEndMinutes })} sub={t('route.km', { n: line.distanceKm })} />
             </View>
             {line.frequency.map((f) => {
               const active = f === current;
               return (
                 <View key={f.label} style={{ flexDirection: 'row', alignItems: 'center', gap: z(10), padding: z(10), borderRadius: z(12), backgroundColor: active ? '#EFEDFF' : '#F8F8FD', borderWidth: 1, borderColor: active ? '#CFC8FF' : CARD_LINE }}>
                   <Text style={{ flex: 1, fontSize: z(12.5), color: NAVY }}>{f.label}</Text>
-                  {active ? <Text style={{ fontSize: z(10.5), fontWeight: '800', color: VIOLET }}>NOW</Text> : null}
-                  <Text style={{ fontSize: z(13), fontWeight: '800', color: NAVY }}>{bandText(f)}</Text>
+                  {active ? <Text style={{ fontSize: z(10.5), fontWeight: '800', color: VIOLET }}>{t('route.details.now')}</Text> : null}
+                  <Text style={{ fontSize: z(13), fontWeight: '800', color: NAVY }}>{bandText(f, t)}</Text>
                 </View>
               );
             })}
@@ -53,7 +55,7 @@ export function ScheduleAccordion({
         );
       })}
       <Note z={z} Icon={Info}>
-        Static GMRC schedule effective {formatDate(timetable.validFrom)} (page updated {formatDate(timetable.sourcePageLastUpdated)}). Not live. {timetable.notes.join(' ')}
+        {t('route.details.scheduleNote', { from: formatDate(timetable.validFrom, lang), updated: formatDate(timetable.sourcePageLastUpdated, lang) })} {timetable.notes.join(' ')}
       </Note>
     </Accordion>
   );
@@ -61,16 +63,17 @@ export function ScheduleAccordion({
 
 export function TicketAccordion({ rules, fareText, fareNote }: { rules: FareRules; fareText: string; fareNote: string }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   return (
-    <Accordion icon={Ticket} tint="#0F6FC4" tintBg="#E3F1FC" title="Ticket rules & fares" subtitle="Fare, smart card, concessions">
+    <Accordion icon={Ticket} tint="#0F6FC4" tintBg="#E3F1FC" title={t('route.details.ticket.title')} subtitle={t('route.details.ticket.subtitle')}>
       <View style={{ padding: z(12), borderRadius: z(14), backgroundColor: '#F8F8FD', borderWidth: 1, borderColor: CARD_LINE, gap: z(3) }}>
         <Text style={{ fontSize: z(16), fontWeight: '800', color: NAVY }}>{fareText}</Text>
         <Text style={{ fontSize: z(12.5), color: SLATE }}>{fareNote}</Text>
       </View>
-      <Chips z={z} title="Ticket types" items={rules.products} />
-      <Chips z={z} title="Pay with" items={rules.media} />
+      <Chips z={z} title={t('route.details.ticketTypes')} items={rules.products} />
+      <Chips z={z} title={t('route.details.payWith')} items={rules.media} />
       <View style={{ gap: z(6) }}>
-        <Text style={{ fontSize: z(12), fontWeight: '800', color: SLATE, letterSpacing: 0.6 }}>KEY RULES</Text>
+        <Text style={{ fontSize: z(12), fontWeight: '800', color: SLATE, letterSpacing: lang === 'en' ? 0.6 : 0 }}>{t('route.details.keyRules')}</Text>
         {rules.rules.map((r) => (
           <View key={r} style={{ flexDirection: 'row', gap: z(8) }}>
             <Text style={{ color: VIOLET, fontWeight: '800' }}>•</Text>
@@ -79,7 +82,7 @@ export function TicketAccordion({ rules, fareText, fareNote }: { rules: FareRule
         ))}
       </View>
       <Note z={z} Icon={TriangleAlert} tone="warn">
-        {rules.phaseRestriction.text} Part of this rule isn’t available offline, so confirm at the station if your trip crosses between Motera Stadium and Koteshwar Road.
+        {rules.phaseRestriction.text} {t('route.details.phaseNote')}
       </Note>
     </Accordion>
   );
@@ -87,24 +90,23 @@ export function TicketAccordion({ rules, fareText, fareNote }: { rules: FareRule
 
 export function GoodToKnowAccordion({ destination, towards, checkedOn, hasMinutes }: { destination: string; towards: string[]; checkedOn: string; hasMinutes: boolean }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   return (
-    <Accordion icon={Info} tint="#B45309" tintBg="#FEF3C7" title="Good to know" subtitle="Platforms, exits, and how times are worked out">
-      <Fact z={z} Icon={Layers} title="Platforms">
-        Platform numbers aren’t published. Follow the signs for “Towards {towards.join(' / ')}”.
+    <Accordion icon={Info} tint="#B45309" tintBg="#FEF3C7" title={t('route.details.good.title')} subtitle={t('route.details.good.subtitle')}>
+      <Fact z={z} Icon={Layers} title={t('route.details.platforms.title')}>
+        {t('route.details.platforms.body', { towards: towards.join(' / ') })}
       </Fact>
-      <Fact z={z} Icon={DoorOpen} title="Exit gates">
-        Which gate faces which street at {destination} isn’t verified. Follow the exit signs inside the station.
+      <Fact z={z} Icon={DoorOpen} title={t('route.details.exits.title')}>
+        {t('route.details.exits.body', { destination })}
       </Fact>
-      <Fact z={z} Icon={Clock} title="About the minutes">
-        {hasMinutes
-          ? 'Estimates: GMRC’s published time for each line, shared across the stops by distance (station positions are approximate). They leave out waiting and the walk to change trains.'
-          : 'GMRC publishes whole-line times but not times between stations, so no per-stop minutes are shown.'}
+      <Fact z={z} Icon={Clock} title={t('route.details.minutes.title')}>
+        {t(hasMinutes ? 'route.details.minutes.withMinutes' : 'route.details.minutes.noMinutes')}
       </Fact>
-      <Fact z={z} Icon={TrainFront} title="Not live">
-        MetroMate works offline and has no live train feed, so it shows the published schedule, never the next train’s arrival.
+      <Fact z={z} Icon={TrainFront} title={t('route.details.notLive.title')}>
+        {t('route.details.notLive.body')}
       </Fact>
-      <Fact z={z} Icon={MapPin} title="Route choice">
-        Fewest stops first, then fewest changes. Network layout from the GMRC route map, checked {formatDate(checkedOn)}.
+      <Fact z={z} Icon={MapPin} title={t('route.details.routeChoice.title')}>
+        {t('route.details.routeChoice.body', { date: formatDate(checkedOn, lang) })}
       </Fact>
     </Accordion>
   );
@@ -117,7 +119,7 @@ export function Mini({ z, label, value, sub }: { z: (n: number) => number; label
       <Text style={{ fontSize: z(17), fontWeight: '800', color: NAVY }} numberOfLines={1}>
         {value}
       </Text>
-      <Text style={{ fontSize: z(10.5), color: SLATE }} numberOfLines={1}>
+      <Text style={{ fontSize: z(10.5), color: SLATE }} numberOfLines={2}>
         {sub}
       </Text>
     </View>
@@ -125,9 +127,10 @@ export function Mini({ z, label, value, sub }: { z: (n: number) => number; label
 }
 
 function Chips({ z, title, items }: { z: (n: number) => number; title: string; items: string[] }) {
+  const { lang } = useT();
   return (
     <View style={{ gap: z(6) }}>
-      <Text style={{ fontSize: z(12), fontWeight: '800', color: SLATE, letterSpacing: 0.6 }}>{title.toUpperCase()}</Text>
+      <Text style={{ fontSize: z(12), fontWeight: '800', color: SLATE, letterSpacing: lang === 'en' ? 0.6 : 0 }}>{title.toUpperCase()}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: z(6) }}>
         {items.map((i) => (
           <View key={i} style={{ paddingHorizontal: z(10), paddingVertical: z(5), borderRadius: z(12), backgroundColor: '#F1EFFF' }}>
@@ -166,9 +169,10 @@ function Fact({ z, Icon, title, children }: { z: (n: number) => number; Icon: ty
 /** Station page: both ends' first and last trains for each line through the station, and the frequency bands. */
 export function StationTimingsAccordion({ lines, timetable, corridors, nameOf }: { lines: TimetableLine[]; timetable: TimetableMetadata; corridors: Map<string, Corridor>; nameOf: (id: string) => string }) {
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   const now = new Date();
   return (
-    <Accordion icon={Clock} tint="#4F35E8" tintBg="#EFEDFF" title="Timings & frequency" subtitle="First & last train, how often trains run">
+    <Accordion icon={Clock} tint="#4F35E8" tintBg="#EFEDFF" title={t('route.details.station.title')} subtitle={t('route.details.schedule.subtitle')}>
       {lines.map((line) => {
         const current = bandAt(line, now);
         const color = corridors.get(line.corridorId)?.color ?? VIOLET;
@@ -179,13 +183,13 @@ export function StationTimingsAccordion({ lines, timetable, corridors, nameOf }:
               <Text style={{ flex: 1, fontSize: z(14.5), fontWeight: '800', color: NAVY }}>{line.label.replace(' — ', ' · ')}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: z(8) }}>
-              {line.firstTrain.slice(0, 2).map((t) => (
-                <Mini key={`f${t.stationId}`} z={z} label="First train" value={t.time} sub={`from ${nameOf(t.stationId)}`} />
+              {line.firstTrain.slice(0, 2).map((ft) => (
+                <Mini key={`f${ft.stationId}`} z={z} label={t('route.service.firstTrain')} value={ft.time} sub={t('route.details.from', { name: nameOf(ft.stationId) })} />
               ))}
             </View>
             <View style={{ flexDirection: 'row', gap: z(8) }}>
-              {line.lastTrain.slice(0, 2).map((t) => (
-                <Mini key={`l${t.stationId}`} z={z} label="Last train" value={t.time} sub={`from ${nameOf(t.stationId)}`} />
+              {line.lastTrain.slice(0, 2).map((lt) => (
+                <Mini key={`l${lt.stationId}`} z={z} label={t('route.service.lastTrain')} value={lt.time} sub={t('route.details.from', { name: nameOf(lt.stationId) })} />
               ))}
             </View>
             {line.frequency.map((f) => {
@@ -193,8 +197,8 @@ export function StationTimingsAccordion({ lines, timetable, corridors, nameOf }:
               return (
                 <View key={f.label} style={{ flexDirection: 'row', alignItems: 'center', gap: z(10), padding: z(10), borderRadius: z(12), backgroundColor: active ? '#EFEDFF' : '#F8F8FD', borderWidth: 1, borderColor: active ? '#CFC8FF' : CARD_LINE }}>
                   <Text style={{ flex: 1, fontSize: z(12.5), color: NAVY }}>{f.label}</Text>
-                  {active ? <Text style={{ fontSize: z(10.5), fontWeight: '800', color: VIOLET }}>NOW</Text> : null}
-                  <Text style={{ fontSize: z(13), fontWeight: '800', color: NAVY }}>{bandText(f)}</Text>
+                  {active ? <Text style={{ fontSize: z(10.5), fontWeight: '800', color: VIOLET }}>{t('route.details.now')}</Text> : null}
+                  <Text style={{ fontSize: z(13), fontWeight: '800', color: NAVY }}>{bandText(f, t)}</Text>
                 </View>
               );
             })}
@@ -202,7 +206,7 @@ export function StationTimingsAccordion({ lines, timetable, corridors, nameOf }:
         );
       })}
       <Note z={z} Icon={Info}>
-        First and last trains are at each line’s end stations; at this station they are a little later or earlier. Static GMRC schedule effective {formatDate(timetable.validFrom)}, not live. {timetable.notes.join(' ')}
+        {t('route.details.station.note', { from: formatDate(timetable.validFrom, lang) })} {timetable.notes.join(' ')}
       </Note>
     </Accordion>
   );

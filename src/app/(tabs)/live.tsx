@@ -19,7 +19,8 @@ import { useReady } from '../../state/useReady';
 import { useLocation, type Precision } from '../../hooks/useLocation';
 import { findRoute } from '../../lib/routing';
 import { findFarePair } from '../../lib/fareCalculator';
-import { cardFromSignalLoss, describeLocationCard, describeSignalLoss, walkingDirectionsUrl, type LocationCardText } from '../../lib/liveText';
+import { cardFromSignalLoss, describeLocationCard, describeSignalLoss, lastKnownText, walkingDirectionsUrl, type LocationCardText } from '../../lib/liveText';
+import { useT } from '../../i18n/useT';
 import { isHeadingAway, isUndergroundLink, locate, signalState, trackJourney } from '../../lib/locator';
 import { resolvePosition } from '../../lib/position';
 
@@ -31,6 +32,7 @@ export default function LiveScreen() {
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
   const { online } = useApp();
+  const { t } = useT();
   const { look, focused, animate, reduceMotion } = useHeroState(params.sky);
   const [precision, setPrecision] = useState<Precision>('precise');
   const loc = useLocation(true, precision);
@@ -44,8 +46,9 @@ export default function LiveScreen() {
   const [tracking, setTracking] = useState(false);
   /** The full-screen live view is open (tracking can continue while it is minimised). */
   const [immersive, setImmersive] = useState(false);
-  const [trackWarn, setTrackWarn] = useState<string | null>(null);
-  const [note, setNote] = useState<string | null>(null);
+  /** Kept as data (not text) so the message follows a language change. 'route' shows the router's own message. */
+  const [trackWarn, setTrackWarn] = useState<'choose' | 'same' | 'route' | null>(null);
+  const [startedFrom, setStartedFrom] = useState<string | null>(null);
 
   // Pre-fill from "Track live" on the route screen, once per set of params.
   const paramKey = `${params.from ?? ''}|${params.to ?? ''}`;
@@ -53,16 +56,16 @@ export default function LiveScreen() {
   if (paramKey !== appliedKey) {
     setAppliedKey(paramKey);
     const f = params.from && network.stations.has(params.from) ? params.from : null;
-    const t = params.to && network.stations.has(params.to) ? params.to : null;
+    const toParam = params.to && network.stations.has(params.to) ? params.to : null;
     if (f) setFromId(f);
-    if (t) setToId(t);
+    if (toParam) setToId(toParam);
     setManualIdx(null);
     setDemoIdx(null);
     // "Track" on the route screen has already chosen both ends, so start following straight away.
-    setTracking(!!f && !!t && f !== t);
-    setImmersive(!!f && !!t && f !== t);
+    setTracking(!!f && !!toParam && f !== toParam);
+    setImmersive(!!f && !!toParam && f !== toParam);
     setTrackWarn(null);
-    setNote(null);
+    setStartedFrom(null);
   }
 
   const nameOf = (id: string) => network.stations.get(id)?.name ?? id;
@@ -75,21 +78,18 @@ export default function LiveScreen() {
     if (!loc.fix || !located) return null;
     if (signal === 'lost') {
       const age = Math.round((loc.now - loc.fix.timestamp) / 1000);
-      let lastKnown: string | null = null;
       let underground = false;
       const st = (id: string) => network.stations.get(id);
       if (located.kind === 'at-station' || located.kind === 'near-station') {
-        lastKnown = `${located.kind === 'at-station' ? 'at' : 'near'} ${nameOf(located.stationId)}`;
         underground = st(located.stationId)?.stationType === 'underground';
       } else if (located.kind === 'between') {
-        lastKnown = `between ${nameOf(located.fromId)} and ${nameOf(located.toId)}`;
         underground = isUndergroundLink(st(located.fromId), st(located.toId));
       }
-      return cardFromSignalLoss(describeSignalLoss(age, lastKnown, underground));
+      return cardFromSignalLoss(describeSignalLoss(age, lastKnownText(located, nameOf, t), underground, t));
     }
-    return describeLocationCard(located, nameOf, loc.fix.accuracyM);
+    return describeLocationCard(located, nameOf, loc.fix.accuracyM, t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loc.fix, loc.now, located, signal, network]);
+  }, [loc.fix, loc.now, located, signal, network, t]);
 
   // ---- journey
   const routeOutcome = useMemo(() => (fromId && toId ? findRoute(network, fromId, toId) : null), [network, fromId, toId]);
@@ -112,8 +112,8 @@ export default function LiveScreen() {
   const lastIdx = routeIds ? routeIds.length - 1 : 0;
   useEffect(() => {
     if (!demoRunning) return;
-    const t = setInterval(() => setDemoIdx((i) => (i === null ? null : Math.min(lastIdx, i + 1))), 2500);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setDemoIdx((i) => (i === null ? null : Math.min(lastIdx, i + 1))), 2500);
+    return () => clearInterval(timer);
   }, [demoRunning, lastIdx]);
 
   // ---- arrival alert (foreground only)
@@ -156,18 +156,18 @@ export default function LiveScreen() {
     setTracking(false);
     setImmersive(false);
     setTrackWarn(null);
-    setNote(null);
+    setStartedFrom(null);
     setManualIdx(null);
     setDemoIdx(null);
   };
 
   const toggleTracking = () => {
     if (tracking) return stationsChanged();
-    if (!fromId || !toId) return setTrackWarn('Choose both a starting station and a destination.');
-    if (fromId === toId) return setTrackWarn('Your start and destination are the same station.');
-    if (routeOutcome && !routeOutcome.ok) return setTrackWarn(routeOutcome.message);
+    if (!fromId || !toId) return setTrackWarn('choose');
+    if (fromId === toId) return setTrackWarn('same');
+    if (routeOutcome && !routeOutcome.ok) return setTrackWarn('route');
     setTrackWarn(null);
-    setNote(null);
+    setStartedFrom(null);
     setTracking(true);
     setImmersive(true);
   };
@@ -183,22 +183,33 @@ export default function LiveScreen() {
   const confirmClearAll = () => {
     const run = () => void clearStationCoords();
     if (Platform.OS === 'web') return run();
-    Alert.alert('Remove all recorded positions?', 'Station positions go back to the built-in map pins.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: run },
+    Alert.alert(t('live.screen.clearAllTitle'), t('live.screen.clearAllBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('live.screen.remove'), style: 'destructive', onPress: run },
     ]);
   };
 
   const badge: HeaderBadge = {
-    label: online === false ? 'Offline mode' : 'Offline ready',
+    label: online === false ? t('live.badge.offlineMode') : t('live.badge.offlineReady'),
     Icon: Wifi,
-    accessibilityLabel: online === false ? 'Offline mode. Live location still works from stored station positions.' : 'Offline ready. Live location works without internet.',
+    accessibilityLabel: online === false ? t('live.badge.offlineMode.a11y') : t('live.badge.offlineReady.a11y'),
   };
-  const hint =
-    note ??
-    (tracking && route
-      ? `Following ${nameOf(route.originId)} to ${nameOf(route.destinationId)}.`
-      : 'Pick your start and destination to follow your progress stop by stop.');
+  const hint = startedFrom
+    ? t('live.screen.startingFrom', { name: nameOf(startedFrom) })
+    : tracking && route
+      ? t('live.screen.hintFollowing', { from: nameOf(route.originId), to: nameOf(route.destinationId) })
+      : t('live.screen.hintPick');
+  const routeMessage = routeOutcome && !routeOutcome.ok ? routeOutcome.message : null;
+  const warnText =
+    trackWarn === 'choose'
+      ? t('live.screen.warnChoose')
+      : trackWarn === 'same'
+        ? t('live.screen.warnSame')
+        : trackWarn === 'route'
+          ? routeMessage
+          : tracking
+            ? routeMessage
+            : null;
 
   return (
     <Screen edges={[]}>
@@ -207,7 +218,7 @@ export default function LiveScreen() {
         <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
           <View>
             <Hero height={z(128) + insets.top} look={look} animate={animate} mode="arrive" />
-            <HomeHeader topInset={insets.top} ink={look.ink} inkSoft={look.inkSoft} tagline="Live · Track · Reach Faster" badge={badge} />
+            <HomeHeader topInset={insets.top} ink={look.ink} inkSoft={look.inkSoft} tagline={t('live.tagline')} badge={badge} />
             <View style={{ height: z(21) }} />
           </View>
 
@@ -240,39 +251,37 @@ export default function LiveScreen() {
                 }}
                 tracking={tracking}
                 onToggle={toggleTracking}
-                useLocationLabel={loc.permission === 'granted' && nearestStationId ? `Use ${nameOf(nearestStationId)}, the nearest station to me, as my start` : null}
+                useLocationLabel={loc.permission === 'granted' && nearestStationId ? t('live.screen.useNearest.a11y', { name: nameOf(nearestStationId) }) : null}
                 onUseLocation={() => {
                   if (!nearestStationId) return;
                   setFromId(nearestStationId);
                   stationsChanged();
-                  setNote(`Starting from ${nameOf(nearestStationId)}, the nearest station to you.`);
+                  setStartedFrom(nearestStationId);
                 }}
                 hint={hint}
-                warn={trackWarn ?? (routeOutcome && !routeOutcome.ok && tracking ? routeOutcome.message : null)}
+                warn={warnText}
               />
             </View>
 
             {tracking && route && !immersive ? (
               <View style={{ marginHorizontal: z(16), gap: z(10) }}>
                 {undergroundOnRoute.length > 0 ? (
-                  <Notice title="Underground section on this route">
-                    GPS can’t reach underground stations ({undergroundOnRoute.map(nameOf).join(', ')}). The live view then shows an estimate, clearly labelled, until GPS returns.
-                  </Notice>
+                  <Notice title={t('live.screen.undergroundTitle')}>{t('live.screen.undergroundBody', { names: undergroundOnRoute.map(nameOf).join(', ') })}</Notice>
                 ) : null}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="Open the live journey view"
+                  accessibilityLabel={t('live.screen.openView.a11y')}
                   onPress={() => setImmersive(true)}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: '#ECE9FF' }}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, minHeight: 44, borderRadius: 18, backgroundColor: '#ECE9FF' }}
                 >
                   <Maximize2 size={20} color={colors.primary} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 14.5, fontWeight: '800', color: colors.text }}>Live journey view</Text>
+                    <Text style={{ fontSize: 14.5, fontWeight: '800', color: colors.text }}>{t('live.screen.viewTitle')}</Text>
                     <Text style={{ fontSize: 12, color: colors.slate }}>
-                      {nameOf(route.originId)} to {nameOf(route.destinationId)} · tracking continues
+                      {t('live.screen.viewSub', { from: nameOf(route.originId), to: nameOf(route.destinationId) })}
                     </Text>
                   </View>
-                  <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>Open</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '800', color: colors.primary }}>{t('live.screen.open')}</Text>
                 </Pressable>
               </View>
             ) : null}
@@ -334,7 +343,7 @@ export default function LiveScreen() {
 
       <StationPicker
         visible={picker !== null}
-        title={picker === 'from' ? 'Starting station' : 'Destination'}
+        title={picker === 'from' ? t('live.pick.from') : t('live.pick.to')}
         allowBus={false}
         onClose={() => setPicker(null)}
         onSelect={(id) => {

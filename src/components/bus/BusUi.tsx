@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Clock, type LucideIcon } from 'lucide-react-native';
 import { Gradient } from '../route/primitives';
 import { useHomeScale } from '../home/scale';
-import { AGENCY_LOOK } from '../../lib/transit/format';
+import { AGENCY_LOOK, agencyLabel } from '../../lib/transit/format';
+import { useT } from '../../i18n/useT';
 import type { AgencyId } from '../../lib/transit/types';
 import { bus } from '../../theme/bus';
 
@@ -15,10 +16,11 @@ export const busShadow = { shadowColor: '#7A1C1C', shadowOpacity: 0.08, shadowRa
 /** Route number in the agency's colour: BRTS red, AMTS blue, Gandhinagar green. */
 export function RouteBadge({ agency, short, size = 1 }: { agency: AgencyId; short: string; size?: number }) {
   const { z } = useHomeScale();
+  const { t } = useT();
   const look = AGENCY_LOOK[agency];
   const long = short.length > 4;
   return (
-    <View style={{ minWidth: z(46 * size), height: z(34 * size), paddingHorizontal: z(8), borderRadius: z(10 * size), backgroundColor: look.color, alignItems: 'center', justifyContent: 'center' }} accessible accessibilityLabel={`${look.label} route ${short}`}>
+    <View style={{ minWidth: z(46 * size), height: z(34 * size), paddingHorizontal: z(8), borderRadius: z(10 * size), backgroundColor: look.color, alignItems: 'center', justifyContent: 'center' }} accessible accessibilityLabel={t('bus.routeBadge.a11y', { agency: agencyLabel(agency, t), short })}>
       <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: z((long ? 12 : 15) * size), letterSpacing: -0.2 }} numberOfLines={1}>
         {short}
       </Text>
@@ -29,14 +31,15 @@ export function RouteBadge({ agency, short, size = 1 }: { agency: AgencyId; shor
 /** "Scheduled · not live": on every screen that shows bus times. */
 export function ScheduledTag({ light }: { light?: boolean }) {
   const { z } = useHomeScale();
+  const { t } = useT();
   return (
     <View
-      style={{ flexDirection: 'row', alignItems: 'center', gap: z(5), height: z(26), paddingHorizontal: z(10), borderRadius: z(13), backgroundColor: light ? 'rgba(255,255,255,0.18)' : bus.soft }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: z(5), minHeight: z(26), paddingVertical: z(3), paddingHorizontal: z(10), borderRadius: z(13), backgroundColor: light ? 'rgba(255,255,255,0.18)' : bus.soft }}
       accessible
-      accessibilityLabel="Scheduled times from the timetable, not live"
+      accessibilityLabel={t('bus.scheduled.a11y')}
     >
       <Clock size={z(13)} color={light ? '#FFFFFF' : bus.dark} strokeWidth={2.2} />
-      <Text style={{ fontSize: z(12), fontWeight: '700', color: light ? '#FFFFFF' : bus.dark }}>Scheduled · not live</Text>
+      <Text style={{ flexShrink: 1, fontSize: z(12), fontWeight: '700', color: light ? '#FFFFFF' : bus.dark }}>{t('bus.scheduled')}</Text>
     </View>
   );
 }
@@ -63,15 +66,16 @@ export function SectionHead({ icon: Icon, title, right }: { icon?: LucideIcon; t
 export function BusTopBar({ title, subtitle, onBack, right, children }: { title: string; subtitle?: string; onBack: () => void; right?: React.ReactNode; children?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
+  const { t, lang } = useT();
   return (
     <View style={{ paddingTop: insets.top + z(10), paddingBottom: z(16), paddingHorizontal: 16, overflow: 'hidden' }}>
       <Gradient id="bus-top" vertical stops={[{ at: 0, color: bus.red }, { at: 1, color: bus.dark }]} />
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(12) }}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={onBack} hitSlop={8} style={({ pressed }) => [styles.back, { width: z(42), height: z(42), borderRadius: z(21), opacity: pressed ? 0.8 : 1 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} onPress={onBack} hitSlop={8} style={({ pressed }) => [styles.back, { width: z(42), height: z(42), borderRadius: z(21), opacity: pressed ? 0.8 : 1 }]}>
           <ChevronLeft size={z(24)} color="#FFFFFF" />
         </Pressable>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ fontSize: z(22), fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.4 }} numberOfLines={2} accessibilityRole="header">
+          <Text style={{ fontSize: z(22), fontWeight: '800', color: '#FFFFFF', letterSpacing: lang === 'en' ? -0.4 : 0 }} numberOfLines={2} accessibilityRole="header">
             {title}
           </Text>
           {subtitle ? (
@@ -98,7 +102,7 @@ export function ListRow({ lead, title, sub, trail, onPress, label }: { lead?: Re
           {title}
         </Text>
         {sub ? (
-          <Text style={{ fontSize: z(12.5), color: bus.inkSoft, marginTop: 1 }} numberOfLines={1}>
+          <Text style={{ fontSize: z(12.5), color: bus.inkSoft, marginTop: 1 }} numberOfLines={2}>
             {sub}
           </Text>
         ) : null}

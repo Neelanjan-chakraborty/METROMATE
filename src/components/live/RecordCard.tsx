@@ -6,6 +6,7 @@ import { StationPicker } from '../StationPicker';
 import { PositionArt } from './LiveArt';
 import { NAVY, SLATE, VIOLET, useLive } from './LiveSections';
 import { colors } from '../../theme';
+import { useT } from '../../i18n/useT';
 import { RECORD_MAX_ACCURACY_M, type Fix } from '../../lib/locator';
 import type { Station, StationCoord } from '../../types';
 
@@ -28,7 +29,9 @@ interface Props {
 export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onClearOne, onClearAll }: Props) {
   const [picker, setPicker] = useState(false);
   const [chosen, setChosen] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  /** The outcome of the last attempt, kept as data so it follows a language change. */
+  const [outcome, setOutcome] = useState<{ kind: 'saved'; id: string; samples: number; accuracyM: number } | { kind: 'rejected' } | null>(null);
+  const { t, tn, lang } = useT();
   const stationId = chosen ?? suggestedId;
   const name = (id: string) => stations.get(id)?.name ?? id;
   const acc = fix?.accuracyM ?? null;
@@ -37,11 +40,7 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
   const record = async () => {
     if (!stationId) return;
     const saved = await onRecord(stationId);
-    setMessage(
-      saved
-        ? `Saved ${name(stationId)}: ${saved.samples} ${saved.samples === 1 ? 'fix' : 'fixes'} averaged, about ±${Math.max(1, Math.round(saved.accuracyM))} m.`
-        : `That fix isn’t accurate enough (needs ±${RECORD_MAX_ACCURACY_M} m or better). Wait for a better fix.`,
-    );
+    setOutcome(saved ? { kind: 'saved', id: stationId, samples: saved.samples, accuracyM: saved.accuracyM } : { kind: 'rejected' });
   };
 
   const share = () => {
@@ -61,8 +60,15 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
   };
 
   const { z, st } = useLive();
-  const rs = useMemo(() => makeRecordStyles(z), [z]);
+  const rs = useMemo(() => makeRecordStyles(z, lang !== 'en'), [z, lang]);
   const enabled = !!stationId && goodEnough;
+  const fixes = (n: number) => tn('live.record.fixes', n);
+  const message =
+    outcome === null
+      ? null
+      : outcome.kind === 'saved'
+        ? t('live.record.saved', { name: name(outcome.id), fixes: fixes(outcome.samples), m: Math.max(1, Math.round(outcome.accuracyM)) })
+        : t('live.record.rejected', { max: RECORD_MAX_ACCURACY_M });
 
   return (
     <View style={st.card}>
@@ -70,12 +76,12 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
         <View style={st.smallCircle}>
           <MapPin size={z(15)} color={VIOLET} strokeWidth={2.1} />
         </View>
-        <Text style={[st.howTitle, { flex: 1, fontSize: z(15) }]} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-          Improve station positions
+        <Text style={[st.howTitle, { flex: 1, fontSize: z(15) }]} accessibilityRole="header">
+          {t('live.record.title')}
         </Text>
-        <Pressable accessibilityRole="button" accessibilityLabel={stationId ? `Station: ${name(stationId)}. Change station` : 'Choose a station'} onPress={() => setPicker(true)} hitSlop={8} style={({ pressed }) => [st.chip, pressed && { opacity: 0.8 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel={stationId ? t('live.record.stationA11y', { name: name(stationId) }) : t('live.record.chooseA11y')} onPress={() => setPicker(true)} hitSlop={8} style={({ pressed }) => [st.chip, pressed && { opacity: 0.8 }]}>
           <MapIcon size={z(14)} color={VIOLET} strokeWidth={2.1} />
-          <Text style={st.chipText}>Change station</Text>
+          <Text style={st.chipText}>{t('live.record.change')}</Text>
         </Pressable>
       </View>
 
@@ -83,17 +89,17 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
         <PositionArt width={z(115)} height={z(108)} radius={z(14)} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={rs.text}>
-            Help make MetroMate more accurate. Stand in the station, record your GPS position, and we’ll improve the station pin (stored only on this phone).
+            {t('live.record.intro')}
           </Text>
-          <Text style={rs.station} numberOfLines={1}>
-            {stationId ? `Recording for ${name(stationId)}` : 'Choose the station you’re at'}
+          <Text style={rs.station}>
+            {stationId ? t('live.record.recordingFor', { name: name(stationId) }) : t('live.record.chooseHere')}
           </Text>
         </View>
       </View>
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Record my position here"
+        accessibilityLabel={t('live.record.button')}
         accessibilityState={{ disabled: !enabled }}
         disabled={!enabled}
         onPress={() => void record()}
@@ -102,17 +108,19 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
         <View style={rs.recordIcon}>
           <View style={rs.recordDot} />
         </View>
-        <Text style={rs.recordLabel}>Record my position here</Text>
+        <Text style={rs.recordLabel}>{t('live.record.button')}</Text>
       </Pressable>
 
       <View style={rs.info}>
         <Info size={z(15)} color={SLATE} strokeWidth={2} style={{ marginTop: z(1) }} />
         <Text style={[st.caption, { flex: 1, marginTop: 0 }]}>
           {!fix
-            ? 'Waiting for a GPS fix.'
+            ? t('live.record.waitingFix')
             : goodEnough
-              ? `Current fix ±${Math.round(acc!)} m is good enough. Record 2–3 times, a few seconds apart, for a better average.`
-              : `Current fix is ${acc === null ? 'of unknown accuracy' : `±${Math.round(acc)} m`}; recording needs ±${RECORD_MAX_ACCURACY_M} m or better. Step outdoors or wait.`}
+              ? t('live.record.goodEnough', { m: Math.round(acc!) })
+              : acc === null
+                ? t('live.record.unknownAcc', { max: RECORD_MAX_ACCURACY_M })
+                : t('live.record.tooCoarse', { m: Math.round(acc), max: RECORD_MAX_ACCURACY_M })}
         </Text>
       </View>
       {message ? (
@@ -123,47 +131,47 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
 
       {coords.length > 0 ? (
         <View style={rs.list}>
-          <Text style={rs.listTitle}>Recorded on this phone ({coords.length})</Text>
+          <Text style={rs.listTitle}>{t('live.record.listTitle', { n: coords.length })}</Text>
           {coords.map((c) => (
             <View key={c.stationId} style={rs.recRow}>
               <Text style={[st.caption, { flex: 1, marginTop: 0, color: '#39425E' }]}>
-                {name(c.stationId)} · {c.samples} {c.samples === 1 ? 'fix' : 'fixes'} · ±{Math.max(1, Math.round(c.accuracyM))} m
+                {name(c.stationId)} · {fixes(c.samples)} · {t('live.unit.pmM', { v: Math.max(1, Math.round(c.accuracyM)) })}
               </Text>
-              <IconButton icon={Trash2} label={`Remove recorded position for ${name(c.stationId)}`} color={colors.destination} onPress={() => onClearOne(c.stationId)} />
+              <IconButton icon={Trash2} label={t('live.record.remove.a11y', { name: name(c.stationId) })} color={colors.destination} onPress={() => onClearOne(c.stationId)} />
             </View>
           ))}
           <View style={{ flexDirection: 'row', gap: z(10), marginTop: z(4) }}>
-            <Button label="Share as JSON" icon={Share2} variant="secondary" compact style={{ flex: 1 }} onPress={share} />
-            <Button label="Clear all" icon={Trash2} variant="danger" compact style={{ flex: 1 }} onPress={onClearAll} />
+            <Button label={t('live.record.share')} icon={Share2} variant="secondary" compact style={{ flex: 1 }} onPress={share} />
+            <Button label={t('live.record.clearAll')} icon={Trash2} variant="danger" compact style={{ flex: 1 }} onPress={onClearAll} />
           </View>
         </View>
       ) : null}
 
       <StationPicker
         visible={picker}
-        title="Which station are you at?"
+        title={t('live.record.pickTitle')}
         allowBus={false}
         onClose={() => setPicker(false)}
         onSelect={(id) => {
           setChosen(id);
-          setMessage(null);
+          setOutcome(null);
         }}
       />
     </View>
   );
 }
 
-function makeRecordStyles(z: (n: number) => number) {
+function makeRecordStyles(z: (n: number) => number, indic: boolean) {
   return StyleSheet.create({
     head: { flexDirection: 'row', alignItems: 'center', gap: z(9) },
     body: { flexDirection: 'row', gap: z(14), marginTop: z(13), alignItems: 'flex-start' },
-    text: { fontSize: z(11.5), lineHeight: z(16.5), color: '#66718C' },
+    text: { fontSize: z(11.5), lineHeight: indic ? z(22) : z(16.5), color: '#66718C' },
     station: { fontSize: z(11.5), fontWeight: '700', color: VIOLET, marginTop: z(7) },
-    record: { marginTop: z(12), height: z(38), borderRadius: z(12), backgroundColor: VIOLET, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: z(10), shadowColor: VIOLET, shadowOpacity: 0.28, shadowRadius: z(10), shadowOffset: { width: 0, height: z(5) }, elevation: 4 },
+    record: { marginTop: z(12), minHeight: z(44), paddingVertical: z(6), paddingHorizontal: z(12), borderRadius: z(12), backgroundColor: VIOLET, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: z(10), shadowColor: VIOLET, shadowOpacity: 0.28, shadowRadius: z(10), shadowOffset: { width: 0, height: z(5) }, elevation: 4 },
     recordOff: { backgroundColor: '#B8ADF4', shadowOpacity: 0, elevation: 0 },
     recordIcon: { width: z(20), height: z(20), borderRadius: z(10), borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
     recordDot: { width: z(11), height: z(11), borderRadius: z(6), backgroundColor: '#FFFFFF' },
-    recordLabel: { fontSize: z(13), fontWeight: '700', color: '#FFFFFF' },
+    recordLabel: { flexShrink: 1, textAlign: 'center', fontSize: z(13), fontWeight: '700', color: '#FFFFFF' },
     info: { marginTop: z(10), flexDirection: 'row', gap: z(8), alignItems: 'flex-start' },
     list: { marginTop: z(14), paddingTop: z(12), borderTopWidth: 1, borderTopColor: '#ECEEF8', gap: z(6) },
     listTitle: { fontSize: z(14), fontWeight: '800', color: NAVY },
