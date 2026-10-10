@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bus as BusIcon, ChevronRight, Info, Map as MapIcon, MapPin, Repeat, Search, X } from 'lucide-react-native';
+import { ChevronRight, Info, Map as MapIcon, MapPin, Repeat, Search, X } from 'lucide-react-native';
 import { BusCard, Divider, RouteBadge, ScheduledTag, busShadow } from '../../components/bus/BusUi';
-import { Gradient } from '../../components/route/primitives';
+import { BusHero } from '../../components/bus/BusHero';
+import { HERO_H, HERO_W, LIFT } from '../../components/bus/busHeroGeometry';
+import { useHeroState } from '../../components/home/useHeroClock';
 import { useHomeScale } from '../../components/home/scale';
 import { AGENCY_LOOK, dayOffset, formatClockMinutes } from '../../lib/transit/format';
 import { searchStops } from '../../lib/transit/places';
@@ -20,8 +22,12 @@ type Item = { kind: 'route'; r: RouteInfo } | { kind: 'stop'; stop: number; name
 
 export default function BusScreen() {
   const insets = useSafeAreaInsets();
-  const { z } = useHomeScale();
+  const { z, width } = useHomeScale();
   const state = useTransit(true);
+  const { sky } = useLocalSearchParams<{ sky?: string }>();
+  const { look, animate } = useHeroState(sky);
+  const heroH = insets.top + z(46) + (HERO_H + LIFT) * (width / HERO_W);
+  const titleInk = look.night > 0.5 ? '#FFFFFF' : bus.dark;
   const [query, setQuery] = useState('');
   const [agency, setAgency] = useState<AgencyId>('AJL');
   const transit = state.status === 'ready' ? state.transit : null;
@@ -86,17 +92,18 @@ export default function BusScreen() {
 
   const header = (
     <View>
-      <View style={{ paddingTop: insets.top + z(14), paddingBottom: z(20), paddingHorizontal: 20, overflow: 'hidden' }}>
-        <Gradient id="bus-head" vertical stops={[{ at: 0, color: bus.red }, { at: 1, color: bus.dark }]} />
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(10) }}>
-          <BusIcon size={z(30)} color="#FFFFFF" strokeWidth={2} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: z(31), fontWeight: '800', color: '#FFFFFF', letterSpacing: -0.6 }} accessibilityRole="header">
+      <View style={{ height: heroH }}>
+        <BusHero height={heroH} look={look} animate={animate} />
+        <View style={{ position: 'absolute', left: 0, right: 0, top: 0, flexDirection: 'row', alignItems: 'flex-start', paddingTop: insets.top + z(12), paddingHorizontal: 20, gap: z(10) }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ fontSize: z(31), fontWeight: '800', color: titleInk, letterSpacing: -0.6 }} accessibilityRole="header" numberOfLines={1}>
               Bus
             </Text>
-            <Text style={{ fontSize: z(13), color: 'rgba(255,255,255,0.9)' }}>BRTS · AMTS · Gandhinagar</Text>
+            <Text style={{ fontSize: z(13), color: look.night > 0.5 ? 'rgba(255,255,255,0.85)' : bus.inkSoft }} numberOfLines={1}>
+              BRTS · AMTS · Gandhinagar
+            </Text>
           </View>
-          <ScheduledTag light />
+          <ScheduledTag />
         </View>
       </View>
 
@@ -131,11 +138,11 @@ export default function BusScreen() {
           {AGENCY_ORDER.map((a) => {
             const on = agency === a;
             return (
-              <Pressable key={a} accessibilityRole="radio" accessibilityState={{ selected: on, checked: on }} accessibilityLabel={`${AGENCY_LOOK[a].full}, ${counts[a]} routes`} onPress={() => setAgency(a)} style={[styles.chip, { height: z(40), borderRadius: z(20) }, on && { backgroundColor: bus.red, borderColor: bus.red }]}>
-                <Text style={{ fontSize: z(13.5), fontWeight: '800', color: on ? '#FFFFFF' : bus.ink }} numberOfLines={1}>
+              <Pressable key={a} accessibilityRole="radio" accessibilityState={{ selected: on, checked: on }} accessibilityLabel={`${AGENCY_LOOK[a].full}, ${counts[a]} routes`} onPress={() => setAgency(a)} style={[styles.chip, { height: z(50), borderRadius: z(25) }, on && { backgroundColor: bus.red, borderColor: bus.red }]}>
+                <Text style={{ fontSize: z(13.5), fontWeight: '800', color: on ? '#FFFFFF' : bus.ink }} numberOfLines={1} adjustsFontSizeToFit>
                   {AGENCY_LOOK[a].label === 'Gandhinagar bus' ? 'Gandhinagar' : AGENCY_LOOK[a].label}
                 </Text>
-                <Text style={{ fontSize: z(12), color: on ? 'rgba(255,255,255,0.85)' : bus.inkSoft }}>{counts[a]}</Text>
+                <Text style={{ fontSize: z(11.5), color: on ? 'rgba(255,255,255,0.88)' : bus.inkSoft }}>{counts[a]} routes</Text>
               </Pressable>
             );
           })}
@@ -228,7 +235,7 @@ function Quick({ z, Icon, label, onPress }: { z: (n: number) => number; Icon: ty
 
 const styles = StyleSheet.create({
   search: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: bus.line },
-  chip: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: bus.line },
+  chip: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: bus.line },
   quick: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: bus.soft },
   about: { fontSize: 13.5, lineHeight: 20, color: bus.inkSoft, marginBottom: 6 },
 });
