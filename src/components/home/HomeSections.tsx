@@ -60,8 +60,8 @@ export function HomeHeader({
       <View style={st.logo} accessibilityLabel={t('home.header.logo.a11y')}>
         <MetroTrainIcon size={z(32)} color="#FFFFFF" strokeWidth={1.7} />
       </View>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={[st.brand, { color: ink }]} accessibilityRole="header" numberOfLines={1}>
+      <View style={{ flex: 1, minWidth: z(138) }}>
+        <Text style={[st.brand, { color: ink }]} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>
           MetroMate
         </Text>
         <Text style={[st.tagline, { color: inkSoft }]} numberOfLines={2}>
@@ -385,8 +385,8 @@ function makeStyles(z: Z, indic: boolean) {
     whenChipOn: { backgroundColor: VIOLET },
     whenText: { fontSize: z(13), fontWeight: '700', color: VIOLET, lineHeight: lh(z(13)) },
     stepBtn: { width: z(34), height: z(34), borderRadius: z(17), backgroundColor: '#F1EFFF', alignItems: 'center', justifyContent: 'center' },
-    offlinePill: { flexDirection: 'row', alignItems: 'center', gap: z(6), paddingHorizontal: z(11), minHeight: z(31), borderRadius: 99, backgroundColor: '#E5F7EC', borderWidth: 1, borderColor: '#C4EBD3' },
-    offlineText: { fontSize: z(12), fontWeight: '700', color: '#0F6B3E', lineHeight: lh(z(12)) },
+    offlinePill: { flexShrink: 1, maxWidth: '34%', flexDirection: 'row', alignItems: 'center', gap: z(6), paddingHorizontal: z(11), minHeight: z(31), borderRadius: 99, backgroundColor: '#E5F7EC', borderWidth: 1, borderColor: '#C4EBD3' },
+    offlineText: { flexShrink: 1, fontSize: z(12), fontWeight: '700', color: '#0F6B3E', lineHeight: lh(z(12)) },
 
     journeyCard: { marginHorizontal: z(16), backgroundColor: '#FFFFFF', borderRadius: z(26), borderWidth: 1, borderColor: CARD_LINE, padding: z(16), paddingTop: z(18), ...shadow },
     cardTitle: { fontSize: z(23), fontWeight: '800', color: NAVY, letterSpacing: ls(-0.4), lineHeight: lh(z(23)), marginLeft: z(4) },
