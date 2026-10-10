@@ -114,10 +114,10 @@ export function Showcase() {
                 id={d.id}
                 data-index={i}
                 className={`relative flex shrink-0 snap-center flex-col items-center ${MOBILE_ORDER[i]} lg:order-none ${side ? 'lg:mt-24 lg:scale-[0.86]' : 'lg:z-10 lg:mx-[-28px]'}`}
-                initial={reduced ? false : { opacity: 0, y: 32 }}
+                initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-                transition={{ duration: 0.9, ease: CALM, delay: side ? 0.15 : 0 }}
+                transition={reduced ? { duration: 0 } : { duration: 0.9, ease: CALM, delay: side ? 0.15 : 0 }}
               >
                 <div aria-hidden className="absolute inset-x-[8%] top-[12%] bottom-[18%] rounded-[50%] opacity-80 blur-3xl" style={{ background: d.glow }} />
                 <div className={`relative w-[264px] transition-transform duration-700 ease-[var(--ease-calm)] lg:w-auto ${side ? (i === 0 ? 'lg:-rotate-[3deg]' : 'lg:rotate-[3deg]') : ''} lg:hover:-translate-y-1.5`}>

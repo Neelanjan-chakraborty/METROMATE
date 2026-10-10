@@ -20,26 +20,122 @@ export const TIMELINE = {
 } as const;
 
 /** Which of the four steps is current at a given progress. */
-export const stepAt = (v: number) => (v < 0.12 ? 0 : v < 0.46 ? 1 : v < 0.75 ? 2 : 3);
+export const stepAt = (v: number) => (v < 0.12 ? 0 : v < 0.46 ? 1 : v < 0.8 ? 2 : 3);
 
 const GROUND = 540;
-const A: Pt = [150, 450];
-const I: Pt = [540, 350];
-const F: Pt = [800, 450];
-const METRO = makeRoute([A, [290, 450], [420, 350], I], 30);
-const BUS = makeRoute([I, [620, 350], [740, 450], F], 30);
 
-const METRO_STOPS: Pt[] = [[222, 450], [355, 400], [475, 350]];
-const BUS_STOPS: Pt[] = [[680, 400]];
+interface Layout {
+  id: string;
+  vb: [number, number, number, number];
+  ground: number;
+  A: Pt;
+  I: Pt;
+  F: Pt;
+  metro: Route;
+  bus: Route;
+  metroStops: Pt[];
+  busStops: Pt[];
+  /** Where the still scene parks the train and the bus (share of their legs). */
+  park: [number, number];
+  sun: [number, number, number];
+  clouds: [number, number, number, number][];
+  skyline: { x: number; w: number; h: number; deep?: boolean; roof?: 'flat' | 'tank' | 'slant' }[];
+  dome: [number, number];
+  trees: { x: number; r?: number; slim?: number; soft?: boolean }[];
+  house: [number, number];
+  homeChip: Pt;
+  walkHome: string;
+  walkCampus?: string;
+  campus: [number, number];
+  campusChip: Pt;
+  changeChip: Pt;
+  /** Hide in-scene labels on narrow screens (the wide scene gets too small to read them). */
+  chipsWideOnly: boolean;
+}
+
+const wideF: Pt = [810, 450];
+const WIDE: Layout = {
+  id: 'wide',
+  vb: [0, 110, 1000, 490],
+  ground: GROUND,
+  A: [150, 450],
+  I: [540, 350],
+  F: wideF,
+  metro: makeRoute([[150, 450], [290, 450], [420, 350], [540, 350]], 30),
+  bus: makeRoute([[540, 350], [600, 350], [700, 450], wideF], 30),
+  metroStops: [[222, 450], [355, 400], [475, 350]],
+  busStops: [[650, 400]],
+  park: [0.62, 0.42],
+  sun: [880, 196, 21],
+  clouds: [[96, 168, 1.15, 0.9], [300, 150, 0.75, 0.75], [700, 176, 0.6, 0.65]],
+  skyline: [
+    { x: 196, w: 46, h: 150, roof: 'tank' },
+    { x: 246, w: 36, h: 96, deep: true },
+    { x: 404, w: 52, h: 232, roof: 'slant' },
+    { x: 460, w: 40, h: 128, deep: true },
+    { x: 566, w: 58, h: 176, roof: 'tank' },
+    { x: 628, w: 38, h: 250, deep: true },
+    { x: 672, w: 50, h: 120 },
+  ],
+  dome: [300, 84],
+  trees: [{ x: 176, slim: 44 }, { x: 40, r: 15 }, { x: 520, slim: 38 }, { x: 548, r: 11, soft: true }, { x: 760, slim: 40 }],
+  house: [92, 2.2],
+  homeChip: [92, 430],
+  walkHome: 'M104 540 C134 540 150 520 150 466',
+  walkCampus: 'M810 466 C810 516 836 536 872 540',
+  campus: [838, 1],
+  campusChip: [904, 372],
+  changeChip: [540, 300],
+  chipsWideOnly: true,
+};
+
+/** Portrait composition for phones: the route arches over the skyline from home (left) to campus (right). */
+const tallF: Pt = [322, 404];
+const TALL: Layout = {
+  id: 'tall',
+  vb: [0, 64, 400, 536],
+  ground: 560,
+  A: [92, 478],
+  I: [222, 290],
+  F: tallF,
+  metro: makeRoute([[92, 478], [92, 392], [170, 290], [222, 290]], 26),
+  bus: makeRoute([[222, 290], [322, 290], tallF], 26),
+  metroStops: [[92, 424], [190, 290]],
+  busStops: [],
+  park: [0.58, 0.3],
+  sun: [336, 124, 16],
+  clouds: [[24, 118, 0.85, 0.9], [190, 96, 0.6, 0.7]],
+  skyline: [
+    { x: 118, w: 40, h: 140, roof: 'tank' },
+    { x: 160, w: 30, h: 86, deep: true },
+    { x: 196, w: 44, h: 226, roof: 'slant' },
+    { x: 242, w: 32, h: 120, deep: true },
+  ],
+  dome: [128, 0],
+  trees: [{ x: 18, r: 11 }, { x: 116, slim: 34 }, { x: 250, slim: 30 }, { x: 236, r: 8, soft: true }],
+  house: [50, 1.7],
+  homeChip: [44, 448],
+  walkHome: 'M60 560 C82 558 92 534 92 494',
+  campus: [268, 0.8],
+  campusChip: [210, 418],
+  changeChip: [222, 248],
+  chipsWideOnly: false,
+};
 
 const span = (r: readonly [number, number], share: number) => r[0] + (r[1] - r[0]) * share;
 
 interface SceneProps {
   progress: MotionValue<number>;
   live: boolean;
+  /** `tall` is the still, portrait composition used on phones. */
+  variant?: 'wide' | 'tall';
+  className?: string;
 }
 
-export function JourneyArt({ progress, live }: SceneProps) {
+export function JourneyArt({ progress, live: liveProp, variant = 'wide', className = '' }: SceneProps) {
+  const L = variant === 'tall' ? TALL : WIDE;
+  const live = liveProp && variant === 'wide';
+  const { A, I, F } = L;
   const metroDraw = useTransform(progress, [TIMELINE.metro[0], TIMELINE.metro[1]], [0, 1]);
   const metroOn = useTransform(progress, [TIMELINE.metro[0], TIMELINE.metro[0] + 0.004], [0, 1]);
   const busDraw = useTransform(progress, [TIMELINE.bus[0], TIMELINE.bus[1]], [0, 1]);
@@ -57,76 +153,73 @@ export function JourneyArt({ progress, live }: SceneProps) {
   const campusS = useTransform(progress, [TIMELINE.arrive[0], TIMELINE.arrive[1]], [0.86, 1]);
   const arrivedO = useTransform(progress, [TIMELINE.arrive[1] - 0.04, TIMELINE.arrive[1]], [0, 1]);
 
+  const [vx, vy, vw, vh] = L.vb;
+  const G = L.ground;
+  const chipCls = L.chipsWideOnly ? 'max-sm:hidden' : '';
   return (
-    <svg viewBox="0 0 1000 600" className="block h-auto w-full" role="img" aria-label="Illustration: a journey from home by metro to an interchange, then by bus to a campus.">
+    <svg viewBox={L.vb.join(' ')} className={`block h-auto w-full ${className}`} role="img" aria-label="Illustration: a journey from home by metro to an interchange, then by bus to a campus.">
       <defs>
-        <linearGradient id="jd-sky" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`jd-sky-${L.id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#F3F0FA" />
           <stop offset="0.75" stopColor="#FBF7F1" />
         </linearGradient>
       </defs>
-      <rect width="1000" height="600" fill="url(#jd-sky)" />
-      <Sun x={860} y={112} r={24} />
-      <Cloud x={120} y={86} s={1.25} />
-      <Cloud x={580} y={58} s={0.85} opacity={0.75} />
-      <Cloud x={700} y={150} s={0.6} opacity={0.6} />
+      <rect x={vx} y={vy} width={vw} height={vh} fill={`url(#jd-sky-${L.id})`} />
+      <Sun x={L.sun[0]} y={L.sun[1]} r={L.sun[2]} />
+      {L.clouds.map(([x, y, sc, o]) => (
+        <Cloud key={x} x={x} y={y} s={sc} opacity={o} />
+      ))}
 
       {/* distant skyline */}
-      <g opacity={0.9}>
-        <Building x={196} y={GROUND} w={46} h={150} fill={art.lavenderMid} seed={3} lit={0.06} roof="tank" />
-        <Building x={246} y={GROUND} w={36} h={96} fill={art.lavenderDeep} seed={4} lit={0.05} />
-        <DomeHall x={300} y={GROUND} w={84} fill={art.lavenderMid} accent={art.lavenderDeep} />
-        <Building x={404} y={GROUND} w={52} h={232} fill={art.lavenderMid} seed={7} lit={0.07} roof="slant" />
-        <Building x={460} y={GROUND} w={40} h={128} fill={art.lavenderDeep} seed={8} lit={0.05} />
-        <Building x={566} y={GROUND} w={58} h={176} fill={art.lavenderMid} seed={9} lit={0.06} roof="tank" />
-        <Building x={628} y={GROUND} w={38} h={250} fill={art.lavenderDeep} seed={11} lit={0.05} />
-        <Building x={672} y={GROUND} w={50} h={120} fill={art.lavenderMid} seed={12} lit={0.06} />
+      <g opacity={0.8}>
+        {L.skyline.map((b, i) => (
+          <Building key={b.x} x={b.x} y={G} w={b.w} h={b.h} fill={b.deep ? art.lavenderDeep : art.lavenderMid} seed={3 + i * 2} lit={0.06} roof={b.roof} />
+        ))}
+        {L.dome[1] ? <DomeHall x={L.dome[0]} y={G} w={L.dome[1]} fill={art.lavenderMid} accent={art.lavenderDeep} /> : null}
       </g>
 
       {/* ground */}
-      <rect x={0} y={GROUND} width={1000} height={60} fill={art.sageMid} />
-      <rect x={0} y={GROUND} width={1000} height={5} fill={tint(art.sageMid, 0.5)} />
-      <SlimTree x={176} y={GROUND} h={44} />
-      <Tree x={40} y={GROUND} r={15} />
-      <SlimTree x={520} y={GROUND} h={38} />
-      <Tree x={548} y={GROUND} r={11} a={art.sageMid} b={art.leaf} />
-      <SlimTree x={760} y={GROUND} h={40} />
+      <rect x={vx} y={G} width={vw} height={vy + vh - G} fill={art.sageMid} />
+      <rect x={vx} y={G} width={vw} height={5} fill={tint(art.sageMid, 0.5)} />
+      {L.trees.map((t) => (t.slim ? <SlimTree key={t.x} x={t.x} y={G} h={t.slim} /> : <Tree key={t.x} x={t.x} y={G} r={t.r} {...(t.soft ? { a: art.sageMid, b: art.leaf } : {})} />))}
 
       {/* home */}
-      <House x={92} y={GROUND} s={2.2} />
-      <Chip x={92} y={430} label="Home" />
+      <House x={L.house[0]} y={G} s={L.house[1]} />
+      <Chip x={L.homeChip[0]} y={L.homeChip[1]} label="Home" className={chipCls} />
 
       {/* walk links */}
-      <path d="M104 540 C134 540 150 520 150 466" fill="none" stroke={art.inkSoft} strokeOpacity={0.55} strokeWidth={3} strokeLinecap="round" strokeDasharray="0.1 8" />
-      <path d="M800 466 C800 518 832 538 872 540" fill="none" stroke={art.inkSoft} strokeOpacity={0.55} strokeWidth={3} strokeLinecap="round" strokeDasharray="0.1 8" />
+      <path d={L.walkHome} fill="none" stroke={art.inkSoft} strokeOpacity={0.55} strokeWidth={3} strokeLinecap="round" strokeDasharray="0.1 8" />
+      {L.walkCampus ? <path d={L.walkCampus} fill="none" stroke={art.inkSoft} strokeOpacity={0.55} strokeWidth={3} strokeLinecap="round" strokeDasharray="0.1 8" /> : null}
 
       {/* destination: campus */}
       <motion.g style={live ? { opacity: campusO, scale: campusS, transformBox: 'fill-box', transformOrigin: '50% 100%' } : undefined}>
-        <Campus />
-        <Chip x={904} y={372} label="Campus" />
+        <g transform={`translate(${L.campus[0]} ${G}) scale(${L.campus[1]}) translate(-838 -${GROUND})`}>
+          <Campus />
+        </g>
+        <Chip x={L.campusChip[0]} y={L.campusChip[1]} label="Campus" className={chipCls} />
       </motion.g>
 
       {/* the planned route, faint, before it is travelled */}
-      <path d={METRO.d} fill="none" stroke={art.lavenderDeep} strokeWidth={4} strokeLinecap="round" strokeDasharray="1 11" />
-      <path d={BUS.d} fill="none" stroke={art.lavenderDeep} strokeWidth={4} strokeLinecap="round" strokeDasharray="1 11" />
+      <path d={L.metro.d} fill="none" stroke={art.lavenderDeep} strokeWidth={4} strokeLinecap="round" strokeDasharray="1 11" />
+      <path d={L.bus.d} fill="none" stroke={art.lavenderDeep} strokeWidth={4} strokeLinecap="round" strokeDasharray="1 11" />
 
       {/* travelled lines */}
       <motion.g style={live ? { opacity: metroOn } : undefined}>
-        <motion.path d={METRO.d} fill="none" stroke="#FFFFFF" strokeWidth={13} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: metroDraw } : undefined} />
-        <motion.path d={METRO.d} fill="none" stroke={art.violet} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: metroDraw, opacity: metroDim } : undefined} />
+        <motion.path d={L.metro.d} fill="none" stroke="#FFFFFF" strokeWidth={13} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: metroDraw } : undefined} />
+        <motion.path d={L.metro.d} fill="none" stroke={art.violet} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: metroDraw, opacity: metroDim } : undefined} />
       </motion.g>
       <motion.g style={live ? { opacity: busOn } : undefined}>
-        <motion.path d={BUS.d} fill="none" stroke="#FFFFFF" strokeWidth={13} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: busDraw } : undefined} />
-        <motion.path d={BUS.d} fill="none" stroke={art.busBlue} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: busDraw } : undefined} />
+        <motion.path d={L.bus.d} fill="none" stroke="#FFFFFF" strokeWidth={13} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: busDraw } : undefined} />
+        <motion.path d={L.bus.d} fill="none" stroke={art.busBlue} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" style={live ? { pathLength: busDraw } : undefined} />
       </motion.g>
 
       {/* stops light up as the line reaches them */}
       <LitNode at={A} color={art.violet} on={TIMELINE.metro[0]} progress={progress} live={live} big />
-      {METRO_STOPS.map((p) => (
-        <LitNode key={p.join()} at={p} color={art.violet} on={span(TIMELINE.metro, METRO.shareAt(p))} progress={progress} live={live} />
+      {L.metroStops.map((p) => (
+        <LitNode key={p.join()} at={p} color={art.violet} on={span(TIMELINE.metro, L.metro.shareAt(p))} progress={progress} live={live} />
       ))}
-      {BUS_STOPS.map((p) => (
-        <LitNode key={p.join()} at={p} color={art.busBlue} on={span(TIMELINE.bus, BUS.shareAt(p))} progress={progress} live={live} />
+      {L.busStops.map((p) => (
+        <LitNode key={p.join()} at={p} color={art.busBlue} on={span(TIMELINE.bus, L.bus.shareAt(p))} progress={progress} live={live} />
       ))}
       <LitNode at={F} color={art.busBlue} on={TIMELINE.bus[1]} progress={progress} live={live} big />
 
@@ -134,12 +227,12 @@ export function JourneyArt({ progress, live }: SceneProps) {
       {live ? <motion.circle cx={I[0]} cy={I[1]} r={14} fill="none" stroke={art.violet} strokeWidth={3} style={{ scale: pulseS, opacity: pulseO, transformBox: 'fill-box', transformOrigin: '50% 50%' }} /> : null}
       <Interchange x={I[0]} y={I[1]} r={10} />
       <motion.g style={live ? { opacity: changeChip } : undefined}>
-        <Chip x={I[0]} y={300} label="Change to bus" accent />
+        <Chip x={L.changeChip[0]} y={L.changeChip[1]} label="Change to bus" accent className={chipCls} />
       </motion.g>
 
       {/* vehicles */}
-      <Rider route={METRO} range={TIMELINE.metro} progress={progress} live={live} parked={0.62} fade={[TIMELINE.metro[0], TIMELINE.change[0] + 0.02, TIMELINE.change[0] + 0.07]}>
-        <g transform="translate(-34 -9.6) scale(0.64)">
+      <Rider route={L.metro} range={TIMELINE.metro} progress={progress} live={live} parked={L.park[0]} fade={[TIMELINE.metro[0], TIMELINE.change[0] + 0.02, TIMELINE.change[0] + 0.07]}>
+        <g transform="translate(-41.5 -12.4) scale(0.83)">
           <MetroCar />
           <g transform="translate(50 0)">
             <MetroCar front />
@@ -147,8 +240,8 @@ export function JourneyArt({ progress, live }: SceneProps) {
           <rect x={47} y={12} width={6} height={8} rx={2} fill={art.lavenderDeep} />
         </g>
       </Rider>
-      <Rider route={BUS} range={TIMELINE.bus} progress={progress} live={live} parked={0.42} fade={[TIMELINE.bus[0] - 0.02, 2, 3]}>
-        <Bus x={-25} y={-14} scale={0.74} />
+      <Rider route={L.bus} range={TIMELINE.bus} end={1 - 52 / L.bus.length} progress={progress} live={live} parked={L.park[1]} fade={[TIMELINE.bus[0] - 0.02, 2, 3]}>
+        <Bus x={-31} y={-16} scale={0.92} />
       </Rider>
 
       {/* destination pin */}
@@ -189,11 +282,11 @@ function Campus() {
   );
 }
 
-/** A small rounded label in the scene (hidden on narrow screens where it would be too small to read). */
-function Chip({ x, y, label, accent = false }: { x: number; y: number; label: string; accent?: boolean }) {
+/** A small rounded label in the scene. */
+function Chip({ x, y, label, accent = false, className = '' }: { x: number; y: number; label: string; accent?: boolean; className?: string }) {
   const w = label.length * 9.4 + 30;
   return (
-    <g className="max-sm:hidden" aria-hidden>
+    <g className={className} aria-hidden>
       <rect x={x - w / 2} y={y - 17} width={w} height={34} rx={17} fill={accent ? art.ink : '#FFFFFF'} stroke={accent ? 'none' : art.lavenderMid} strokeWidth={1.5} />
       <text x={x} y={y + 5.5} textAnchor="middle" fontSize={16} fontWeight={600} fill={accent ? art.paper : art.ink} style={{ fontFamily: 'var(--font-sans)' }}>
         {label}
@@ -222,16 +315,16 @@ function LitNode({ at, color, on, progress, live, big = false }: { at: Pt; color
  * A vehicle that rides its route between `range[0]` and `range[1]` of the progress, eased at both ends.
  * `fade` = [fade-in start, fade-out start, fade-out end]. Still scenes park it at share `parked`.
  */
-function Rider({ route, range, progress, live, parked, fade, children }: { route: Route; range: readonly [number, number]; progress: MotionValue<number>; live: boolean; parked: number; fade: [number, number, number]; children: ReactNode }) {
+function Rider({ route, range, progress, live, parked, fade, end = 1, children }: { route: Route; end?: number; range: readonly [number, number]; progress: MotionValue<number>; live: boolean; parked: number; fade: [number, number, number]; children: ReactNode }) {
   const ref = useRef<SVGGElement>(null);
   const opacity = useTransform(progress, [fade[0], fade[0] + 0.03, fade[1], fade[2]], [0, 1, 1, 0]);
   const tf = useCallback(
     (v: number) => {
-      const share = live ? easeInOut(Math.min(1, Math.max(0, (v - range[0]) / (range[1] - range[0])))) : parked;
+      const share = live ? end * easeInOut(Math.min(1, Math.max(0, (v - range[0]) / (range[1] - range[0])))) : parked;
       const p = route.at(share);
       return `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) rotate(${p.angle.toFixed(2)})`;
     },
-    [live, parked, range, route],
+    [live, parked, range, route, end],
   );
   useMotionValueEvent(progress, 'change', (v) => {
     if (live) ref.current?.setAttribute('transform', tf(v));

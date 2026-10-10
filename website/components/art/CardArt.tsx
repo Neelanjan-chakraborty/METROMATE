@@ -191,7 +191,7 @@ export function SavedArt() {
   };
   return (
     <svg {...svgProps}>
-      <ellipse cx={128} cy={170} rx={108} ry={10} fill={art.stoneDeep} opacity={0.7} />
+      <ellipse cx={128} cy={168} rx={104} ry={8} fill={art.stoneDeep} opacity={0.45} />
       {[0, 1, 2, 3].map((i) => (
         <path
           key={i}
