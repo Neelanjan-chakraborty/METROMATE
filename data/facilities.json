@@ -1,0 +1,32 @@
+{
+  "scope": "network-wide",
+  "sourceMetadata": {
+    "sourceId": "gmrc-facilities",
+    "sourceUrl": "https://www.gujaratmetrorail.com/",
+    "verifiedAt": "2026-10-09",
+    "verificationStatus": "verified",
+    "notes": "GMRC facility galleries. These are network-wide categories; they do not confirm that any specific station has a given facility."
+  },
+  "general": [
+    "Escalators",
+    "Guiding signage",
+    "Contactless smart card",
+    "Token vending and card recharge machines",
+    "Drinking water",
+    "First aid assistance",
+    "Passenger seating",
+    "Lifts",
+    "Passenger information display",
+    "Washrooms"
+  ],
+  "accessibility": [
+    "Wide automatic fare gates",
+    "Tactile path for visually impaired passengers",
+    "Passenger ramp",
+    "Wheelchair available at station",
+    "Braille call buttons and handrails in lifts",
+    "Reserved space for wheelchair in train",
+    "Washrooms for differently abled passengers",
+    "Ticket counter at low height"
+  ]
+}

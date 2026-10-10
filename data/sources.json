@@ -1,0 +1,92 @@
+[
+  {
+    "id": "gmrc-route-map",
+    "name": "GMRC Route Map (Gujarati / Hindi / English)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Corridors, station names, station order, interchanges",
+    "obtainedBy": "Screenshot supplied by the project team; transcribed by eye",
+    "checkedAt": "2026-10-09",
+    "limitations": "Exact page URL not recorded. Low-resolution image; no coordinates, gates, platforms or fares."
+  },
+  {
+    "id": "gmrc-interactive-map",
+    "name": "GMRC interactive route map (SVG markup)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "GMRC station codes and adjacent-station links",
+    "obtainedBy": "SVG markup pasted by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Used only for station codes and adjacency. Also contains stations/lines (Ashram Road to Airport, GIFT City House, Gujarat Biotechnology University) that are NOT on the official route map and are excluded. Its pixel layout is not reused."
+  },
+  {
+    "id": "gmrc-train-information",
+    "name": "GMRC Train Information (frequency, first/last train, travel time)",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/train-information/",
+    "type": "Frequency bands, first and last train, end-to-end travel time and distance per line",
+    "obtainedBy": "Screenshot supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Effective 18/05/2026; page footer says last updated 05-Oct-2026. The per-train timetable image is low resolution and partly hidden, so per-train times are not stored."
+  },
+  {
+    "id": "gmrc-fare-rules",
+    "name": "GMRC Fare Rules",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/fare-rules/",
+    "type": "Fare media, products and rules",
+    "obtainedBy": "Screenshot supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Contains no fare amounts. The start of one bullet about Phase-1/Phase-2 travel is hidden by a navigation bar in the screenshot."
+  },
+  {
+    "id": "gmrc-facilities",
+    "name": "GMRC Facilities for Passengers / Differently Abled Passengers",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Network-wide facility categories",
+    "obtainedBy": "Screenshots supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Photo galleries only. Does not say which station has which facility."
+  },
+  {
+    "id": "gmrc-gates",
+    "name": "GMRC Information of Entry-Exit Gate at Entrance",
+    "url": "https://www.gujaratmetrorail.com/ahmedabad/information-of-entry-exit-gate-at-entrance/",
+    "type": "Station type (elevated/underground), operational gate numbers, lifts with ramp near gates",
+    "obtainedBy": "PDF printout supplied by the project team (page footer: last updated 05-Oct-2026); table extracted programmatically, two entries corrected by viewing the rendered PDF",
+    "checkedAt": "2026-10-09",
+    "limitations": "Gate NUMBERS only: GMRC publishes no street or landmark direction for any gate. Lift operating status is not published. Sabarmati Railway Station is not listed. Shahpur lists Gate No. 3 twice (probable typo)."
+  },
+  {
+    "id": "google-my-maps",
+    "name": "Google My Maps: Ahmedabad Metro Rail (KML export)",
+    "url": "https://www.google.com/maps/d/viewer?mid=1ebnAmbRUbMyI_quB06reRZWcyfcLF8M",
+    "type": "Station coordinates; entry/exit connectivity notes (BRTS, GSRTC, railway)",
+    "obtainedBy": "KML and CSV exports supplied by the project team; parsed by scripts/import-coordinates.mjs",
+    "checkedAt": "2026-10-09",
+    "limitations": "Unofficial community/third-party map, so coordinates are stored as estimated, not verified, and may be tens to hundreds of metres from the actual station entrance or platform. Connectivity notes are unverified. Planned-line placemarks (Ashram Road to Airport, GIFT City House, Gujarat Biotechnology University, a second Shahpur) are ignored."
+  },
+  {
+    "id": "gmrc-route-pdf",
+    "name": "GMRC Route / train timing sheet (older, undated PDF)",
+    "url": "https://www.gujaratmetrorail.com/",
+    "type": "Older frequency and run-time table; per-station headways",
+    "obtainedBy": "PDF supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "Undated and superseded by the 18 May 2026 Train Information page, so it is NOT used for timings. Its blank cell for Sabarmati Rly. Station is consistent with that station not being in service."
+  },
+  {
+    "id": "mega-alignment-2015",
+    "name": "MEGA Alignment of Ahmedabad Metro Rail Project Phase I (DPR, March 2015)",
+    "url": "https://www.gujaratmetrorail.com/reports/",
+    "type": "Phase I alignment drawing: elevated vs underground lengths and station counts",
+    "obtainedBy": "PDF supplied by the project team",
+    "checkedAt": "2026-10-09",
+    "limitations": "2015 planning document; used only as corroboration that four East–West stations (Shahpur, Gheekanta, Kalupur, Kankaria East) are underground. Its summary table says 17 East–West stations whereas the current gate table and route map list 18."
+  },
+  {
+    "id": "gtfs-blrtransit",
+    "name": "GTFS feed for AMTS, AJL (BRTS Janmarg) and GTSL (Gandhinagar) buses",
+    "url": "https://blrtransit.com",
+    "type": "Bus and BRTS stops, routes, scheduled trips, BRTS fares",
+    "obtainedBy": "Two GTFS zips supplied by the project team (gtfs.zip and gtfs_compat.zip); compat is the one converted by scripts/build-transit.mjs",
+    "checkedAt": "2026-10-10",
+    "limitations": "Third-party compilation (publisher BLRTransit), not an official AMTS/AJL/GTSL publication; licence not stated. Valid 2026-09-30 to 2027-03-29, same service every day. Scheduled times only (no live data). Only BRTS fares are included (no AMTS or GTSL fares). Route shapes are not linked to trips: the build matches 610 of 970 patterns to a shape by stop proximity (inference) and draws the rest straight. 77 trips with impossible durations (over 360 min end to end) were dropped."
+  }
+]

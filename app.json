@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "MetroMate",
+    "slug": "metromate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2E24D6",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.azurerift.metromate"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "scheme": "metromate",
+    "description": "Offline metro companion for the Ahmedabad–Gandhinagar Metro.",
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MetroMate uses your location to show which metro station you are at and how far along your journey you are. It works offline and your location never leaves your phone."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2E24D6",
+          "image": "./assets/android-icon-foreground.png",
+          "imageWidth": 240,
+          "resizeMode": "contain",
+          "ios": {
+            "image": "./assets/splash-frame.png",
+            "resizeMode": "cover",
+            "backgroundColor": "#B9D3F0"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1ada865f-2f6b-42b1-b084-1817543da665"
+      }
+    },
+    "owner": "azurerift"
+  }
+}

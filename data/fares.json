@@ -1,0 +1,18 @@
+{
+  "version": "0",
+  "currency": "INR",
+  "status": "unavailable",
+  "validFrom": null,
+  "reviewDate": "2026-10-09",
+  "fareType": null,
+  "pairs": [],
+  "rules": [],
+  "notes": "No GMRC fare amounts or tariff rule have been supplied or verified. Add verified origin–destination pairs to \"pairs\" ({ fromStationId, toStationId, amountInr, fareType, validFrom, sourceUrl, verifiedAt, verificationStatus: \"verified\" }) to enable fares. Fares are never computed from stop counts.",
+  "sourceMetadata": {
+    "sourceId": "gmrc-fare-rules",
+    "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/fare-rules/",
+    "verifiedAt": "2026-10-09",
+    "verificationStatus": "unknown",
+    "notes": "Fare Rules page contains no amounts."
+  }
+}

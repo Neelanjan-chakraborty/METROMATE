@@ -1,0 +1,89 @@
+# Research sources
+
+Checked: **2026-10-09**. Dataset version: `2026.10.09-1`.
+
+## How the research was done (and its limits)
+
+The build environment's network policy **blocked `www.gujaratmetrorail.com`** (HTTP 403 on the proxy tunnel), and Wikipedia and OpenStreetMap hosts did not resolve. No access control was bypassed. Instead, the project team supplied **screenshots and markup taken from the official GMRC website**, and those are the primary source for every operational fact in the app. Web-search summaries of secondary sources were used only to cross-check station counts; **no data was copied from them** (see "Consulted but not used").
+
+Everything transcribed from a screenshot was read by eye. Treat "verified" in the dataset as "matches the official GMRC material supplied on the date above", not as an independent field survey.
+
+## Sources used
+
+| # | Source | URL | Type of data | Checked | Limitations |
+|---|---|---|---|---|---|
+| 1 | GMRC Route Map (Gujarati / Hindi / English) | https://www.gujaratmetrorail.com/ (exact page not recorded) | Corridors, station names and order, interchanges (GNLU, Old High Court), legend lengths (41.71 km, 5.42 km, 21.16 km) | 2026-10-09 | User-supplied screenshot, fairly low resolution. No coordinates, gates, platforms, fares. Gujarati/Hindi names not transcribed. |
+| 2 | GMRC interactive route map (SVG markup) | https://www.gujaratmetrorail.com/ (exact page not recorded) | GMRC station codes (e.g. `OHCI`, `GNLU`) and adjacent-station links; confirms the order read from source 1 | 2026-10-09 | Used for codes and adjacency only. It also contains stations/lines that are **not** on the official route map (Ashram Road, Koteshwar Prachin Mandir, Sabarmati River, Sardarnagar, Airport, GIFT City House, Gujarat Biotechnology University); these are excluded. Its pixel layout is not reused; MetroMate draws its own schematic. |
+| 3 | GMRC Train Information | https://www.gujaratmetrorail.com/ahmedabad/train-information/ | Frequency bands, first/last train, end-to-end time and distance per line, effective 18/05/2026; page footer "Last Updated on 05-Oct-2026" | 2026-10-09 | User-supplied screenshot. The per-train timetable grid is low resolution and partly hidden by a navigation bar, so **per-train times are not stored**. |
+| 4 | GMRC Fare Rules | https://www.gujaratmetrorail.com/ahmedabad/fare-rules/ | Fare media, products, selected rules, Phase-1/Phase-2 wording | 2026-10-09 | User-supplied screenshot. **No fare amounts.** The start of the Phase-1/Phase-2 bullet is hidden by a navigation bar. |
+| 5 | GMRC Facilities (passengers / differently abled passengers) | https://www.gujaratmetrorail.com/ (exact page not recorded) | Network-wide facility categories | 2026-10-09 | Photo galleries only; does not say which station has which facility. |
+| 6 | GMRC Information of Entry-Exit Gate at Entrance | https://www.gujaratmetrorail.com/ahmedabad/information-of-entry-exit-gate-at-entrance/ | Station type (elevated/underground), operational gate numbers and lifts with ramp near gates, for 53 stations | 2026-10-09 | PDF printout (page footer: last updated 05-Oct-2026), table extracted programmatically; Gheekanta and Kalupur corrected by viewing the rendered PDF. **Gate numbers only, no gate directions.** Sabarmati Railway Station is not listed. Lift working status not published. Shahpur lists Gate 3 twice. |
+| 7 | Google My Maps "Ahmedabad Metro Rail" (KML + CSV export) | https://www.google.com/maps/d/viewer?mid=1ebnAmbRUbMyI_quB06reRZWcyfcLF8M | Station coordinates; gate connectivity notes (BRTS/GSRTC/railway) | 2026-10-09 | **Unofficial** map: coordinates stored as `estimated`. The KML and the CSV carry identical coordinates. The first KMZ supplied was only a NetworkLink to this live map, and the network policy blocked fetching it, so the full KML export was supplied instead. Planned-line placemarks are ignored. |
+| 8 | GMRC route/timing sheet (older PDF) | https://www.gujaratmetrorail.com/ | Older frequency/run-time table | 2026-10-09 | Undated and superseded by source 3: **not used** for timings. Its blank cell for "Sabarmati Rly. Station" is consistent with that station not being in service. |
+| 9 | MEGA "Alignment of Ahmedabad Metro Rail Project Phase I" (DPR, March 2015) | https://www.gujaratmetrorail.com/reports/ | Phase I alignment drawing: elevated vs underground lengths and station counts | 2026-10-09 | 2015 planning document, used only as corroboration that four East–West stations are underground and that Sabarmati Railway Station was planned. Its table says 17 East–West stations (current sources list 18). |
+
+## GMRC fare calculator (endpoint observed, not yet captured)
+
+The route-and-fares page loads fares from its own calculator: `POST https://www.gujaratmetrorail.com/ahmedabad/wp-admin/admin-ajax.php` with `action=get_fare&FromStation=<id>&ToStation=<id>`, answering JSON such as `{"fare_price":"10","station_count":"7","search_found":"Yes","station_interchange":"0","station_km":"7.10","station_min":"14","msg":"","same_station_msg":""}`. The project team captured this request from the page in a browser (status 200, no authentication). It is the page's normal public interface, so no access control is bypassed, but it was **not** called from the build environment (the host is blocked there). `scripts/capture-fares.browser.js` and `scripts/import-fares.mjs` are the intended, rate-limited route to the full set. Until that is run, `data/fares.json` is empty. Limitations: the response does not state the ticket type or a validity date; the calculator's station-ID list must be captured from the page's dropdown to map IDs to stations (the sample's IDs 2 and 8 could not be identified).
+
+## Requested sources not inspected
+
+| Source | URL | Status |
+|---|---|---|
+| Route and fares | https://www.gujaratmetrorail.com/ahmedabad/route-and-fares/ | Not reachable from the build environment; no fare chart supplied. |
+| Know your stations | https://www.gujaratmetrorail.com/ahmedabad/know-your-stations/ | Not reachable; no per-station data supplied. |
+| Reports / alignment maps | https://www.gujaratmetrorail.com/reports/ | Not inspected. |
+| Phase II route map PDF | https://www.gujaratmetrorail.com/wp-content/uploads/Reports/Phase-II-Map-Final.pdf | Not inspected. |
+| Multimodal integration | https://www.gujaratmetrorail.com/mmi-2/ | Not inspected. |
+| OpenStreetMap, copyright, tile policy | https://www.openstreetmap.org/ , https://www.openstreetmap.org/copyright , https://operations.osmfoundation.org/policies/tiles/ | Not reachable. **No OSM data or tiles are used.** No coordinates are stored. |
+| Official journey planner | (GMRC site) | Not inspected; no API was assumed. |
+
+## Consulted but not used as data
+
+Web-search summaries (Wikipedia list/line articles, news items, a GMRC press release repost, third-party fare sites such as Yometro) were read only to sanity-check station counts. Third-party fare figures (e.g. ₹25 for Motera Stadium–Sector 24) are **not** in the app: they are not GMRC-verified, so every route shows "Fare unavailable offline".
+
+## Which dataset fields depend on which source
+
+| Dataset file / field | Source |
+|---|---|
+| `corridors.json` (names, colours, lengths, sequence) | 1 (order cross-checked with 2) |
+| `stations.json` id (GMRC code), name, sequence, `isInterchange` | 1 and 2 |
+| `stations.json` `phase` (1 or 2) | 4 (phase wording) |
+| `stations.json` `stationType`, `lifts`; `gates.json` | 6 (gate numbers and lifts); direction deliberately null |
+| `stations.json` `latitude`/`longitude` (status `estimated`), `nearbyConnections` | 7 (unofficial; cross-checked: 54/54 matched, adjacent stations 571 m–2.5 km apart) |
+| `stations.json` `aliases` | Spelling variants seen across sources 1–3, plus common alternative names (e.g. "Narendra Modi Stadium", "Secretariat"). Aliases are search aids only, not operational facts. |
+| `connections.json` adjacency and direction labels | 1 and 2; direction label derived from corridor terminals |
+| `timetable-metadata.json` | 3 |
+| `fare-rules.json` | 4 |
+| `facilities.json` | 5 |
+| `landmarks.json` | **Inferred from official station names only**; all `unverified` |
+| `fares.json` | Empty: no verified fare data |
+
+## Fields that still require manual verification
+
+- Fare amounts / tariff rule (source: route-and-fares page, GMRC app, ticket windows).
+- Station coordinates (currently estimated from an unofficial map; replace with surveyed/official values).
+- Gate directions (street or landmark each gate faces), platform numbers and boarding sides; lift working status.
+- Station type for Sabarmati Railway Station, and whether it is in service.
+- Per-station travel times (needed for journey-time estimates).
+- The hidden start of the Phase-1/Phase-2 fare-rule bullet.
+- Whether trains run through GNLU to GIFT City (see `data-gaps.md`).
+- Exact page URLs for sources 1, 2 and 5.
+- Gujarati and Hindi station names (visible on the route map, not transcribed).
+- Landmark associations and walking distances.
+
+## Station thumbnails (not yet fetched)
+
+`scripts/fetch-station-thumbs.mjs` is designed to use Wikimedia Commons (CC0, CC BY, CC BY-SA and public-domain files only) and to record title, page URL, licence and author for each photo in `data/source/station-photos.json`; the app credits the author on the station screen. The build container cannot reach Commons, so no photo has been fetched or checked, and the script has been tested only against a local fake of the API. Review each pick before release; photographers' attribution requirements (CC BY, CC BY-SA) are met by the on-screen credit and link.
+
+## Bus, BRTS and Gandhinagar bus data (GTFS)
+
+**Not scraped.** The build container has no internet access beyond npm, PyPI and GitHub, so nothing about buses was downloaded from the web. The only bus source is the pair of GTFS zips supplied by the project team (`gtfs.zip`, `gtfs_compat.zip`; sha256 recorded in `data/transit/transit.json` `meta.source.files`).
+
+- **Publisher:** the feed's `feed_info.txt` names *BLRTransit* (https://blrtransit.com). This is a third-party compilation, **not** an official publication of AMTS, AJL (Ahmedabad Janmarg Ltd, the BRTS) or GTSL (Gandhinagar Transport Services), and the licence is not stated. Confirm redistribution rights before releasing the app.
+- **Validity:** 2026-09-30 to 2027-03-29, one calendar service running every day (so no weekday/weekend difference). The app warns when the feed has expired.
+- **Used:** stops, routes, scheduled trips (converted to compact "patterns" with every distinct travel-time vector), BRTS fares (191 fare areas, adult and child), derived walking links. `scripts/build-transit.mjs` fails if the calendar has more than one service or exceptions.
+- **`shapes.txt` (used for the map only):** 860 shapes, 270,043 points, **not linked to trips** (no `shape_id` in `trips.txt`). `scripts/build-transit.mjs` matches each pattern to the shape on which at least 90 % of its stops lie within 80 m (monotone sweep along the shape, clipped to the first and last stop, simplified to 10 m, stored at 1e-5° as `data/transit/shapes.json`). 610 of 970 patterns match; the rest are drawn as straight segments and labelled. The matching is our inference, not something the feed states.
+- **Not used:** luggage fares, the directional `gtfs.zip` routes (same trips as the compat feed).
+- **Cleaned:** 77 trips with impossible durations (1,500–3,000 minutes end to end) were dropped and are listed in the build output; 2 exact duplicate trips were removed. Nothing else was altered.
+- **Checked against the feed:** counts, fare matrix completeness and symmetry, stop coordinates, links (`src/lib/transit/__tests__`). **Not checked:** that the timetable matches what buses actually do.

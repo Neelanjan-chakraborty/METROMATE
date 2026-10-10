@@ -1,0 +1,38 @@
+{
+  "version": "2026-10-05",
+  "sourceMetadata": {
+    "sourceId": "gmrc-fare-rules",
+    "sourceUrl": "https://www.gujaratmetrorail.com/ahmedabad/fare-rules/",
+    "verifiedAt": "2026-10-09",
+    "verificationStatus": "verified",
+    "notes": "Selected rules transcribed from a screenshot of the GMRC Fare Rules page (page footer dated 05-Oct-2026)."
+  },
+  "media": [
+    "QR tickets (including paper and mobile app tickets)",
+    "Contactless Smart Token (CST)",
+    "Contactless Smart Card (CSC) – GMRC",
+    "NCMC (National Common Mobility Card)",
+    "Temporary paper ticket (used if the AFC system fails)",
+    "Special paper tickets (special events/occasions)"
+  ],
+  "products": [
+    "Single journey ticket",
+    "Return journey ticket",
+    "Group ticket (more than 9 passengers)"
+  ],
+  "rules": [
+    "Two children under 3 feet in height travel free if accompanied by one adult.",
+    "Tickets can be bought at ticket windows at operational stations; QR tickets can also be bought online in the official GMRC Mobile App.",
+    "QR paper tickets are valid for 30 minutes and digital mobile QR tickets for 180 minutes from issue, only from the issuing station.",
+    "All passengers travelling with NCMC get a 10% discount on completing a journey, as per current fare rules.",
+    "Every valid entry must be followed by a valid exit.",
+    "Travelling back in the reverse direction from the destination station is not permitted: exit the paid area and pay the full fare for the new journey.",
+    "Maximum permissible time in the paid area: 20 minutes if exiting at the same station and 240 minutes if exiting at another station (QR ticket).",
+    "Luggage limit: 25 kg and 80 cm × 50 cm × 30 cm."
+  ],
+  "phaseRestriction": {
+    "status": "partial",
+    "text": "…not permitted to travel between Phase-1 (i.e. Thaltej Gam to Vastral Gam and APMC to Motera) stations and Phase-2 (i.e. Koteshwar to Mahatma Mandir and GNLU to Gift City).",
+    "notes": "The start of this rule is hidden by a navigation bar in the screenshot, so what exactly is not permitted (for example a ticket type) is unknown. Routes crossing between Motera Stadium and Koteshwar Road show a neutral warning."
+  }
+}
