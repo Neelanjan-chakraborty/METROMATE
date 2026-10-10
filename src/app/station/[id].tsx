@@ -6,13 +6,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, ExternalLink, Info, Map as MapIcon } from 'lucide-react-native';
 import { Button, Notice, Screen } from '../../components/ui';
 import { StationHero } from '../../components/station/StationHero';
-import { ActionButtons, AmenitiesSection, GatesSection, LineCards, NeighbourStrip, NearbySection, type LineCardData } from '../../components/station/StationSections';
+import { ActionButtons, AmenitiesSection, BusesSection, GatesSection, LineCards, NeighbourStrip, NearbySection, type LineCardData } from '../../components/station/StationSections';
 import { StationTimingsAccordion } from '../../components/route/RouteDetails';
 import { Accordion, CARD_LINE, ExpandAlert, NAVY, SLATE, VIOLET, cardShadow } from '../../components/route/primitives';
 import { useHeroState } from '../../components/home/useHeroClock';
 import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
 import { formatDate, mapsSearchUrl } from '../../lib/format';
+import { nearbyBusStops } from '../../lib/transit/nearby';
+import { useTransit } from '../../lib/transit/transitData';
 import { gateFeatures, hopEstimate, neighboursOn, stationAmenities, stationService } from '../../lib/stationView';
 
 export default function StationScreen() {
@@ -21,6 +23,7 @@ export default function StationScreen() {
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
   const { look, focused } = useHeroState(sky);
+  const bus = useTransit(true);
 
   const station = id ? network.stations.get(id) : undefined;
   const corridors = useMemo(() => new Map(dataset.corridors.map((c) => [c.id, c])), [dataset]);
@@ -108,6 +111,8 @@ export default function StationScreen() {
             <GatesSection gates={gateList} underground={underground} lineColor={color} night={look.night} towards={towards} hasServiceNote={!!station.serviceNote} />
 
             <AmenitiesSection data={amenities} />
+
+            <BusesSection stops={bus.status === 'ready' ? nearbyBusStops(bus.transit, station.id, 4) : []} loading={bus.status === 'loading'} onPlan={(stopId) => router.navigate({ pathname: '/', params: { from: stopId } })} />
 
             <NearbySection places={landmarks} links={links} onMaps={() => openUrl(mapsSearchUrl(station.name))} />
 

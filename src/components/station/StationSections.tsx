@@ -7,6 +7,9 @@ import { AMENITY_LOOK, AmenityIcon } from './amenityIcons';
 import { GateScene } from './GateScene';
 import { placeKind, type Amenity, type GateFeatures, type Neighbours, type PlaceKind, type StationAmenities } from '../../lib/stationView';
 import type { Landmark as LandmarkT, NearbyConnection } from '../../types';
+import { AGENCY_LOOK } from '../../lib/transit/format';
+import { walkMinutes } from '../../lib/transit/planner';
+import type { NearbyStop } from '../../lib/transit/nearby';
 
 type Z = (n: number) => number;
 
@@ -365,6 +368,58 @@ export function NearbySection({ places, links, onMaps }: { places: LandmarkT[]; 
         ))}
       </ScrollView>
       <Text style={{ fontSize: z(11.5), color: SLATE }}>Dashed = not verified. “Maps” opens your maps app (needs internet).</Text>
+    </Section>
+  );
+}
+
+// -------------------------------------------------------------- buses nearby
+
+
+/** Real bus stops (from the timetable feed) within a few hundred metres of the station pin, with the routes serving them. */
+export function BusesSection({ stops, loading, onPlan }: { stops: NearbyStop[]; loading: boolean; onPlan: (stopId: string) => void }) {
+  const { z } = useHomeScale();
+  return (
+    <Section icon={Bus} tint="#0F6FC4" tintBg="#E3F1FC" title="Buses nearby">
+      {loading ? (
+        <Text style={{ fontSize: z(13), color: SLATE }}>Loading bus stops…</Text>
+      ) : stops.length === 0 ? (
+        <Text style={{ fontSize: z(13), color: SLATE }}>The bus timetable lists no stop within 600 m of this station.</Text>
+      ) : (
+        <View style={{ gap: z(10) }}>
+          {stops.map((s) => (
+            <Pressable key={s.id} accessibilityRole="button" accessibilityLabel={`${s.name}, about ${Math.max(1, Math.round(walkMinutes(s.m)))} minutes walk. Routes ${s.routes.slice(0, 8).map((r) => r.short).join(', ')}. Plan a journey from this stop`} onPress={() => onPlan(s.id)} style={({ pressed }) => ({ flexDirection: 'row', gap: z(12), padding: z(12), borderRadius: z(16), backgroundColor: '#F8FAFD', borderWidth: 1, borderColor: CARD_LINE, opacity: pressed ? 0.9 : 1 })}>
+              <View style={{ width: z(40), height: z(40), borderRadius: z(13), backgroundColor: '#E3F1FC', alignItems: 'center', justifyContent: 'center' }}>
+                <Bus size={z(20)} color="#0F6FC4" strokeWidth={1.9} />
+              </View>
+              <View style={{ flex: 1, minWidth: 0, gap: z(5) }}>
+                <Text style={{ fontSize: z(14.5), fontWeight: '800', color: NAVY }} numberOfLines={2}>
+                  {s.name}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(6), flexWrap: 'wrap' }}>
+                  <Text style={{ fontSize: z(12), color: SLATE }}>
+                    ~{Math.max(1, Math.round(walkMinutes(s.m)))} min walk · ~{s.m} m
+                  </Text>
+                  {s.named ? (
+                    <View style={{ paddingHorizontal: z(7), height: z(20), borderRadius: z(10), backgroundColor: '#E4F7EF', justifyContent: 'center' }}>
+                      <Text style={{ fontSize: z(10.5), fontWeight: '800', color: '#0B7A54' }}>“Metro” in the stop name</Text>
+                    </View>
+                  ) : null}
+                </View>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: z(5) }}>
+                  {s.routes.slice(0, 8).map((r) => (
+                    <View key={`${r.agency}${r.short}`} style={{ paddingHorizontal: z(7), height: z(21), borderRadius: z(10.5), backgroundColor: AGENCY_LOOK[r.agency].soft, justifyContent: 'center' }}>
+                      <Text style={{ fontSize: z(11), fontWeight: '800', color: AGENCY_LOOK[r.agency].color }}>{r.short}</Text>
+                    </View>
+                  ))}
+                  {s.routes.length > 8 ? <Text style={{ fontSize: z(11.5), color: SLATE, alignSelf: 'center' }}>+{s.routes.length - 8} more</Text> : null}
+                </View>
+              </View>
+              <ChevronRight size={z(18)} color="#5A5FA8" style={{ alignSelf: 'center' }} />
+            </Pressable>
+          ))}
+        </View>
+      )}
+      <Text style={{ fontSize: z(11.5), color: SLATE }}>From the bus timetable feed (unofficial, scheduled). Distances use the station’s approximate pin; red = BRTS, blue = city bus. Tap a stop to plan from it.</Text>
     </Section>
   );
 }
