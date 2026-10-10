@@ -87,6 +87,6 @@
     "type": "Bus and BRTS stops, routes, scheduled trips, BRTS fares",
     "obtainedBy": "Two GTFS zips supplied by the project team (gtfs.zip and gtfs_compat.zip); compat is the one converted by scripts/build-transit.mjs",
     "checkedAt": "2026-10-10",
-    "limitations": "Third-party compilation (publisher BLRTransit), not an official AMTS/AJL/GTSL publication; licence not stated. Valid 2026-09-30 to 2027-03-29, same service every day. Scheduled times only (no live data). Only BRTS fares are included (no AMTS or GTSL fares). Route shapes are not linked to trips and are not used. 77 trips with impossible durations (over 360 min end to end) were dropped."
+    "limitations": "Third-party compilation (publisher BLRTransit), not an official AMTS/AJL/GTSL publication; licence not stated. Valid 2026-09-30 to 2027-03-29, same service every day. Scheduled times only (no live data). Only BRTS fares are included (no AMTS or GTSL fares). Route shapes are not linked to trips: the build matches 610 of 970 patterns to a shape by stop proximity (inference) and draws the rest straight. 77 trips with impossible durations (over 360 min end to end) were dropped."
   }
 ]

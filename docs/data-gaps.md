@@ -44,7 +44,10 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 - **Scheduled, not live:** no vehicle positions or delays.
 - **Metro↔bus links are estimates:** station pins are estimated (±100–250 m), so "bus stop within N m" and walking times (straight line × 1.3 ÷ 5 km/h) are approximate. 11 metro stations (Gandhinagar side and GIFT City) have no bus stop within 600 m in the feed.
 - **BRTS coverage near the metro is thin:** a BRTS stop within 600 m for only 11 of 54 stations; most metro–bus connections are AMTS.
-- **No bus lines on the map:** the feed's route shapes are not linked to trips, so bus legs are listed, not drawn.
+- **Bus lines on the map are partly matched, not published:** the feed's route shapes are not linked to trips. The build matches a pattern to the shape its stops lie on (≥ 90 % of stops within 80 m): 610 of 970 patterns (63 %; BRTS 132/149, AMTS 478/809, Gandhinagar 0/12). Those are drawn on the road; the other 360 are drawn as dashed straight segments between stops. A wrong match is possible and was not compared with real roads.
+- **No base map:** the Bus & metro map has no tiles, streets or place names (offline); only a grid, a scale bar, the bus lines and the metro stations. Metro lines pass through *estimated* station pins and are approximate.
+- **No GSRTC:** state intercity (GSRTC) buses are not in the feed. The "GSRTC" lettering on the Bus tab's animated bus is decorative.
+- **Headway and offsets are summaries of the schedule:** "how often" uses the gaps between scheduled starts at a pattern's first stop; stop minutes use the most common run of the pattern. Real buses vary.
 - **Dropped data:** 77 trips with impossible durations.
 
 ## Resolved by the newly supplied data
