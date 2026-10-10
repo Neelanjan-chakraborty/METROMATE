@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { Check, Database, History, RotateCcw, Star, Trash2 } from 'lucide-react-native';
+import { Check, Compass, Database, History, RotateCcw, Star, Trash2 } from 'lucide-react-native';
 import { Button, Card, EmptyState, Muted, Notice, Screen, SectionTitle } from '../../components/ui';
 import { JourneyRow } from '../../components/JourneyRow';
 import { OfflineBadge } from '../../components/OfflineBadge';
@@ -116,6 +116,14 @@ export default function SavedScreen() {
               })}
             </View>
             <Muted>{t('common.language.note')}</Muted>
+          </Card>
+        </View>
+
+        <View>
+          <SectionTitle>{t('onboarding.replay.title')}</SectionTitle>
+          <Card style={{ gap: space.sm }}>
+            <Muted>{t('onboarding.replay.body')}</Muted>
+            <Button label={t('onboarding.replay.button')} icon={Compass} variant="secondary" compact onPress={() => router.push('/onboarding')} />
           </Card>
         </View>
 

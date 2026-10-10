@@ -242,4 +242,13 @@ describe('settings', () => {
     await resetLocalData(db, ds);
     expect(await getSetting(db, 'language')).toBe('gu');
   });
+
+  it('remembers that the welcome walkthrough was completed, and keeps that through a data reset', async () => {
+    const db = await freshDb();
+    expect(await getSetting(db, 'onboarding')).toBeNull();
+    await setSetting(db, 'onboarding', 'done');
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds);
+    expect(await getSetting(db, 'onboarding')).toBe('done');
+  });
 });
