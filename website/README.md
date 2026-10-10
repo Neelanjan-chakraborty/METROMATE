@@ -1,6 +1,6 @@
 # MetroMate website
 
-The public landing page for MetroMate: *a calmer way through the city*. It introduces the app, shows the real app screens and links to the Android preview build. It is a separate Next.js project from the Expo app in the repository root; the app's tooling ignores this folder.
+The public landing page for MetroMate: *a calmer way through the city*. Live at **[spontaneous-mochi-9a0109.netlify.app](https://spontaneous-mochi-9a0109.netlify.app/)**. It introduces the app, shows the real app screens and links to the Android preview build. It is a separate Next.js project from the Expo app in the repository root; the app's tooling ignores this folder.
 
 ## Run it
 

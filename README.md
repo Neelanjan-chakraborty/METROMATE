@@ -2,6 +2,8 @@
 
 An offline-first React Native (Expo) app for the **Ahmedabad–Gandhinagar Metro**, built for *Road to DevFest: Metro Hacks* (GDG Gandhinagar). Pick a start and destination; MetroMate shows the route, which way the train is heading, where to change, and what it does and doesn't know — with no backend, API key, account or network request.
 
+**Website:** [spontaneous-mochi-9a0109.netlify.app](https://spontaneous-mochi-9a0109.netlify.app/) · **Android preview build:** [download the APK](https://expo.dev/artifacts/eas/FRk6vqoEAP_QPs_TEV6VlLTskJpNvcROpg5INuj4cpw.apk)
+
 > **Data honesty:** network structure, timings, station types, gate numbers and lifts come from official GMRC material. Station **coordinates are estimates** from an unofficial Google My Maps export. Fares, gate directions, platforms and per-station travel times are **not** in the dataset yet, and the app says so instead of guessing. See [`docs/data-gaps.md`](docs/data-gaps.md).
 
 ## Run it
@@ -42,7 +44,7 @@ North–South corridor APMC ↔ Mahatma Mandir (35 stations incl. Motera Stadium
 
 ## Website (`website/`)
 
-A separate Next.js landing page that introduces MetroMate to the public: *a calmer way through the city*. It uses real screens captured from the app, original vector illustrations, and links to the Android preview build. Run it with `cd website && npm install && npm run dev`. Details, design system and content rules are in [`website/README.md`](website/README.md). The app's TypeScript, ESLint, Jest and Metro setups ignore that folder.
+A separate Next.js landing page that introduces MetroMate to the public: *a calmer way through the city*. It is live at **[spontaneous-mochi-9a0109.netlify.app](https://spontaneous-mochi-9a0109.netlify.app/)** (Netlify). It uses real screens captured from the app, original vector illustrations, and links to the Android preview build. Run it with `cd website && npm install && npm run dev`. Details, design system and content rules are in [`website/README.md`](website/README.md). The app's TypeScript, ESLint, Jest and Metro setups ignore that folder.
 
 ## Home screen design
 
