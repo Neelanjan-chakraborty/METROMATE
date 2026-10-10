@@ -10,7 +10,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="map" options={{ title: 'Map' }} />
       <Tabs.Screen name="bus" options={{ title: 'Bus' }} />
       <Tabs.Screen name="stations" options={{ title: 'Stations' }} />
-      <Tabs.Screen name="saved" options={{ title: 'Saved' }} />
+      <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
     </Tabs>
   );
 }

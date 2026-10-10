@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { BOARD_H, BOARD_W, OVERSCAN, VIEWBOX, ob } from '../palette';
+import { MetroMateLogo, type MetroMateLogoProps } from '../../brand/MetroMateLogo';
 import { pointAt, stage, stageOut, type Track } from './pathMath';
 
 /*
@@ -316,4 +317,14 @@ export function useSpringIn(active: boolean, reduced: boolean, delayMs = 0) {
 /** Scale/opacity style for a spring value (the logo's entrance). */
 export function useSpringStyle(v: SharedValue<number>) {
   return useAnimatedStyle(() => ({ opacity: Math.min(1, v.value * 2.2), transform: [{ scale: 0.4 + 0.6 * v.value }] }));
+}
+
+/** The MetroMate logo placed on the artboard (an image, so it lives outside the Svg layers). */
+export function LogoSprite({ x, y, size, animate }: { x: number; y: number; size: number; animate: MetroMateLogoProps['animate'] }) {
+  const { scale } = useBoard();
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', left: (x + OVERSCAN) * scale, top: y * scale }}>
+      <MetroMateLogo size={size * scale} animate={animate} delayMs={150} />
+    </View>
+  );
 }

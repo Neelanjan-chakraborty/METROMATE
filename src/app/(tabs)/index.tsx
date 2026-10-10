@@ -176,11 +176,11 @@ export default function Home() {
 
           <ShortcutCards onMap={() => router.push('/map')} onStations={() => router.push('/stations')} />
 
-          <SectionHeader title={t('home.section.quick')} onSeeAll={() => router.push('/saved')} />
+          <SectionHeader title={t('home.section.quick')} onSeeAll={() => router.push('/settings')} />
           <QuickRoutes items={quickItems} onPress={onQuick} onClear={(slot) => void clearQuickRoute(slot).then(() => setQuickHint({ kind: 'removed', slot }))} />
           {quickHint ? <Text style={[styles.hint, lang !== 'en' && styles.hintIndic]}>{quickHintText(quickHint)}</Text> : null}
 
-          <SectionHeader title={t('home.section.recent')} onSeeAll={() => router.push('/saved')} />
+          <SectionHeader title={t('home.section.recent')} onSeeAll={() => router.push('/settings')} />
           <RecentTrips trips={trips} onOpen={openTrip} />
 
           {storage === 'memory' ? (

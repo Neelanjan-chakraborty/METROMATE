@@ -1,25 +1,25 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bookmark, Bus, List, LocateFixed, Map as MapIcon, type LucideIcon } from 'lucide-react-native';
+import { Bus, List, LocateFixed, Map as MapIcon, Settings as SettingsIcon, type LucideIcon } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
-import { MetroTrainIcon } from './home/icons';
+import { MetroMateLogo } from './brand/MetroMateLogo';
 import { colors } from '../theme';
 import { activeColorFor } from '../theme/bus';
 import { useT } from '../i18n/useT';
 import type { MessageKey } from '../i18n';
 
-const ICONS: Record<string, (p: { color: string; size: number }) => React.ReactElement> = {
-  index: ({ color, size }) => <MetroTrainIcon color={color} size={size} strokeWidth={1.8} />,
+const ICONS: Record<string, (p: { color: string; size: number; focused: boolean }) => React.ReactElement> = {
+  index: ({ size, focused }) => <MetroMateLogo size={size + 1} shadow={false} dim={!focused} />,
   live: lucide(LocateFixed),
   map: lucide(MapIcon),
   bus: lucide(Bus),
   stations: lucide(List),
-  saved: lucide(Bookmark),
+  settings: lucide(SettingsIcon),
 };
 
 function lucide(Icon: LucideIcon) {
-  return function LucideTab({ color, size }: { color: string; size: number }) {
+  return function LucideTab({ color, size }: { color: string; size: number; focused?: boolean }) {
     return <Icon color={color} size={size} strokeWidth={1.8} />;
   };
 }
@@ -52,7 +52,7 @@ export function MetroTabBar({ state, descriptors, navigation }: BottomTabBarProp
             style={styles.item}
           >
             {focused ? <View style={[styles.indicator, { backgroundColor: active }]} /> : null}
-            {Icon ? <Icon color={color} size={25} /> : null}
+            {Icon ? <Icon color={color} size={25} focused={focused} /> : null}
             <Text style={[styles.label, { color }, focused && styles.labelActive]}>{label}</Text>
           </Pressable>
         );

@@ -26,6 +26,6 @@ describe('bus theme contrast', () => {
 describe('tab bar active colours', () => {
   it('only the Bus tab is red', () => {
     expect(activeColorFor('bus')).toBe(bus.red);
-    for (const t of ['index', 'live', 'map', 'stations', 'saved']) expect(activeColorFor(t)).toBe(colors.primary);
+    for (const t of ['index', 'live', 'map', 'stations', 'settings']) expect(activeColorFor(t)).toBe(colors.primary);
   });
 });

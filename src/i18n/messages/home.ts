@@ -3,7 +3,6 @@ import { defineCatalog } from '../catalog';
 /** Home tab: header, journey card, shortcuts, quick routes, recent trips, and the station picker. */
 export default defineCatalog({
   // header
-  'home.header.logo.a11y': { en: 'MetroMate logo', hi: 'MetroMate लोगो', gu: 'MetroMate લોગો' },
   'home.header.tagline': { en: 'Your offline metro companion', hi: 'आपका ऑफ़लाइन मेट्रो साथी', gu: 'તમારો ઑફલાઇન મેટ્રો સાથી' },
   'home.header.offlineReady': { en: 'Offline ready', hi: 'ऑफ़लाइन तैयार', gu: 'ઑફલાઇન તૈયાર' },
   'home.header.offlineReady.a11y': {

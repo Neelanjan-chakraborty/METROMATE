@@ -1,7 +1,7 @@
 import React from 'react';
-import { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
+import { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { BirdArt, BusArt, Building, Cloud, DomeHall, Lamp, MetroTrainArt, Passenger, Road, SkyGradient, Sun, Temple, Tree, Viaduct } from '../art/shapes';
-import { Backdrop, Layer, RouteStroke, Sprite, StationNode, Vehicle, useLoopProgress, useSceneClock, useSpringIn, useSpringStyle, useSway } from '../motion/kit';
+import { Backdrop, Layer, LogoSprite, RouteStroke, Sprite, StationNode, Vehicle, useLoopProgress, useSceneClock, useSway } from '../motion/kit';
 import { buildTrack, toPathD } from '../motion/pathMath';
 import { ob } from '../palette';
 import type { SceneProps } from './types';
@@ -36,8 +36,6 @@ export function WelcomeScene({ active, reduced }: SceneProps) {
   const birdB = useLoopProgress(loop, 1, 0.37);
   const birdC = useLoopProgress(loop, 1, 0.71);
   const pulse = useLoopProgress(loop, 2);
-  const logoSpring = useSpringIn(active, reduced, 150);
-  const logoStyle = useSpringStyle(logoSpring);
   const swayA = useSway(loop, 2, 0, 2.6);
   const swayB = useSway(loop, 2, 0.3, 2.2);
   const swayC = useSway(loop, 3, 0.6, 2.8);
@@ -142,19 +140,7 @@ export function WelcomeScene({ active, reduced }: SceneProps) {
         </Vehicle>
       ))}
 
-      <Sprite x={150} y={30} w={60} h={64} animated={logoStyle}>
-        <G>
-          <Rect x={2} y={2} width={56} height={56} rx={17} fill={ob.violet} />
-          <Rect x={2} y={2} width={56} height={56} rx={17} fill="#FFFFFF" opacity={0.08} />
-          <G transform="translate(15 14) scale(1.3)" fill="none" stroke="#FFFFFF" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-            <Rect x={4.5} y={2.5} width={15} height={14.5} rx={4} />
-            <Rect x={7.5} y={5.8} width={9} height={4.6} rx={1.4} />
-            <Circle cx={8.6} cy={13.6} r={0.9} fill="#FFFFFF" stroke="none" />
-            <Circle cx={15.4} cy={13.6} r={0.9} fill="#FFFFFF" stroke="none" />
-            <Path d="M8 17 L6 21.5 M16 17 L18 21.5 M5 21.5 H19" />
-          </G>
-        </G>
-      </Sprite>
+      <LogoSprite x={150} y={28} size={60} animate={active ? 'float' : 'none'} />
     </>
   );
 }

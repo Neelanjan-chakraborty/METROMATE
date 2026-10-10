@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { ChevronLeft } from 'lucide-react-native';
 import { LanguageButton } from '../LanguagePicker';
-import { MetroTrainIcon } from '../home/icons';
+import { MetroMateLogo } from '../brand/MetroMateLogo';
 import { useReduceMotion } from '../home/useHeroClock';
 import { useT } from '../../i18n/useT';
 import { fontFor, useOnboardingFonts } from './fonts';
@@ -191,9 +191,9 @@ function HeaderLogo({ show, reduced, top }: { show: boolean; reduced: boolean; t
   }, [show, reduced, v]);
   const style = useAnimatedStyle(() => ({ opacity: Math.min(1, v.value * 2.4), transform: [{ translateY: (1 - v.value) * 120 }, { scale: 1 + (1 - v.value) * 1.1 }] }));
   return (
-    <View pointerEvents="none" style={[styles.logoWrap, { top }]} accessible accessibilityRole="image" accessibilityLabel="MetroMate">
-      <Animated.View style={[styles.logo, style]}>
-        <MetroTrainIcon size={28} color={ob.white} strokeWidth={1.7} />
+    <View pointerEvents="none" style={[styles.logoWrap, { top }]}>
+      <Animated.View style={style}>
+        <MetroMateLogo size={50} />
       </Animated.View>
     </View>
   );
@@ -216,7 +216,6 @@ const styles = StyleSheet.create({
   skip: { minHeight: 44, minWidth: 64, paddingHorizontal: 18, borderRadius: 22, backgroundColor: ob.white, alignItems: 'center', justifyContent: 'center', shadowColor: ob.violet, shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
   skipText: { fontSize: 15, color: ob.indigo },
   logoWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  logo: { width: 48, height: 48, borderRadius: 15, backgroundColor: ob.violet, alignItems: 'center', justifyContent: 'center', shadowColor: ob.violet, shadowOpacity: 0.35, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 6 },
   controls: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 24, paddingTop: 6, gap: 14, backgroundColor: 'transparent' },
   buttons: { gap: 2 },
   secondarySlot: { minHeight: 48, justifyContent: 'center' },

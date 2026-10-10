@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ArrowRight, ArrowUpDown, Briefcase, ChevronLeft, ChevronRight, Clock, GraduationCap, House, List, Map as MapIcon, Navigation, Plus, WifiOff, X, type LucideIcon } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { ButtonArt, MapCardArt, StationCardArt } from './art';
-import { MetroTrainIcon } from './icons';
+import { MetroMateLogo } from '../brand/MetroMateLogo';
 import { LanguageButton } from '../LanguagePicker';
 import { useHomeScale } from './scale';
 import { useT } from '../../i18n/useT';
@@ -57,9 +57,7 @@ export function HomeHeader({
   const BadgeIcon = shownBadge.Icon;
   return (
     <View style={[st.header, { paddingTop: topInset + z(21) }]}>
-      <View style={st.logo} accessibilityLabel={t('home.header.logo.a11y')}>
-        <MetroTrainIcon size={z(32)} color="#FFFFFF" strokeWidth={1.7} />
-      </View>
+      <MetroMateLogo size={z(58)} animate="enter" />
       <View style={{ flex: 1, minWidth: z(138) }}>
         <Text style={[st.brand, { color: ink }]} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>
           MetroMate
@@ -377,7 +375,6 @@ function makeStyles(z: Z, indic: boolean) {
     pressedSoft: { backgroundColor: '#F3F1FF' },
 
     header: { flexDirection: 'row', alignItems: 'center', gap: z(13), paddingHorizontal: z(20), paddingBottom: z(4) },
-    logo: { width: z(58), height: z(58), borderRadius: z(17), backgroundColor: VIOLET, alignItems: 'center', justifyContent: 'center', shadowColor: VIOLET, shadowOpacity: 0.28, shadowRadius: z(10), shadowOffset: { width: 0, height: z(5) }, elevation: 4 },
     brand: { fontSize: z(26), fontWeight: '800', color: NAVY, letterSpacing: -0.6 },
     tagline: { fontSize: z(12.5), color: '#66718C', marginTop: z(1), lineHeight: lh(z(12.5)) },
     whenRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: z(8), marginTop: z(12) },

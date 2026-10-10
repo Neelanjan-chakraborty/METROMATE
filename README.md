@@ -33,7 +33,7 @@ The web preview is a development convenience only: `expo-sqlite` has no web buil
 - **Route** — see “Route screen” below.
 - **Map** — an original schematic drawn by the app from the station data (not a copy of GMRC's map): three corridors, interchanges, start/destination markers, highlighted journey, zoom.
 - **Stations** — directory with search and line filters; the station page is described under “Station screen” below.
-- **Saved** — favourites and recents (open, reverse, remove, clear), dataset info, **Reset local data**.
+- **Settings** (formerly Saved) — saved routes (favourites, recent journeys, quick routes: open, reverse, remove, clear), preferences (language, replay the welcome guide, recorded station positions), database and storage details (dataset version, SQLite status, counts, **Reset local data**, Data & sources), about (version, privacy, independence) and credits, including *Made with Love by Neelanjan for Road to DevFest : Metro Hacks hackathon*.
 - **Data & sources** — every source, its limits, and what is unavailable.
 
 ### Network covered (54 stations)
@@ -111,7 +111,7 @@ A red-themed **Bus** tab (the sixth tab; only its active state is red, the rest 
 
 ## Welcome walkthrough (first launch)
 
-A five-step illustrated walkthrough opens the first time the app runs and can be replayed from **Saved → Welcome guide**. It teaches the app through moving artwork and one sentence per step: *Your city. Your way.* (a sunrise city, a metro over a bridge, a bus below, a route that lights station by station) → *The smartest way there.* (an isometric block: metro to an interchange, then a bus, drawn as one route) → *Never miss your stop.* (a cutaway: tunnel, cutting, elevated line; the route line advances and the next stop pulses) → *Your city, even offline.* (a phone holding the network map, saved routes, a Wi-Fi mark turning into "offline") → *Let's get moving.* (a panorama and a route loop through four destinations).
+A five-step illustrated walkthrough opens the first time the app runs and can be replayed from **Settings → Welcome guide**. It teaches the app through moving artwork and one sentence per step: *Your city. Your way.* (a sunrise city, a metro over a bridge, a bus below, a route that lights station by station) → *The smartest way there.* (an isometric block: metro to an interchange, then a bus, drawn as one route) → *Never miss your stop.* (a cutaway: tunnel, cutting, elevated line; the route line advances and the next stop pulses) → *Your city, even offline.* (a phone holding the network map, saved routes, a Wi-Fi mark turning into "offline") → *Let's get moving.* (a panorama and a route loop through four destinations).
 - **Controls:** swipe, Next / Get started, Back, Skip ("I already know the way" on step 1), a five-pill progress indicator, and the language button (so the guide can be read in Hindi or Gujarati). Android Back steps back through the guide, then leaves it. The last step opens the real **Plan** screen ("Plan my first trip") or the real **Map** ("Explore the map first"). Haptics (a light tick) are used on step changes where supported.
 - **Honest copy:** it never shows fares, journey times, live arrivals or real station names. The Live step says the position comes from the phone's GPS, only when tracking is started; the offline step says live location needs GPS and bus times are scheduled, not live. **The offline sentence was reworded** from "Save maps & routes before you go" to "Maps and saved routes live on your phone", because the map and timetables are already bundled and nothing is downloaded. No permission (location included) is requested during the walkthrough, and no account is needed.
 - **Built with:** `react-native-reanimated` (shared-value timelines, route drawing via stroke-dash, vehicles moving along measured polylines on the UI thread, spring entrances, parallax), `react-native-gesture-handler` (the pager's pan), `react-native-svg` (all artwork is original vector code in `src/components/onboarding/art` and `scenes`, no images), `expo-haptics`, and Manrope via `expo-font` (Latin text only; Hindi and Gujarati keep the system font). With the phone's reduced-motion setting on, every scene is shown complete and still. Animations run only for the step on screen.
@@ -120,7 +120,7 @@ A five-step illustrated walkthrough opens the first time the app runs and can be
 
 ## Languages (English, हिन्दी, ગુજરાતી)
 
-The interface can be switched between English, Hindi and Gujarati from the globe button on the Home and Live headers, or from the Language card on the Saved tab. The choice is saved on the phone (SQLite, kept through "Reset local data"); on first launch the app follows the phone's language if it is Hindi or Gujarati, otherwise English.
+The interface can be switched between English, Hindi and Gujarati from the globe button on the Home and Live headers, or from the Language card on the Settings tab. The choice is saved on the phone (SQLite, kept through "Reset local data"); on first launch the app follows the phone's language if it is Hindi or Gujarati, otherwise English.
 - **How it works:** typed message catalogs in `src/i18n/messages/<area>.ts` hold every string in all three languages (`{placeholders}`, `.one`/`.other` plurals; Hindi and Gujarati treat 0 and 1 as singular). Components use `const { t, tn } = useT()`; pure helpers in `src/lib` take an optional translator (`t = enT`), so English output and the existing tests are unchanged. `src/i18n/__tests__/catalog.test.ts` fails the build if a message is missing a language, uses different placeholders, is in the wrong script or is left untranslated.
 - **Translated:** every screen's buttons, headings, labels, messages, hints, warnings the app writes itself, accessibility labels, units (min, m, km), plurals, dates and the share text.
 - **Not translated, on purpose:** station, stop, place and route names; text that comes from the data (GMRC notes, source descriptions, fare rules, line names such as "North–South Corridor"); agency and brand names (GMRC, BRTS, AMTS, GSRTC, MetroMate). Digits stay 0–9 in all languages. Line names show with a translated suffix ("North–South लाइन").
@@ -179,7 +179,7 @@ scripts/generate-initial-data.mjs   ORIGINAL one-shot generator. Do NOT re-run: 
 scripts/import-coordinates.mjs      KML -> station coordinates (+ gate connectivity notes)
 scripts/import-gates.mjs            GMRC gate table -> gates, station type, lifts
 scripts/fetch-station-thumbs.mjs    Wikimedia Commons -> assets/stations/*.webp + credits (run with internet)
-src/app/                    Expo Router screens (tabs: Plan, Live, Map, Bus, Stations, Saved; route, station/[id], bus/route/[id], bus/stop/[id], data)
+src/app/                    Expo Router screens (tabs: Plan, Live, Map, Bus, Stations, Settings; route, station/[id], bus/route/[id], bus/stop/[id], data)
 src/components/             UI pieces (timeline, map, station picker …)
 src/lib/                    routing, fareCalculator, journeyTime, search, schematic, dataValidation, dataset,
                             locator, position, journeyModel (route geometry), eta, journeyStatus, skyPalette
@@ -187,6 +187,7 @@ src/components/journey/     live journey canvas: scene, city tiles, route hops, 
 src/lib/transit/            bus data loader, place search, planner, metro model, fares, GTFS build logic
 src/components/transit/     multimodal result screen: summary, options, timeline
 src/i18n/                   English / Hindi / Gujarati message catalogs, useT hook, language list
+src/components/brand/       the MetroMate logo component (one source for every place the logo appears; the artwork is assets/logo.png, a 384 px copy of the app icon)
 src/components/onboarding/  welcome walkthrough: pager, scenes, vector art kit, motion primitives
 src/components/bus/         Bus tab pieces and the animated GSRTC-lettered header
 src/components/map/         Bus & metro map (SVG) and its screen panel

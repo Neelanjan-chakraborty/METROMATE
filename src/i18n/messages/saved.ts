@@ -2,8 +2,6 @@ import { defineCatalog } from '../catalog';
 
 /** Saved tab (favourites, recent journeys, language, data & storage) and the Data & sources screen. */
 export default defineCatalog({
-  'saved.title': { en: 'Saved', hi: 'सहेजे गए', gu: 'સાચવેલ' },
-  'saved.subtitle': { en: 'Stored on this device. No account needed.', hi: 'इस डिवाइस पर रखा गया है। अकाउंट की ज़रूरत नहीं।', gu: 'આ ડિવાઇસ પર રાખેલ છે. એકાઉન્ટની જરૂર નથી.' },
 
   'saved.favourites.title': { en: 'Favourite routes', hi: 'पसंदीदा रूट', gu: 'મનપસંદ રૂટ' },
   'saved.favourites.empty.title': { en: 'No favourites yet', hi: 'अभी कोई पसंदीदा नहीं', gu: 'હજુ કોઈ મનપસંદ નથી' },

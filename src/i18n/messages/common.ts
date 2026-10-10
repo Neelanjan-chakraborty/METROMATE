@@ -7,7 +7,7 @@ export default defineCatalog({
   'common.tab.map': { en: 'Map', hi: 'नक्शा', gu: 'નકશો' },
   'common.tab.bus': { en: 'Bus', hi: 'बस', gu: 'બસ' },
   'common.tab.stations': { en: 'Stations', hi: 'स्टेशन', gu: 'સ્ટેશન' },
-  'common.tab.saved': { en: 'Saved', hi: 'सहेजे', gu: 'સાચવેલ' },
+  'common.tab.settings': { en: 'Settings', hi: 'सेटिंग्स', gu: 'સેટિંગ્સ' },
 
   'common.online': { en: 'Online', hi: 'ऑनलाइन', gu: 'ઑનલાઇન' },
   'common.offlineAll': { en: 'Offline · all features work', hi: 'ऑफ़लाइन · सब कुछ चलता है', gu: 'ઑફલાઇન · બધું ચાલે છે' },
