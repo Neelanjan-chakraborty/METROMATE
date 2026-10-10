@@ -335,6 +335,7 @@ export default function LiveScreen() {
       <StationPicker
         visible={picker !== null}
         title={picker === 'from' ? 'Starting station' : 'Destination'}
+        allowBus={false}
         onClose={() => setPicker(null)}
         onSelect={(id) => {
           if (picker === 'from') setFromId(id);

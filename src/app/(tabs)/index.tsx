@@ -12,6 +12,10 @@ import { HomeHeader, JourneyCard, QuickRoutes, RecentTrips, SectionHeader, Short
 import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
 import { findRoute } from '../../lib/routing';
+import { isBusId } from '../../lib/transit/types';
+import { placeName } from '../../lib/transit/places';
+import { useTransit } from '../../lib/transit/transitData';
+import { formatAtParam, minutesOfDay } from '../../lib/transit/format';
 import { getFare } from '../../lib/fareCalculator';
 import { getJourneyTime } from '../../lib/journeyTime';
 import { formatDate, plural, relativeDay } from '../../lib/format';
@@ -32,18 +36,28 @@ export default function Home() {
   const [picker, setPicker] = useState<Target>(null);
   const [error, setError] = useState<string | null>(null);
   const [quickHint, setQuickHint] = useState<string | null>(null);
+  /** Minutes since midnight to depart at, or null for "leave now". */
+  const [leaveMin, setLeaveMin] = useState<number | null>(null);
 
   // Pre-fill from a station page ("Start here" / "Go here"), applied once per set of params.
   const paramKey = `${params.from ?? ''}|${params.to ?? ''}`;
   const [appliedKey, setAppliedKey] = useState('');
   if (paramKey !== appliedKey) {
     setAppliedKey(paramKey);
-    if (params.from && network.stations.has(params.from)) setFromId(params.from);
-    if (params.to && network.stations.has(params.to)) setToId(params.to);
+    if (params.from && (network.stations.has(params.from) || isBusId(params.from))) setFromId(params.from);
+    if (params.to && (network.stations.has(params.to) || isBusId(params.to))) setToId(params.to);
   }
 
-  const name = (id: string | null) => (id ? network.stations.get(id)?.name ?? id : null);
-  const openRoute = (a: string, b: string) => router.push({ pathname: '/route', params: { from: a, to: b } });
+  // The bus data is parsed only when something on screen needs a bus stop's name.
+  const needBus = isBusId(fromId) || isBusId(toId) || recents.slice(0, 3).some((r) => isBusId(r.fromId) || isBusId(r.toId)) || quickRoutes.some((q) => isBusId(q.fromId) || isBusId(q.toId));
+  const bus = useTransit(needBus);
+  const transit = bus.status === 'ready' ? bus.transit : null;
+  const name = (id: string | null) => (id ? placeName(id, network.stations, transit) ?? (isBusId(id) ? 'Bus stop' : id) : null);
+  /** Metro-to-metro "leave now" trips keep the metro route screen; anything with a bus stop or a chosen time uses the multimodal planner. */
+  const openRoute = (a: string, b: string, at: number | null = null) => {
+    if (isBusId(a) || isBusId(b) || at !== null) router.push({ pathname: '/route', params: { from: a, to: b, mode: 'transit', ...(at !== null ? { at: formatAtParam(at) } : {}) } });
+    else router.push({ pathname: '/route', params: { from: a, to: b } });
+  };
 
   const swap = () => {
     setFromId(toId);
@@ -52,10 +66,10 @@ export default function Home() {
   };
 
   const find = () => {
-    if (!fromId || !toId) return setError('Choose both a starting station and a destination.');
-    if (fromId === toId) return setError('Your start and destination are the same station.');
+    if (!fromId || !toId) return setError('Choose both a start and a destination (a station or a bus stop).');
+    if (fromId === toId) return setError('Your start and destination are the same place.');
     setError(null);
-    openRoute(fromId, toId);
+    openRoute(fromId, toId, leaveMin);
   };
 
   // ---- quick routes: tap to open a saved one, or save the stations chosen above into an empty slot
@@ -70,7 +84,7 @@ export default function Home() {
       return openRoute(q.fromId, q.toId);
     }
     if (!fromId || !toId || fromId === toId) {
-      return setQuickHint(`To save ${QUICK_LABEL[slot]}, choose two different stations above, then tap ${QUICK_LABEL[slot]} again.`);
+      return setQuickHint(`To save ${QUICK_LABEL[slot]}, choose two different places above, then tap ${QUICK_LABEL[slot]} again.`);
     }
     void setQuickRoute(slot, fromId, toId).then(() => setQuickHint(`Saved ${name(fromId)} → ${name(toId)} as ${QUICK_LABEL[slot]}.`));
   };
@@ -80,6 +94,17 @@ export default function Home() {
     const corridors = new Map(dataset.corridors.map((c) => [c.id, c]));
     const out: TripItem[] = [];
     for (const r of recents.slice(0, 3)) {
+      if (isBusId(r.fromId) || isBusId(r.toId)) {
+        out.push({
+          id: r.id,
+          fromName: placeName(r.fromId, network.stations, transit) ?? 'Bus stop',
+          toName: placeName(r.toId, network.stations, transit) ?? 'Bus stop',
+          chips: [{ color: '#0F6FC4', label: 'Bus + metro' }],
+          day: relativeDay(r.createdAt),
+          metric: 'Plan',
+        });
+        continue;
+      }
       const route = findRoute(network, r.fromId, r.toId);
       if (!route.ok) continue;
       const time = getJourneyTime(network, route, dataset.fares);
@@ -96,7 +121,7 @@ export default function Home() {
       });
     }
     return out;
-  }, [recents, network, dataset]);
+  }, [recents, network, dataset, transit]);
 
   const openTrip = (id: number) => {
     const r = recents.find((x) => x.id === id);
@@ -119,7 +144,19 @@ export default function Home() {
             <View style={{ height: z(76) }} />
           </View>
 
-          <JourneyCard fromName={name(fromId)} toName={name(toId)} onFrom={() => setPicker('from')} onTo={() => setPicker('to')} onSwap={swap} onFind={find} error={error} />
+          <JourneyCard
+            fromName={name(fromId)}
+            toName={name(toId)}
+            onFrom={() => setPicker('from')}
+            onTo={() => setPicker('to')}
+            onSwap={swap}
+            onFind={find}
+            error={error}
+            leaveAt={leaveMin === null ? null : formatAtParam(leaveMin)}
+            onLeaveNow={() => setLeaveMin(null)}
+            onLeaveAt={() => setLeaveMin((m) => m ?? Math.ceil((minutesOfDay(new Date()) + 5) / 5) * 5)}
+            onLeaveStep={(d) => setLeaveMin((m) => (((m ?? minutesOfDay(new Date())) + d) % 1440 + 1440) % 1440)}
+          />
 
           <ShortcutCards onMap={() => router.push('/map')} onStations={() => router.push('/stations')} />
 
@@ -149,7 +186,7 @@ export default function Home() {
 
       <StationPicker
         visible={picker !== null}
-        title={picker === 'from' ? 'Starting station' : 'Destination'}
+        title={picker === 'from' ? 'Start from' : 'Go to'}
         onClose={() => setPicker(null)}
         onSelect={(id) => {
           if (picker === 'from') setFromId(id);

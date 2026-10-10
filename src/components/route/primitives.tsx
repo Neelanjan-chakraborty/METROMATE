@@ -94,3 +94,19 @@ const styles = StyleSheet.create({
   acc: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, ...cardShadow, shadowOpacity: 0.05 },
   accHead: { flexDirection: 'row', alignItems: 'center' },
 });
+
+/** A white circular icon button with a soft shadow (back, favourite, share, …). */
+export function RoundButton({ z, label, onPress, children, size = 42 }: { z: (n: number) => number; label: string; onPress: () => void; children: React.ReactNode; size?: number }) {
+  const d = z(size);
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={6}
+      style={({ pressed }) => [{ width: d, height: d, borderRadius: d / 2, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 }, cardShadow]}
+    >
+      {children}
+    </Pressable>
+  );
+}

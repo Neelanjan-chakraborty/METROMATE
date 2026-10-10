@@ -257,3 +257,15 @@ describe('invariants over many random journeys', () => {
     expect((Date.now() - t0) / 60).toBeLessThan(500);
   });
 });
+
+describe('share text', () => {
+  it('lists each leg, marks bus as scheduled and metro as estimated, and says it is not live', () => {
+    const { transitShareText } = jest.requireActual('../share') as typeof import('../share');
+    const p = plan(stop('Koba Metro Station'), 'ARVD', at(10, 0)).plans.find((x) => x.legs.some((l) => l.mode === 'bus') && x.legs.some((l) => l.mode === 'metro'))!;
+    const text = transitShareText(p, 'Koba', 'Amraivadi', (id) => id, (id) => id);
+    expect(text).toMatch(/^Koba → Amraivadi: leave \d\d:\d\d, arrive \d\d:\d\d/);
+    expect(text).toMatch(/\(scheduled\)/);
+    expect(text).toMatch(/\(estimated\)/);
+    expect(text).toMatch(/not live/);
+  });
+});

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { InteractionManager } from 'react-native';
 import { buildIndex, type TransitIndex } from './transitIndex';
 import type { TransitData } from './types';
 
@@ -33,19 +32,20 @@ export function transitIfLoaded(): TransitIndex | null {
 
 export type TransitState = { status: 'loading' } | { status: 'ready'; transit: TransitIndex } | { status: 'error'; error: Error };
 
-/** Loads the bus data once the screen has finished its transition. Metro features work while it loads. */
+/** Loads the bus data shortly after the screen first paints. Metro features work while it loads. */
 export function useTransit(enabled = true): TransitState {
   const [state, setState] = useState<TransitState>(() => (cached ? { status: 'ready', transit: cached } : failed ? { status: 'error', error: failed } : { status: 'loading' }));
   useEffect(() => {
     if (!enabled || state.status !== 'loading') return;
-    const task = InteractionManager.runAfterInteractions(() => {
+    // A short timer rather than InteractionManager: the looping hero animations keep the interaction queue busy forever.
+    const id = setTimeout(() => {
       try {
         setState({ status: 'ready', transit: loadTransit() });
       } catch (e) {
         setState({ status: 'error', error: e instanceof Error ? e : new Error(String(e)) });
       }
-    });
-    return () => task.cancel();
+    }, 60);
+    return () => clearTimeout(id);
   }, [enabled, state.status]);
   return state;
 }

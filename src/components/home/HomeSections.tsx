@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ArrowRight, ArrowUpDown, Briefcase, ChevronRight, GraduationCap, House, List, Map as MapIcon, Navigation, Plus, WifiOff, X, type LucideIcon } from 'lucide-react-native';
+import { ArrowRight, ArrowUpDown, Briefcase, ChevronLeft, ChevronRight, Clock, GraduationCap, House, List, Map as MapIcon, Navigation, Plus, WifiOff, X, type LucideIcon } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { ButtonArt, MapCardArt, StationCardArt } from './art';
 import { MetroTrainIcon } from './icons';
@@ -78,9 +78,14 @@ interface JourneyProps {
   onSwap: () => void;
   onFind: () => void;
   error: string | null;
+  /** When to leave: null = now; otherwise "HH:MM". */
+  leaveAt?: string | null;
+  onLeaveNow?: () => void;
+  onLeaveAt?: () => void;
+  onLeaveStep?: (deltaMinutes: number) => void;
 }
 
-export function JourneyCard({ fromName, toName, onFrom, onTo, onSwap, onFind, error }: JourneyProps) {
+export function JourneyCard({ fromName, toName, onFrom, onTo, onSwap, onFind, error, leaveAt, onLeaveNow, onLeaveAt, onLeaveStep }: JourneyProps) {
   const { z, st } = useStyles();
   return (
     <View style={st.journeyCard}>
@@ -125,6 +130,28 @@ export function JourneyCard({ fromName, toName, onFrom, onTo, onSwap, onFind, er
           <ArrowUpDown size={z(22)} color={VIOLET} strokeWidth={2} />
         </Pressable>
       </View>
+
+      {onLeaveNow ? (
+        <View style={st.whenRow} accessibilityRole="radiogroup">
+          <Pressable accessibilityRole="radio" accessibilityState={{ selected: !leaveAt, checked: !leaveAt }} aria-checked={!leaveAt} accessibilityLabel="Leave now" onPress={onLeaveNow} style={[st.whenChip, !leaveAt && st.whenChipOn]}>
+            <Clock size={z(14)} color={!leaveAt ? '#FFFFFF' : VIOLET} strokeWidth={2.1} />
+            <Text style={[st.whenText, !leaveAt && { color: '#FFFFFF' }]}>Leave now</Text>
+          </Pressable>
+          <Pressable accessibilityRole="radio" accessibilityState={{ selected: !!leaveAt, checked: !!leaveAt }} aria-checked={!!leaveAt} accessibilityLabel={leaveAt ? `Depart at ${leaveAt}` : 'Depart at a chosen time'} onPress={onLeaveAt} style={[st.whenChip, !!leaveAt && st.whenChipOn]}>
+            <Text style={[st.whenText, !!leaveAt && { color: '#FFFFFF' }]}>{leaveAt ? `Depart ${leaveAt}` : 'Depart at…'}</Text>
+          </Pressable>
+          {leaveAt && onLeaveStep ? (
+            <>
+              <Pressable accessibilityRole="button" accessibilityLabel="15 minutes earlier" onPress={() => onLeaveStep(-15)} style={st.stepBtn}>
+                <ChevronLeft size={z(18)} color={VIOLET} strokeWidth={2.2} />
+              </Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="15 minutes later" onPress={() => onLeaveStep(15)} style={st.stepBtn}>
+                <ChevronRight size={z(18)} color={VIOLET} strokeWidth={2.2} />
+              </Pressable>
+            </>
+          ) : null}
+        </View>
+      ) : null}
 
       {error ? (
         <Text style={st.error} accessibilityRole="alert">
@@ -333,6 +360,11 @@ function makeStyles(z: Z) {
     logo: { width: z(58), height: z(58), borderRadius: z(17), backgroundColor: VIOLET, alignItems: 'center', justifyContent: 'center', shadowColor: VIOLET, shadowOpacity: 0.28, shadowRadius: z(10), shadowOffset: { width: 0, height: z(5) }, elevation: 4 },
     brand: { fontSize: z(26), fontWeight: '800', color: NAVY, letterSpacing: -0.6 },
     tagline: { fontSize: z(12.5), color: '#66718C', marginTop: z(1) },
+    whenRow: { flexDirection: 'row', alignItems: 'center', gap: z(8), marginTop: z(12) },
+    whenChip: { flexDirection: 'row', alignItems: 'center', gap: z(6), height: z(34), paddingHorizontal: z(13), borderRadius: z(17), backgroundColor: '#F1EFFF' },
+    whenChipOn: { backgroundColor: VIOLET },
+    whenText: { fontSize: z(13), fontWeight: '700', color: VIOLET },
+    stepBtn: { width: z(34), height: z(34), borderRadius: z(17), backgroundColor: '#F1EFFF', alignItems: 'center', justifyContent: 'center' },
     offlinePill: { flexDirection: 'row', alignItems: 'center', gap: z(6), paddingHorizontal: z(11), height: z(31), borderRadius: 99, backgroundColor: '#E5F7EC', borderWidth: 1, borderColor: '#C4EBD3' },
     offlineText: { fontSize: z(12), fontWeight: '700', color: '#0F6B3E' },
 

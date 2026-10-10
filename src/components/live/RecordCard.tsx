@@ -142,6 +142,7 @@ export function RecordCard({ fix, stations, coords, suggestedId, onRecord, onCle
       <StationPicker
         visible={picker}
         title="Which station are you at?"
+        allowBus={false}
         onClose={() => setPicker(false)}
         onSelect={(id) => {
           setChosen(id);

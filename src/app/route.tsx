@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-nati
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeftRight, ChevronLeft, LocateFixed, Map as MapIcon, Share2, Star } from 'lucide-react-native';
+import { ArrowLeftRight, Bus, ChevronLeft, ChevronRight, LocateFixed, Map as MapIcon, Share2, Star } from 'lucide-react-native';
 import { Button, Notice, Screen } from '../components/ui';
 import { Hero } from '../components/home/Hero';
 import { useHeroState } from '../components/home/useHeroClock';
@@ -12,7 +12,9 @@ import { JourneyTimeline } from '../components/route/JourneyTimeline';
 import { RouteSummary } from '../components/route/RouteSummary';
 import { ServiceCard } from '../components/route/ServiceCard';
 import { GoodToKnowAccordion, ScheduleAccordion, TicketAccordion } from '../components/route/RouteDetails';
-import { CARD_LINE, ExpandAlert, NAVY, SLATE, VIOLET, cardShadow } from '../components/route/primitives';
+import { CARD_LINE, ExpandAlert, NAVY, RoundButton, SLATE, VIOLET, cardShadow } from '../components/route/primitives';
+import { TransitScreen } from '../components/transit/TransitScreen';
+import { isBusId } from '../lib/transit/types';
 import { useReady } from '../state/useReady';
 import { findRoute } from '../lib/routing';
 import { getFare } from '../lib/fareCalculator';
@@ -22,7 +24,13 @@ import { shareSummary, stopMinutes, warningTitle } from '../lib/routeView';
 import { formatDate } from '../lib/format';
 import { colors } from '../theme';
 
+/** Metro-only routes keep the metro screen; bus stops or a chosen time go to the multimodal planner. */
 export default function RouteScreen() {
+  const { from, to, mode } = useLocalSearchParams<{ from?: string; to?: string; mode?: string }>();
+  return mode === 'transit' || isBusId(from) || isBusId(to) ? <TransitScreen /> : <MetroRouteScreen />;
+}
+
+function MetroRouteScreen() {
   const { from, to, sky } = useLocalSearchParams<{ from?: string; to?: string; sky?: string }>();
   const { dataset, network, stationPoints, isFavourite, toggleFavourite, recordRecent } = useReady();
   const insets = useSafeAreaInsets();
@@ -117,6 +125,17 @@ export default function RouteScreen() {
               </View>
             ))}
 
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Compare with bus and BRTS options"
+              onPress={() => router.replace({ pathname: '/route', params: { from: route.originId, to: route.destinationId, mode: 'transit' } })}
+              style={({ pressed }) => [{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: z(12), padding: z(12), borderRadius: z(16), backgroundColor: '#E3F1FC', opacity: pressed ? 0.9 : 1 }]}
+            >
+              <Bus size={z(20)} color="#0F6FC4" strokeWidth={2} />
+              <Text style={{ flex: 1, fontSize: z(14), fontWeight: '700', color: '#0B4F8A' }}>Compare with bus & BRTS options</Text>
+              <ChevronRight size={z(18)} color="#0F6FC4" />
+            </Pressable>
+
             <ServiceCard lines={lines} corridors={corridors} nameOf={nameOf} onTrack={toTrack} />
 
             <View style={[styles.timeline, { marginHorizontal: 16, borderRadius: z(24), padding: z(14) }, cardShadow]}>
@@ -174,21 +193,6 @@ export default function RouteScreen() {
         </View>
       </View>
     </Screen>
-  );
-}
-
-function RoundButton({ z, label, onPress, children, size = 42 }: { z: (n: number) => number; label: string; onPress: () => void; children: React.ReactNode; size?: number }) {
-  const d = z(size);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      hitSlop={6}
-      style={({ pressed }) => [{ width: d, height: d, borderRadius: d / 2, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 }, cardShadow]}
-    >
-      {children}
-    </Pressable>
   );
 }
 

@@ -7,13 +7,19 @@ import { JourneyRow } from '../../components/JourneyRow';
 import { OfflineBadge } from '../../components/OfflineBadge';
 import { useReady } from '../../state/useReady';
 import { formatDate } from '../../lib/format';
+import { isBusId } from '../../lib/transit/types';
+import { placeName } from '../../lib/transit/places';
+import { useTransit } from '../../lib/transit/transitData';
 import { colors, space, type } from '../../theme';
 
 export default function SavedScreen() {
   const { dataset, network, favourites, recents, removeFavourite, clearRecents, resetLocalData, storage } = useReady();
   const [done, setDone] = useState<string | null>(null);
-  const name = (id: string) => network.stations.get(id)?.name ?? id;
-  const open = (a: string, b: string) => router.push({ pathname: '/route', params: { from: a, to: b } });
+  const hasBus = [...favourites, ...recents].some((r) => isBusId(r.fromId) || isBusId(r.toId));
+  const bus = useTransit(hasBus);
+  const transit = bus.status === 'ready' ? bus.transit : null;
+  const name = (id: string) => placeName(id, network.stations, transit) ?? (isBusId(id) ? 'Bus stop' : id);
+  const open = (a: string, b: string) => router.push({ pathname: '/route', params: isBusId(a) || isBusId(b) ? { from: a, to: b, mode: 'transit' } : { from: a, to: b } });
 
   const confirmReset = () => {
     const run = async () => {
