@@ -126,7 +126,7 @@ The interface can be switched between English, Hindi and Gujarati from the globe
 - **Translated:** every screen's buttons, headings, labels, messages, hints, warnings the app writes itself, accessibility labels, units (min, m, km), plurals, dates and the share text.
 - **Not translated, on purpose:** station, stop, place and route names; text that comes from the data (GMRC notes, source descriptions, fare rules, line names such as "North–South Corridor"); agency and brand names (GMRC, BRTS, AMTS, GSRTC, MetroMate). Digits stay 0–9 in all languages. Line names show with a translated suffix ("North–South लाइन").
 - **Layout:** Hindi and Gujarati text is longer and taller, so fixed heights became minimum heights, labels wrap, and letter-spacing is removed outside English (it breaks Indic conjuncts).
-- **Caveat:** the Hindi and Gujarati text was written by Claude and has **not been reviewed by a native speaker**; a list of phrases to check is in `docs/data-gaps.md`. It was checked in headless Chromium with Noto fonts at 360 and 430 px, not on a phone: Devanagari/Gujarati rendering and line heights on real Android/iOS system fonts are unverified.
+- **Caveat:** the Hindi and Gujarati text was written by Antigravity and has **not been reviewed by a native speaker**; a list of phrases to check is in `docs/data-gaps.md`. It was checked in headless Chromium with Noto fonts at 360 and 430 px, not on a phone: Devanagari/Gujarati rendering and line heights on real Android/iOS system fonts are unverified.
 
 ## Station screen
 

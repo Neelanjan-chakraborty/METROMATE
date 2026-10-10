@@ -41,4 +41,4 @@ yarn-error.*
 /android
 
 # local assistant settings
-.claude/settings.local.json
+.antigravity/
