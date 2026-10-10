@@ -1,10 +1,107 @@
-# MetroMate — Offline Metro Companion
+<div align="center">
 
-An offline-first React Native (Expo) app for the **Ahmedabad–Gandhinagar Metro**, built for *Road to DevFest: Metro Hacks* (GDG Gandhinagar). Pick a start and destination; MetroMate shows the route, which way the train is heading, where to change, and what it does and doesn't know — with no backend, API key, account or network request.
+<img src="assets/logo.png" alt="MetroMate logo" width="112" />
 
-**Website:** [spontaneous-mochi-9a0109.netlify.app](https://spontaneous-mochi-9a0109.netlify.app/) · **Android preview build:** [download the APK](https://expo.dev/artifacts/eas/FRk6vqoEAP_QPs_TEV6VlLTskJpNvcROpg5INuj4cpw.apk)
+# MetroMate
 
-> **Data honesty:** network structure, timings, station types, gate numbers and lifts come from official GMRC material. Station **coordinates are estimates** from an unofficial Google My Maps export. Fares, gate directions, platforms and per-station travel times are **not** in the dataset yet, and the app says so instead of guessing. See [`docs/data-gaps.md`](docs/data-gaps.md).
+### A calmer way through the city.
+
+**The offline-first metro and bus companion for Ahmedabad and Gandhinagar.**<br/>
+Plan metro and bus trips, find the right exit, and follow your journey stop by stop, with no internet.
+
+<a href="https://spontaneous-mochi-9a0109.netlify.app/"><img alt="Website" src="https://img.shields.io/badge/Website-live-5140E8?style=for-the-badge&logo=netlify&logoColor=white" /></a>
+<a href="https://expo.dev/artifacts/eas/FRk6vqoEAP_QPs_TEV6VlLTskJpNvcROpg5INuj4cpw.apk"><img alt="Download the Android APK" src="https://img.shields.io/badge/Android-preview%20APK-35C99A?style=for-the-badge&logo=android&logoColor=white" /></a>
+<img alt="Works offline" src="https://img.shields.io/badge/Works-offline-292524?style=for-the-badge" />
+
+<img alt="Expo SDK 57" src="https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white" />
+<img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black" />
+<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
+<img alt="426 tests passing" src="https://img.shields.io/badge/tests-426%20passing-35C99A" />
+<img alt="English, Hindi, Gujarati" src="https://img.shields.io/badge/languages-EN%20%C2%B7%20%E0%A4%B9%E0%A4%BF%20%C2%B7%20%E0%AA%97%E0%AB%81-F04444" />
+
+<br/><br/>
+
+<img src="docs/images/banner-screens.webp" alt="Five MetroMate screens: the Plan screen, a route from Thaltej to Akshardham, the offline network map, the Old High Court station page and the Bus tab" width="100%" />
+
+<sub>Built for <b>Road to DevFest: Metro Hacks</b> (GDG Gandhinagar) · Made with love by Neelanjan</sub>
+
+</div>
+
+---
+
+## At a glance
+
+| 🚇 **54 metro stations** | 🚌 **633 bus routes** | 📴 **Works offline** | 🗣️ **3 languages** |
+|:---:|:---:|:---:|:---:|
+| North–South, East–West and GIFT City lines, interchanges at Old High Court and GNLU | BRTS (Janmarg), AMTS and Gandhinagar city buses, from scheduled timetables | Routing, maps, station details and timetables ship inside the app | English, हिन्दी and ગુજરાતી, chosen in one tap |
+
+## See it in action
+
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="docs/images/app-plan.webp" alt="Plan screen with saved Home, Campus and Work routes" width="220" /><br/><b>Plan</b><br/><sub>Pick two stations, keep Home, Campus and Work one tap away</sub></td>
+    <td align="center" width="25%"><img src="docs/images/app-route.webp" alt="Route from Thaltej to Akshardham with one change" width="220" /><br/><b>Route</b><br/><sub>Direction, where to change, first and last trains</sub></td>
+    <td align="center" width="25%"><img src="docs/images/app-map.webp" alt="Offline metro network map" width="220" /><br/><b>Network map</b><br/><sub>All three lines and both interchanges, offline</sub></td>
+    <td align="center" width="25%"><img src="docs/images/app-station.webp" alt="Old High Court station page" width="220" /><br/><b>Station</b><br/><sub>Gates, lifts, lines and nearby stops</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/app-stations.webp" alt="Stations directory filtered to the East–West line" width="220" /><br/><b>Stations</b><br/><sub>Search 54 stations, filter by line</sub></td>
+    <td align="center"><img src="docs/images/app-bus.webp" alt="Bus tab listing BRTS routes" width="220" /><br/><b>Bus</b><br/><sub>BRTS, AMTS and Gandhinagar routes, scheduled times</sub></td>
+    <td align="center"><img src="docs/images/app-busmap.webp" alt="Geographic bus and metro map" width="220" /><br/><b>Bus &amp; metro map</b><br/><sub>Real road shapes with the metro on top</sub></td>
+    <td align="center"><img src="docs/images/app-live.webp" alt="Live tab showing the rider at Usmanpura" width="220" /><br/><b>Live</b><br/><sub>Your own GPS position, stop by stop</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/app-welcome.webp" alt="First step of the animated welcome walkthrough" width="220" /><br/><b>Welcome</b><br/><sub>An animated five-step walkthrough</sub></td>
+    <td align="center"><img src="docs/images/app-walkthrough-tracking.webp" alt="Walkthrough step about following your trip" width="220" /><br/><b>Never miss your stop</b><br/><sub>Walkthrough step three</sub></td>
+    <td align="center"><img src="docs/images/app-plan-hindi.webp" alt="Plan screen in Hindi" width="220" /><br/><b>हिन्दी</b><br/><sub>The whole interface in Hindi or Gujarati</sub></td>
+    <td align="center"><img src="docs/images/app-settings.webp" alt="Settings with saved routes" width="220" /><br/><b>Settings</b><br/><sub>Saved routes, language, data and credits</sub></td>
+  </tr>
+</table>
+
+<sub>Real screens captured from the app (its web build at phone size) with sample saved routes. The Live screen used a simulated GPS position at Usmanpura. Station photos in the screens: Old High Court by Rupturestriker; East–West stations by Sanjeev4125; both via Wikimedia Commons, CC BY-SA 4.0.</sub>
+
+## The website
+
+A public landing page lives in [`website/`](website/) and at **[spontaneous-mochi-9a0109.netlify.app](https://spontaneous-mochi-9a0109.netlify.app/)**.
+
+<img src="docs/images/website-hero.webp" alt="MetroMate website hero: A calmer way through the city" width="100%" />
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/website-journey.webp" alt="Scroll-driven journey demo from home to campus by metro and bus" /></td>
+    <td width="50%"><img src="docs/images/website-offline.webp" alt="Offline section with the network map on a phone" /></td>
+  </tr>
+</table>
+
+## How it works
+
+```mermaid
+flowchart LR
+  A["GMRC network, gates and lifts<br/>(data/*.json)"] --> C["On-device SQLite<br/>(expo-sqlite)"]
+  B["Bus timetables (GTFS)<br/>data/transit/*.json"] --> D["Offline planner<br/>metro + bus + walk"]
+  C --> D
+  D --> E["Plan · Route · Map · Stations · Bus"]
+  F["Phone GPS<br/>(no data needed)"] --> G["Live journey view"]
+  C --> G
+```
+
+Everything runs on the phone: no backend, no API key, no account and no analytics. The only network features are two optional links (open in your maps app, open the GMRC website).
+
+| Area | Built with |
+|---|---|
+| App | React Native 0.86 · Expo SDK 57 · Expo Router · TypeScript |
+| Data &amp; storage | expo-sqlite · bundled GMRC dataset · GTFS-derived bus timetables |
+| Maps &amp; motion | react-native-svg · Reanimated 4 · gesture-handler |
+| Location | expo-location (foreground GPS) |
+| Quality | Jest (426 tests) · ESLint · `tsc --noEmit` |
+| Website | Next.js 16 · Tailwind CSS v4 · Framer Motion · Netlify |
+| Builds | EAS Build (Android APK) |
+
+> **Data honesty:** network structure, timings, station types, gate numbers and lifts come from official GMRC material. Station **coordinates are estimates** from an unofficial Google My Maps export. Fares (except BRTS), gate directions, platforms and live arrivals are **not** in the data, and the app says so instead of guessing. Bus times are scheduled, never live. See [`docs/data-gaps.md`](docs/data-gaps.md).
+
+---
+
+# Project details
 
 ## Run it
 
