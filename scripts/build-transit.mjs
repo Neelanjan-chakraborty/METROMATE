@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { strFromU8, unzipSync } from 'fflate';
 import { buildTransit } from '../src/lib/transit/gtfsBuild.ts';
+import { buildShapes } from '../src/lib/transit/shapeBuild.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const zips = process.argv.slice(2).filter((a) => !a.startsWith('--'));
@@ -23,7 +24,9 @@ if (zips.length === 0) {
 }
 const RAW_BUDGET = 1_500_000;
 const GZ_BUDGET = 250_000;
-const NEEDED = ['agency.txt', 'areas.txt', 'calendar.txt', 'calendar_dates.txt', 'fare_leg_rules.txt', 'fare_products.txt', 'feed_info.txt', 'routes.txt', 'stop_areas.txt', 'stop_times.txt', 'stops.txt', 'trips.txt'];
+const SHAPES_RAW_BUDGET = 450_000;
+const SHAPES_GZ_BUDGET = 100_000;
+const NEEDED = ['shapes.txt', 'agency.txt', 'areas.txt', 'calendar.txt', 'calendar_dates.txt', 'fare_leg_rules.txt', 'fare_products.txt', 'feed_info.txt', 'routes.txt', 'stop_areas.txt', 'stop_times.txt', 'stops.txt', 'trips.txt'];
 
 const main = zips[0];
 const entries = unzipSync(new Uint8Array(readFileSync(main)), { filter: (f) => NEEDED.includes(f.name) });
@@ -31,7 +34,8 @@ const files = Object.fromEntries(Object.entries(entries).map(([name, bytes]) => 
 const stations = JSON.parse(readFileSync(join(root, 'data', 'stations.json'), 'utf8'));
 const sources = zips.map((z) => ({ name: basename(z), sha256: createHash('sha256').update(readFileSync(z)).digest('hex') }));
 
-const data = buildTransit({ files, stations, sources });
+const { 'shapes.txt': shapesText, ...gtfsFiles } = files;
+const data = buildTransit({ files: gtfsFiles, stations, sources });
 const json = JSON.stringify(data);
 const out = join(root, 'data', 'transit', 'transit.json');
 writeFileSync(out, json + '\n');
@@ -42,7 +46,24 @@ console.log(`  ${(json.length / 1024).toFixed(0)} KB raw, ${(gz / 1024).toFixed(
 for (const [k, v] of Object.entries(data.meta.counts)) console.log(`  ${k}: ${v}`);
 for (const line of data.meta.report) console.log(`  - ${line}`);
 console.log(`  valid ${data.meta.source.validFrom} to ${data.meta.source.validTo} (${statSync(main).size} byte input)`);
-if (json.length > RAW_BUDGET || gz > GZ_BUDGET) {
-  console.error(`Over budget (raw ${RAW_BUDGET}, gz ${GZ_BUDGET}).`);
-  process.exit(1);
+let over = json.length > RAW_BUDGET || gz > GZ_BUDGET;
+if (over) console.error(`transit.json over budget (raw ${RAW_BUDGET}, gz ${GZ_BUDGET}).`);
+
+// road shapes: matched to patterns by stop position (the feed does not link them to trips)
+if (shapesText) {
+  const shapes = buildShapes({ transit: data, shapesText });
+  const sj = JSON.stringify(shapes);
+  const sout = join(root, 'data', 'transit', 'shapes.json');
+  writeFileSync(sout, sj + '\n');
+  const sgz = gzipSync(sj).length;
+  console.log(`Wrote ${sout}`);
+  console.log(`  ${(sj.length / 1024).toFixed(0)} KB raw, ${(sgz / 1024).toFixed(0)} KB gzipped`);
+  for (const line of shapes.meta.report) console.log(`  - ${line}`);
+  if (sj.length > SHAPES_RAW_BUDGET || sgz > SHAPES_GZ_BUDGET) {
+    console.error(`shapes.json over budget (raw ${SHAPES_RAW_BUDGET}, gz ${SHAPES_GZ_BUDGET}).`);
+    over = true;
+  }
+} else {
+  console.log('No shapes.txt in the feed: shapes.json not written.');
 }
+if (over) process.exit(1);

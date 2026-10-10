@@ -79,3 +79,26 @@ export const BUS_PREFIX = 'bus:';
 export const isBusId = (id: string | null | undefined): boolean => !!id && id.startsWith(BUS_PREFIX);
 export const busStopId = (gtfsId: string): string => BUS_PREFIX + gtfsId;
 export const gtfsStopId = (placeId: string): string => placeId.slice(BUS_PREFIX.length);
+
+/**
+ * Road geometry for bus patterns, built from the feed's shapes.txt by scripts/build-transit.mjs
+ * (data/transit/shapes.json). The feed does not link shapes to trips, so each pattern is MATCHED to the
+ * shape its stops lie on; patterns with no good match have no line and are drawn straight between stops.
+ */
+export interface ShapesData {
+  meta: {
+    schema: 1;
+    /** Simplification tolerance, metres. */
+    tolM: number;
+    matched: number;
+    total: number;
+    byAgency: Record<string, { matched: number; total: number }>;
+    report: string[];
+  };
+  /** Each polyline: [lat0, lon0, dLat1, dLon1, ...] in integer 1e-5 degrees (first point absolute, then deltas). */
+  lines: number[][];
+  /** Per pattern (same order as transit.json patterns): index into `lines`, or -1 when no road shape matched. */
+  pattern: number[];
+  /** Per pattern: 1 when the pattern runs opposite to the stored polyline direction. */
+  rev: number[];
+}
