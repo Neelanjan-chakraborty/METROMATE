@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { DrawPath } from '@/components/motion';
 import { art, tint, shade, Building, DomeHall, Tree, SlimTree, Cloud, Sun, Train, BusStop, Road, Person, Node, Interchange, NoSignal, Lamp } from './kit';
+import { useStillMotion } from '../motion';
 
 /*
  * Large illustrations for the "Built around the way you move" stories. Each is a single lightweight SVG drawn
@@ -17,7 +18,7 @@ const font = { fontFamily: "'Inter Variable', Inter, ui-sans-serif, sans-serif" 
 function useLive() {
   const ref = useRef<SVGSVGElement>(null);
   const inView = useInView(ref, { margin: '0px 0px -10% 0px' });
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   return [ref, inView && !reduced] as const;
 }
 
@@ -329,6 +330,7 @@ export function ConnectionArt() {
       {[500, 560].map((x) => chevron(x, 310, 0, `b2${x}`))}
       {/* moving vehicles (plan view) */}
       <motion.g
+        initial={{ x: 70, opacity: 1 }}
         animate={live ? { x: [0, 130], opacity: [0, 1, 1, 0] } : { x: 70, opacity: 1 }}
         transition={live ? { duration: 16, repeat: Infinity, ease: 'linear', opacity: { duration: 16, times: [0, 0.12, 0.85, 1], repeat: Infinity } } : { duration: 0 }}
       >

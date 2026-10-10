@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { PhoneFrame } from '../PhoneFrame';
-import { CALM, FloatBlob, Reveal } from '../motion';
+import { CALM, FloatBlob, Reveal, useStillMotion } from '../motion';
 import { SectionHeading } from '../ui';
 
 /*
@@ -63,7 +63,7 @@ const MOBILE_ORDER = ['order-2', 'order-1', 'order-3'];
 export function Showcase() {
   const rail = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(1);
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
 
   // Which slide is centred in the gallery (small screens only; on large screens the rail does not scroll).
   useEffect(() => {

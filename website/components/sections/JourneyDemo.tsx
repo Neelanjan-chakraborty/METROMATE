@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { JourneyArt, stepAt } from '@/components/art/JourneyArt';
+import { useStillMotion } from '../motion';
 
 /*
  * How it works: a scroll-driven walk through one trip. On wide screens with motion allowed the section is tall
@@ -19,7 +20,7 @@ const STEPS = [
 ] as const;
 
 export function JourneyDemo() {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   const [wide, setWide] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 640px)');

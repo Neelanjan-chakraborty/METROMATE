@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { DrawPath, CALM } from '@/components/motion';
 import { art, tint, shade, Train, Bus, BusStop, Viaduct, Road, SlimTree, Person, Pin, Node, Interchange, Building, Cloud } from './kit';
+import { useStillMotion } from '../motion';
 
 /*
  * Miniature artwork for the "Little things" rail. Each piece is a 280 × 200 vignette drawn on the card's own
@@ -127,7 +128,7 @@ export function EntranceArt() {
 
 /** Card 3: a metro pulls into an elevated interchange while a city bus waits at the stop below. */
 export function InterchangeArt() {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   const ground = 162;
   const walk = 'M168 96 V132 Q168 150 150 150 H112';
   return (
@@ -147,10 +148,10 @@ export function InterchangeArt() {
       <rect x={252} y={57} width={2.4} height={30} fill={art.inkSoft} opacity={0.45} />
       <Viaduct x1={-10} x2={290} y={88} ground={ground} pier={108} deck={art.stone} dark={art.stoneDeep} rail={art.violetSoft} />
       <motion.g
-        initial={reduced ? false : { x: -90, opacity: 0.4 }}
+        initial={{ x: -90, opacity: 0.4 }}
         whileInView={{ x: 0, opacity: 1 }}
         viewport={{ once: true, margin: '0px 0px -10% 0px' }}
-        transition={{ duration: 3.4, ease: CALM, delay: 0.2 }}
+        transition={reduced ? { duration: 0 } : { duration: 3.4, ease: CALM, delay: 0.2 }}
       >
         <Train x={116} y={62} scale={0.88} />
       </motion.g>

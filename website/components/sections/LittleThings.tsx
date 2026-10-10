@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { useReducedMotion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { Reveal } from '@/components/motion';
 import { Hand } from '@/components/ui';
 import { RouteArt, EntranceArt, InterchangeArt, SavedArt } from '@/components/art/CardArt';
+import { useStillMotion } from '../motion';
 
 /*
  * "Little things": a horizontally scrolling rail of editorial cards. Native scrolling (touch, trackpad, the
@@ -37,7 +37,7 @@ const RAIL_PAD =
 
 export function LittleThings() {
   const rail = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
 

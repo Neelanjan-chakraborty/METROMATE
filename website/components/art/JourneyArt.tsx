@@ -80,7 +80,7 @@ const WIDE: Layout = {
   dome: [300, 84],
   trees: [{ x: 176, slim: 44 }, { x: 40, r: 15 }, { x: 520, slim: 38 }, { x: 548, r: 11, soft: true }, { x: 760, slim: 40 }],
   house: [92, 2.2],
-  homeChip: [92, 430],
+  homeChip: [86, 404],
   walkHome: 'M104 540 C134 540 150 520 150 466',
   walkCampus: 'M810 466 C810 516 836 536 872 540',
   campus: [838, 1],

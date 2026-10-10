@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion, type HTMLMotionProps } from 'framer-motion';
-import type { ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 
 /*
  * The site's motion language: slow, low-velocity reveals (opacity 0 → 1, 24 px rise, 0.8 s, calm ease-out)
@@ -13,6 +13,22 @@ import type { ReactNode } from 'react';
 
 export const CALM = [0.22, 1, 0.36, 1] as const;
 
+const noop = () => () => {};
+
+/**
+ * The visitor's reduced-motion preference, safe to use during hydration: the server and the first browser render
+ * both assume motion, then components re-render with the real preference. Use this instead of useReducedMotion().
+ */
+export function useStillMotion() {
+  const pref = useReducedMotion();
+  const hydrated = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
+  return hydrated && !!pref;
+}
+
 interface RevealProps extends HTMLMotionProps<'div'> {
   delay?: number;
   /** Rise distance in px. */
@@ -21,7 +37,7 @@ interface RevealProps extends HTMLMotionProps<'div'> {
 }
 
 export function Reveal({ delay = 0, y = 24, children, ...rest }: RevealProps) {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   return (
     <motion.div
       initial={{ opacity: 0, y }}
@@ -37,7 +53,7 @@ export function Reveal({ delay = 0, y = 24, children, ...rest }: RevealProps) {
 
 /** A soft decorative blob that drifts ±10 px on a slow loop. Purely decorative and hidden from assistive tech. */
 export function FloatBlob({ className, color, duration = 8, delay = 0 }: { className?: string; color: string; duration?: number; delay?: number }) {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   return (
     <motion.div
       aria-hidden
@@ -51,7 +67,7 @@ export function FloatBlob({ className, color, duration = 8, delay = 0 }: { class
 
 /** An SVG path that draws itself once when it scrolls into view. */
 export function DrawPath({ delay = 0, duration = 1.6, ...rest }: React.ComponentProps<typeof motion.path> & { delay?: number; duration?: number }) {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   return (
     <motion.path
       initial={{ pathLength: 0 }}

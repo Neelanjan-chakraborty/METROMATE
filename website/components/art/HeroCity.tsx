@@ -1,9 +1,10 @@
 'use client';
 
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'framer-motion';
-import type { ReactNode } from 'react';
+import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion';
+import { useStillMotion } from '../motion';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { CALM } from '@/components/motion';
-import { art, shade, tint, rand, Building, DomeHall, Tree, SlimTree, Cloud, Sun, Lamp, Person, MetroCar, Train, Bus, StationEntrance, BusStop, Node } from './kit';
+import { art, shade, rand, Building, DomeHall, Tree, SlimTree, Cloud, Sun, Lamp, Person, MetroCar, Train, Bus, StationEntrance, BusStop, Node } from './kit';
 
 /*
  * The hero landscape: an Ahmedabad–Gandhinagar riverfront in cross-section. A violet metro glides along an
@@ -15,8 +16,22 @@ import { art, shade, tint, rand, Building, DomeHall, Tree, SlimTree, Cloud, Sun,
  * off-canvas), the route lines (drawn once), and three parallax layers (sky, far skyline, mid city).
  */
 
-type BuildingSpec = { x: number; w: number; h: number; fill: string; seed: number; roof?: 'flat' | 'tank' | 'slant' | 'dome'; lit?: number };
-type TowerSpec = { x: number; w: number; h: number; fill: string; crown: 'slant' | 'step' | 'spire' };
+type BuildingSpec = {
+  x: number;
+  w: number;
+  h: number;
+  fill: string;
+  seed: number;
+  roof?: 'flat' | 'tank' | 'slant' | 'dome';
+  lit?: number;
+};
+type TowerSpec = {
+  x: number;
+  w: number;
+  h: number;
+  fill: string;
+  crown: 'slant' | 'step' | 'spire';
+};
 
 interface Layout {
   id: string;
@@ -41,7 +56,13 @@ interface Layout {
   trees: [number, number][];
   slim: number[];
   lamps: number[];
-  people: { x: number; color: string; bag?: string; step?: 0 | 1; s?: number }[];
+  people: {
+    x: number;
+    color: string;
+    bag?: string;
+    step?: 0 | 1;
+    s?: number;
+  }[];
   entrance: number;
   busStop: number;
   tunnel: { x1: number; y: number; h: number };
@@ -81,7 +102,7 @@ const DESKTOP: Layout = {
     [1104, 214, 0.65],
   ],
   farBase: 352,
-  kite: [476, 104],
+  kite: [588, 74],
   birds: [700, 120],
   midBase: 358,
   dome: { x: 70, w: 96 },
@@ -143,7 +164,7 @@ const DESKTOP: Layout = {
   metroNodes: [96, 344, 760, 1150],
   busNodes: [614, 1100],
   train: { scale: 1.4, park: 232, duration: 26 },
-  bus: { scale: 1.2, park: 650, duration: 22 },
+  bus: { scale: 1.2, park: 598, duration: 22 },
   walk: 'M492 438 Q556 404 606 436',
 };
 
@@ -157,8 +178,8 @@ const MOBILE: Layout = {
     [196, 26, 0.6],
   ],
   farBase: 266,
-  kite: [252, 96],
-  birds: [150, 120],
+  kite: [150, 100],
+  birds: [236, 104],
   midBase: 272,
   dome: { x: 20, w: 70 },
   mid: [
@@ -202,6 +223,8 @@ const MOBILE: Layout = {
   bus: { scale: 0.95, park: 232, duration: 20 },
   walk: 'M200 336 Q190 322 186 334',
 };
+
+export { useStillMotion };
 
 // ---------------------------------------------------------------------------------- parts
 
@@ -273,7 +296,13 @@ function SkyDetails({ kite, birds, s }: { kite: [number, number]; birds: [number
   const [bx, by] = birds;
   return (
     <g>
-      <path d={`M${kx} ${ky + 12 * s} C${kx + 10 * s} ${ky + 60 * s} ${kx - 40 * s} ${ky + 110 * s} ${kx - 70 * s} ${ky + 190 * s}`} fill="none" stroke={art.inkSoft} strokeWidth={0.8} opacity={0.35} />
+      <path
+        d={`M${kx} ${ky + 12 * s} C${kx + 10 * s} ${ky + 60 * s} ${kx - 40 * s} ${ky + 110 * s} ${kx - 92 * s} ${ky + 250 * s}`}
+        fill="none"
+        stroke={art.inkSoft}
+        strokeWidth={0.8}
+        opacity={0.35}
+      />
       <path d={`M${kx} ${ky - 11 * s} L${kx + 8 * s} ${ky} L${kx} ${ky + 12 * s} L${kx - 8 * s} ${ky} Z`} fill={art.coralDeep} />
       <path d={`M${kx} ${ky - 11 * s} L${kx + 8 * s} ${ky} L${kx} ${ky + 12 * s} Z`} fill={art.coral} />
       <path d={`M${kx - 3 * s} ${ky + 15 * s} l3 ${-3 * s} l3 ${3 * s} Z`} fill={art.violet} />
@@ -423,12 +452,21 @@ function Underground({ L }: { L: Layout }) {
 }
 
 /** A vehicle that loops at constant speed from `from` to `to`, starting at `park` so it is in view on first paint. */
-function Loop({ from, to, park, duration, reduced, children }: { from: number; to: number; park: number; duration: number; reduced: boolean | null; children: ReactNode }) {
+function Loop({ from, to, park, duration, reduced, children }: { from: number; to: number; park: number; duration: number; reduced: boolean; children: ReactNode }) {
   if (reduced) return <g transform={`translate(${park} 0)`}>{children}</g>;
   const span = Math.abs(to - from);
   const t1 = Math.abs(to - park) / span;
   return (
-    <motion.g initial={{ x: park }} animate={{ x: [park, to, from, park] }} transition={{ duration, times: [0, t1, t1 + 0.0004, 1], ease: 'linear', repeat: Infinity }}>
+    <motion.g
+      initial={{ x: park }}
+      animate={{ x: [park, to, from, park] }}
+      transition={{
+        duration,
+        times: [0, t1, t1 + 0.0004, 1],
+        ease: 'linear',
+        repeat: Infinity,
+      }}
+    >
       {children}
     </motion.g>
   );
@@ -438,7 +476,19 @@ function Layer({ y, children }: { y: MotionValue<number> | null; children: React
   return y ? <motion.g style={{ y }}>{children}</motion.g> : <g>{children}</g>;
 }
 
-function Scene({ L, reduced, py }: { L: Layout; reduced: boolean | null; py: { sky: MotionValue<number>; far: MotionValue<number>; mid: MotionValue<number> } | null }) {
+function Scene({
+  L,
+  reduced,
+  py,
+}: {
+  L: Layout;
+  reduced: boolean;
+  py: {
+    sky: MotionValue<number>;
+    far: MotionValue<number>;
+    mid: MotionValue<number>;
+  } | null;
+}) {
   const { W, H, deckY, parkY } = L;
   const ts = L.train.scale;
   const trainY = deckY - 2 - 28 * ts;
@@ -447,8 +497,21 @@ function Scene({ L, reduced, py }: { L: Layout; reduced: boolean | null; py: { s
   const metro = `M-10 ${deckY + 5} H${W + 10}`;
   const busLine = `M-10 ${parkY} H${W + 10}`;
   const draw = (delay: number, duration = 2.6) =>
-    reduced ? {} : { initial: { pathLength: 0 }, animate: { pathLength: 1 }, transition: { duration, delay, ease: CALM } };
-  const fade = (delay: number) => (reduced ? {} : { initial: { opacity: 0 }, animate: { opacity: [0, 1] }, transition: { duration: 0.9, delay, ease: CALM } });
+    reduced
+      ? {}
+      : {
+          initial: { pathLength: 0 },
+          animate: { pathLength: 1 },
+          transition: { duration, delay, ease: CALM },
+        };
+  const fade = (delay: number) =>
+    reduced
+      ? {}
+      : {
+          initial: { opacity: 0 },
+          animate: { opacity: [0, 1] },
+          transition: { duration: 0.9, delay, ease: CALM },
+        };
 
   return (
     <>
@@ -521,7 +584,7 @@ function Scene({ L, reduced, py }: { L: Layout; reduced: boolean | null; py: { s
 
       {/* route lines: metro along the viaduct, bus along the curb, a walking link between them */}
       <g fill="none" strokeLinecap="round">
-                <motion.path d={metro} stroke={art.violet} strokeWidth={3.4} {...draw(0.5)} />
+        <motion.path d={metro} stroke={art.violet} strokeWidth={3.4} {...draw(0.5)} />
         <motion.path d={busLine} stroke={art.busBlue} strokeWidth={2.6} {...draw(1.3, 2.4)} />
         <motion.path d={L.walk} stroke={art.coralDeep} strokeWidth={2} strokeDasharray="0.1 5.5" {...fade(2.6)} />
       </g>
@@ -562,8 +625,28 @@ const LABEL =
   'Illustration: a violet metro crosses an elevated bridge over a riverfront city while a blue bus drives along the street below; a cutaway shows an underground metro platform. Route lines connect the stations.';
 
 /** The hero illustration, with both compositions; Tailwind switches between them at the `sm` breakpoint. */
+const SM = '(min-width: 640px)';
+const subscribeSm = (cb: () => void) => {
+  const m = window.matchMedia(SM);
+  m.addEventListener('change', cb);
+  return () => m.removeEventListener('change', cb);
+};
+
+/**
+ * true ≥ 640 px, false below, null on the server and during hydration. The server renders both compositions
+ * (CSS picks one); after hydration only the visible one stays mounted, so the live DOM holds a single scene.
+ */
+function useWide() {
+  return useSyncExternalStore(
+    subscribeSm,
+    () => window.matchMedia(SM).matches,
+    () => null,
+  );
+}
+
 export function HeroCity() {
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
+  const wide = useWide();
   const { scrollY } = useScroll();
   const sky = useTransform(scrollY, [0, 900], [0, 30]);
   const far = useTransform(scrollY, [0, 900], [0, 20]);
@@ -571,12 +654,16 @@ export function HeroCity() {
   const py = reduced ? null : { sky, far, mid };
   return (
     <>
-      <svg viewBox={`0 44 ${DESKTOP.W} ${DESKTOP.H - 44}`} className="hidden h-auto w-full sm:block" role="img" aria-label={LABEL}>
-        <Scene L={DESKTOP} reduced={reduced} py={py} />
-      </svg>
-      <svg viewBox={`0 0 ${MOBILE.W} ${MOBILE.H}`} className="block h-auto w-full sm:hidden" role="img" aria-label={LABEL}>
-        <Scene L={MOBILE} reduced={reduced} py={py} />
-      </svg>
+      {wide !== false ? (
+        <svg viewBox={`0 44 ${DESKTOP.W} ${DESKTOP.H - 44}`} className="hidden h-auto w-full sm:block" role="img" aria-label={LABEL}>
+          <Scene key={String(reduced)} L={DESKTOP} reduced={reduced} py={py} />
+        </svg>
+      ) : null}
+      {wide !== true ? (
+        <svg viewBox={`0 0 ${MOBILE.W} ${MOBILE.H}`} className="block h-auto w-full sm:hidden" role="img" aria-label={LABEL}>
+          <Scene key={String(reduced)} L={MOBILE} reduced={reduced} py={py} />
+        </svg>
+      ) : null}
     </>
   );
 }

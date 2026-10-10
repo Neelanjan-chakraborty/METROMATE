@@ -1,10 +1,10 @@
 'use client';
 
 import { useId, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { site } from '@/lib/site';
-import { CALM, Reveal } from '../motion';
+import { CALM, Reveal, useStillMotion } from '../motion';
 import { SectionHeading } from '../ui';
 
 /*
@@ -79,7 +79,7 @@ const QA: { q: string; a: ReactNode }[] = [
 
 function Item({ q, a, open, onToggle }: { q: string; a: ReactNode; open: boolean; onToggle: () => void }) {
   const id = useId();
-  const reduced = useReducedMotion();
+  const reduced = useStillMotion();
   return (
     <li className="rounded-[20px] border border-line bg-white transition-shadow duration-300 hover:shadow-soft">
       <h3>
