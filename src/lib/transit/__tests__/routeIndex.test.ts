@@ -1,5 +1,5 @@
 import { loadTransit } from '../transitData';
-import { buildRouteIndex, headwayBands, searchRoutes } from '../routeIndex';
+import { buildRouteIndex, headwayBands, searchRoutes, typicalOffsets } from '../routeIndex';
 import { departuresAt, groupDepartures } from '../departures';
 
 const ix = loadTransit();
@@ -62,6 +62,18 @@ describe('headway bands', () => {
         expect(b.median).toBeLessThanOrEqual(b.max!);
         expect(b.min!).toBeGreaterThanOrEqual(0);
       } else expect(b.trips).toBeLessThan(2);
+    }
+  });
+});
+
+describe('typical offsets', () => {
+  it('has one non-decreasing value per stop, starting at 0', () => {
+    for (const r of ri.routes.filter((x) => x.trips > 0).slice(0, 200)) {
+      const p = r.dirs[0].pattern;
+      const off = typicalOffsets(ix, p);
+      expect(off).toHaveLength(ix.data.patterns.stops[p].length);
+      expect(off[0]).toBe(0);
+      for (let i = 1; i < off.length; i++) expect(off[i]).toBeGreaterThanOrEqual(off[i - 1]);
     }
   });
 });

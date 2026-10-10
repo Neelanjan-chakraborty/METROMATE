@@ -1,15 +1,17 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bookmark, List, LocateFixed, Map as MapIcon, type LucideIcon } from 'lucide-react-native';
+import { Bookmark, Bus, List, LocateFixed, Map as MapIcon, type LucideIcon } from 'lucide-react-native';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { MetroTrainIcon } from './home/icons';
 import { colors } from '../theme';
+import { activeColorFor } from '../theme/bus';
 
 const ICONS: Record<string, (p: { color: string; size: number }) => React.ReactElement> = {
   index: ({ color, size }) => <MetroTrainIcon color={color} size={size} strokeWidth={1.8} />,
   live: lucide(LocateFixed),
   map: lucide(MapIcon),
+  bus: lucide(Bus),
   stations: lucide(List),
   saved: lucide(Bookmark),
 };
@@ -20,7 +22,7 @@ function lucide(Icon: LucideIcon) {
   };
 }
 
-/** Persistent bottom navigation: white bar, outline icons, violet active item with a small top indicator. */
+/** Persistent bottom navigation: white bar, outline icons, violet active item (red for Bus) with a small top indicator. */
 export function MetroTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   return (
@@ -30,7 +32,8 @@ export function MetroTabBar({ state, descriptors, navigation }: BottomTabBarProp
         const options = descriptors[route.key].options;
         const label = typeof options.title === 'string' ? options.title : route.name;
         const Icon = ICONS[route.name];
-        const color = focused ? colors.primary : colors.slate;
+        const active = activeColorFor(route.name);
+        const color = focused ? active : colors.slate;
         const onPress = () => {
           const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
           if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
@@ -44,7 +47,7 @@ export function MetroTabBar({ state, descriptors, navigation }: BottomTabBarProp
             onPress={onPress}
             style={styles.item}
           >
-            {focused ? <View style={styles.indicator} /> : null}
+            {focused ? <View style={[styles.indicator, { backgroundColor: active }]} /> : null}
             {Icon ? <Icon color={color} size={25} /> : null}
             <Text style={[styles.label, { color }, focused && styles.labelActive]}>{label}</Text>
           </Pressable>

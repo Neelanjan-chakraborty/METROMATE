@@ -8,6 +8,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: 'Plan' }} />
       <Tabs.Screen name="live" options={{ title: 'Live' }} />
       <Tabs.Screen name="map" options={{ title: 'Map' }} />
+      <Tabs.Screen name="bus" options={{ title: 'Bus' }} />
       <Tabs.Screen name="stations" options={{ title: 'Stations' }} />
       <Tabs.Screen name="saved" options={{ title: 'Saved' }} />
     </Tabs>

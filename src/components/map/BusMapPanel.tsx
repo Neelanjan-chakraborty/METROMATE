@@ -298,7 +298,7 @@ function PickedCard({
     const look = AGENCY_LOOK[r.agency];
     return (
       <Row
-        onPress={() => router.push({ pathname: '/bus/route/[id]', params: { id: r.id } })}
+        onPress={() => router.push({ pathname: '/bus/route/[id]', params: { id: String(r.index) } })}
         title={`${look.label} ${r.short}`}
         sub={`${r.dirs.map((d) => d.headsign).join(' ⇄ ') || r.long} · scheduled`}
         accent={bus.red}

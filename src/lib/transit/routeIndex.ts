@@ -143,3 +143,23 @@ export function searchRoutes(ri: RouteIndex, query: string, limit = 40): RouteIn
   scored.sort((a, b) => b.score - a.score || natural(a.r.short, b.r.short));
   return scored.slice(0, limit).map((s) => s.r);
 }
+
+/**
+ * Minutes after a trip's first departure at each stop of the pattern, using the vector shared by the most
+ * trips (the typical run). Scheduled offsets; not live.
+ */
+export function typicalOffsets(ix: TransitIndex, pattern: number): number[] {
+  const vecs = ix.data.patterns.vectors[pattern];
+  const startV = ix.data.patterns.startV[pattern];
+  const counts = new Map<number, number>();
+  for (const v of startV) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let best = startV.length ? startV[0] : 0;
+  let bc = -1;
+  for (const [v, c] of counts) {
+    if (c > bc || (c === bc && v < best)) {
+      best = v;
+      bc = c;
+    }
+  }
+  return vecs[best] ?? [];
+}

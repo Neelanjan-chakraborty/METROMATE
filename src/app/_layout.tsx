@@ -36,6 +36,8 @@ function Gate() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="route" />
       <Stack.Screen name="station/[id]" />
+      <Stack.Screen name="bus/route/[id]" />
+      <Stack.Screen name="bus/stop/[id]" />
       <Stack.Screen name="data" />
     </Stack>
   );

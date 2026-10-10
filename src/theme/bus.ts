@@ -1,3 +1,5 @@
+import { colors } from './index';
+
 /**
  * The Bus tab's red theme. Used only by the Bus screens, the bus layer of the map and the Bus tab's active
  * state; the rest of the app stays violet. `red` is 5.6:1 on white (WCAG AA for normal text), `dark` is
@@ -17,3 +19,6 @@ export const bus = {
   bg: '#FFF8F6',
   white: '#FFFFFF',
 } as const;
+
+/** Active colour per tab: violet everywhere except the Bus tab, which is red. */
+export const activeColorFor = (routeName: string): string => (routeName === 'bus' ? bus.red : colors.primary);

@@ -1,4 +1,5 @@
-import { bus } from '../bus';
+import { activeColorFor, bus } from '../bus';
+import { colors } from '../index';
 
 function lum(hex: string): number {
   const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
@@ -19,5 +20,12 @@ describe('bus theme contrast', () => {
     expect(ratio(bus.ink, bus.bg)).toBeGreaterThanOrEqual(7);
     expect(ratio(bus.inkSoft, bus.white)).toBeGreaterThanOrEqual(4.5);
     expect(ratio(bus.inkSoft, bus.bg)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('tab bar active colours', () => {
+  it('only the Bus tab is red', () => {
+    expect(activeColorFor('bus')).toBe(bus.red);
+    for (const t of ['index', 'live', 'map', 'stations', 'saved']) expect(activeColorFor(t)).toBe(colors.primary);
   });
 });
