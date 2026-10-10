@@ -8,25 +8,27 @@ import { AppProvider, useApp } from '../state/AppProvider';
 import { colors, type } from '../theme';
 import { Notice } from '../components/ui';
 import { SplashVideo } from '../components/SplashVideo';
+import { useT } from '../i18n/useT';
 
 // Keep the native splash up until the launch video has drawn its first frame (native only).
 if (Platform.OS !== 'web') void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function Gate() {
   const { status, error } = useApp();
+  const { t } = useT();
   if (status === 'loading') {
     return (
-      <View style={styles.center} accessibilityLabel="Loading offline data">
+      <View style={styles.center} accessibilityLabel={t('common.loading')}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[type.small, { marginTop: 12 }]}>Loading offline data…</Text>
+        <Text style={[type.small, { marginTop: 12 }]}>{t('common.loading')}</Text>
       </View>
     );
   }
   if (status === 'error') {
     return (
       <View style={styles.center}>
-        <Notice tone="warn" title="MetroMate could not load its data">
-          {error ?? 'Unknown error.'} Restart the app. If this persists, reinstall to restore the bundled offline data.
+        <Notice tone="warn" title={t('common.loadError.title')}>
+          {t('common.loadError.body', { error: error ?? t('common.unknownError') })}
         </Notice>
       </View>
     );

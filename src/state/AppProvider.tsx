@@ -8,6 +8,7 @@ import { buildNetwork, type Network } from '../lib/routing';
 import * as repo from '../db/repository';
 import type { Db } from '../db/types';
 import { openAppDatabase } from '../db';
+import { DEFAULT_LANGUAGE, detectLanguage, isLanguage, type Language } from '../i18n/languages';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -43,6 +44,9 @@ interface AppState {
   recordRecent: (fromId: string, toId: string) => Promise<void>;
   clearRecents: () => Promise<void>;
   resetLocalData: () => Promise<void>;
+  /** Interface language: saved on this phone; the first launch follows the phone's language. */
+  language: Language;
+  setLanguage: (l: Language) => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -62,6 +66,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [recents, setRecents] = useState<SavedJourney[]>([]);
   const [stationCoords, setStationCoords] = useState<StationCoord[]>([]);
   const [quickRoutes, setQuickRoutes] = useState<QuickRoute[]>([]);
+  const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
   const dbRef = useRef<Db | null>(null);
   const memId = useRef(1);
   const net = useNetworkState();
@@ -86,6 +91,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         await repo.seedIfNeeded(db, bundled);
         ds = (await repo.loadDataset(db)) ?? bundled;
         dbRef.current = db;
+        const savedLanguage = await repo.getSetting(db, 'language');
+        if (!cancelled) setLanguageState(isLanguage(savedLanguage) ? savedLanguage : detectLanguage());
         const [f, r, c, q] = [await repo.listFavourites(db), await repo.listRecents(db), await repo.listStationCoords(db), await repo.listQuickRoutes(db)];
         if (cancelled) return;
         setFavourites(f);
@@ -98,6 +105,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         console.warn('MetroMate: SQLite unavailable, using in-memory storage.', e);
         dbRef.current = null;
+        setLanguageState(detectLanguage());
         setStorage('memory');
       }
       if (cancelled) return;
@@ -192,6 +200,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setStationCoords([]);
     }
   }, [refresh]);
+
+  const setLanguage = useCallback(async (l: Language) => {
+    setLanguageState(l);
+    const db = dbRef.current;
+    if (db) await repo.setSetting(db, 'language', l).catch(() => undefined);
+  }, []);
 
   const isFavourite = useCallback(
     (fromId: string, toId: string) => favourites.some((f) => f.fromId === fromId && f.toId === toId),
@@ -299,8 +313,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       recordRecent,
       clearRecents,
       resetLocalData,
+      language,
+      setLanguage,
     }),
-    [status, error, dataset, network, validation, storage, online, favourites, recents, quickRoutes, setQuickRoute, clearQuickRoute, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData],
+    [status, error, dataset, network, validation, storage, online, favourites, recents, quickRoutes, setQuickRoute, clearQuickRoute, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData, language, setLanguage],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

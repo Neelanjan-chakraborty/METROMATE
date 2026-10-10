@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Info, TriangleAlert, type LucideIcon } from 'lucide-react-native';
 import { colors, radius, space, type } from '../theme';
 import type { VerificationStatus } from '../types';
+import { useT } from '../i18n/useT';
+import type { MessageKey } from '../i18n';
 
 export function Screen({ children, edges = ['top'] }: { children: React.ReactNode; edges?: ('top' | 'bottom' | 'left' | 'right')[] }) {
   return (
@@ -115,21 +117,22 @@ export function CorridorDot({ color, size = 10 }: { color: string; size?: number
   return <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} />;
 }
 
-const STATUS_LABEL: Record<VerificationStatus, string> = {
-  verified: 'Verified from GMRC',
-  unverified: 'Unverified',
-  estimated: 'Estimate',
-  unknown: 'Not verified yet',
+const STATUS_KEY: Record<VerificationStatus, MessageKey> = {
+  verified: 'common.verify.verified',
+  unverified: 'common.verify.unverified',
+  estimated: 'common.verify.estimated',
+  unknown: 'common.verify.unknown',
 };
 
 export function VerifyBadge({ status }: { status: VerificationStatus }) {
+  const { t } = useT();
   const map: Record<VerificationStatus, { fg: string; bg: string }> = {
     verified: { fg: colors.ok, bg: colors.okSoft },
     unverified: { fg: colors.warn, bg: colors.warnSoft },
     estimated: { fg: colors.warn, bg: colors.warnSoft },
     unknown: { fg: colors.muted, bg: '#EEF0F5' },
   };
-  return <Pill label={STATUS_LABEL[status]} color={map[status].fg} bg={map[status].bg} />;
+  return <Pill label={t(STATUS_KEY[status])} color={map[status].fg} bg={map[status].bg} />;
 }
 
 export function Notice({

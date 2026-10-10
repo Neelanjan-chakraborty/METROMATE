@@ -6,6 +6,8 @@ import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { MetroTrainIcon } from './home/icons';
 import { colors } from '../theme';
 import { activeColorFor } from '../theme/bus';
+import { useT } from '../i18n/useT';
+import type { MessageKey } from '../i18n';
 
 const ICONS: Record<string, (p: { color: string; size: number }) => React.ReactElement> = {
   index: ({ color, size }) => <MetroTrainIcon color={color} size={size} strokeWidth={1.8} />,
@@ -25,12 +27,14 @@ function lucide(Icon: LucideIcon) {
 /** Persistent bottom navigation: white bar, outline icons, violet active item (red for Bus) with a small top indicator. */
 export function MetroTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useT();
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 8) }]} accessibilityRole="tablist">
       {state.routes.map((route, index) => {
         const focused = state.index === index;
         const options = descriptors[route.key].options;
-        const label = typeof options.title === 'string' ? options.title : route.name;
+        const labelKey = `common.tab.${route.name === 'index' ? 'plan' : route.name}` as MessageKey;
+        const label = typeof options.title === 'string' ? t(labelKey) : route.name;
         const Icon = ICONS[route.name];
         const active = activeColorFor(route.name);
         const color = focused ? active : colors.slate;

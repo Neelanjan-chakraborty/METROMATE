@@ -71,6 +71,10 @@ export async function migrate(db: Db): Promise<void> {
   `);
 }
 
+/** Small key/value settings (the interface language). Not cleared by resetLocalData. */
+export const getSetting = (db: Db, key: string): Promise<string | null> => getMeta(db, `setting:${key}`);
+export const setSetting = (db: Db, key: string, value: string): Promise<void> => setMeta(db, `setting:${key}`, value);
+
 async function getMeta(db: Db, key: string): Promise<string | null> {
   const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM meta WHERE key = ?', [key]);
   return row?.value ?? null;

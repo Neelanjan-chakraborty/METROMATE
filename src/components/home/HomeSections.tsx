@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpDown, Briefcase, ChevronLeft, ChevronRight, Clock, G
 import { colors } from '../../theme';
 import { ButtonArt, MapCardArt, StationCardArt } from './art';
 import { MetroTrainIcon } from './icons';
+import { LanguageButton } from '../LanguagePicker';
 import { useHomeScale } from './scale';
 import type { QuickSlot } from '../../types';
 
@@ -60,6 +61,7 @@ export function HomeHeader({
           {tagline}
         </Text>
       </View>
+      <LanguageButton size={z(38)} />
       <View style={st.offlinePill} accessibilityLabel={badge.accessibilityLabel}>
         <BadgeIcon size={z(15)} color="#0F6B3E" strokeWidth={2} />
         <Text style={st.offlineText}>{badge.label}</Text>

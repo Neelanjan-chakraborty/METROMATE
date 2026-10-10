@@ -9,6 +9,8 @@ import {
   clearStationCoord,
   clearStationCoords,
   getDatasetMeta,
+  getSetting,
+  setSetting,
   listFavourites,
   listQuickRoutes,
   listRecents,
@@ -225,5 +227,19 @@ describe('quick routes (Home / Campus / Work)', () => {
     await seedIfNeeded(db, ds);
     await resetLocalData(db, ds);
     expect(await listQuickRoutes(db)).toEqual([]);
+  });
+});
+
+describe('settings', () => {
+  it('stores the interface language, replaces it, and keeps it through a data reset', async () => {
+    const db = await freshDb();
+    expect(await getSetting(db, 'language')).toBeNull();
+    await setSetting(db, 'language', 'hi');
+    expect(await getSetting(db, 'language')).toBe('hi');
+    await setSetting(db, 'language', 'gu');
+    expect(await getSetting(db, 'language')).toBe('gu');
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds);
+    expect(await getSetting(db, 'language')).toBe('gu');
   });
 });
