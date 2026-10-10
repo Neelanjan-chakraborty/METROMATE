@@ -14,7 +14,7 @@ export const tint = (c: string, k: number) => mixColor(c, '#FFFFFF', k);
 
 /** A grid of small windows as one path; `seed` varies which are lit. Returns [lit, unlit] path data. */
 export function windowGrid(x: number, y: number, w: number, h: number, seed: number, opts: { gx?: number; gy?: number; pw?: number; ph?: number; lit?: number } = {}) {
-  const { gx = 8, gy = 9, pw = 3.6, ph = 4.6, lit = 0.35 } = opts;
+  const { gx = 10, gy = 12, pw = 3.6, ph = 4.8, lit = 0.35 } = opts;
   const cols = Math.max(1, Math.floor((w - 4) / gx));
   const rows = Math.max(1, Math.floor((h - 8) / gy));
   const ox = x + (w - (cols - 1) * gx - pw) / 2;
@@ -60,7 +60,7 @@ export function Building({ x, y, w, h, fill, seed = 1, roof = 'flat', lit = 0.3,
         </G>
       ) : null}
       {roof === 'spire' ? <Path d={`M${x + w / 2 - 3} ${y - h} L${x + w / 2} ${y - h - 16} L${x + w / 2 + 3} ${y - h} Z`} fill={dark} /> : null}
-      <Path d={g.unlit} fill={tint(fill, 0.55)} opacity={0.55} />
+      <Path d={g.unlit} fill={tint(fill, 0.5)} opacity={0.38} />
       <Path d={g.lit} fill={winColor ?? '#FFE3A3'} />
     </G>
   );
@@ -279,6 +279,24 @@ export function MetroTrainArt({ body = '#FFFFFF', stripe = ob.violet, glass = '#
         <Rect key={cx} x={cx + 47} y={14} width={6} height={9} rx={2} fill={shade(ob.lavenderDeep, 0.1)} />
       ))}
       {glow ? <Circle cx={149} cy={20} r={3.4} fill={glow} opacity={0.9} /> : <Circle cx={148.6} cy={21} r={1.6} fill="#FFE3A3" />}
+    </G>
+  );
+}
+
+/** One metro car, facing right (`front` adds the cab nose and headlight). 50 x 34: chain three for a train that bends on curves. */
+export function MetroCarArt({ front = false, body = '#FFFFFF', stripe = ob.violet, glass = '#3A3780', glow }: { front?: boolean; body?: string; stripe?: string; glass?: string; glow?: string }) {
+  return (
+    <G>
+      <Path d={front ? 'M1 4 H37 Q47 5 49 16 V26 H1 Z' : 'M3 4 H47 V26 H3 Z'} fill={body} />
+      <Rect x={front ? 1 : 3} y={17.5} width={front ? 48 : 44} height={3} fill={stripe} />
+      {[0, 1, 2, 3].slice(0, front ? 3 : 4).map((k) => (
+        <Rect key={k} x={7 + k * 10.5} y={8} width={7.4} height={7} rx={1.6} fill={glass} />
+      ))}
+      {front ? <Path d="M38 8 H42 Q46 9 47.5 15 H38 Z" fill={glass} /> : null}
+      <Rect x={front ? 1 : 3} y={26} width={front ? 48 : 44} height={3.4} rx={1.4} fill={shade(stripe, 0.35)} />
+      <Circle cx={11} cy={30.4} r={2.6} fill={ob.indigo} />
+      <Circle cx={37} cy={30.4} r={2.6} fill={ob.indigo} />
+      {front ? <Circle cx={48} cy={20} r={glow ? 2.6 : 1.6} fill={glow ?? '#FFE3A3'} /> : null}
     </G>
   );
 }

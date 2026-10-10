@@ -3,14 +3,12 @@ import type { MessageKey } from '../../../i18n';
 
 /** What every scene receives from the pager. */
 export interface SceneProps {
-  /** This is the page being looked at: animations run only while it is. */
-  active: boolean;
   /** The phone asks for reduced motion: show the finished scene, still. */
   reduced: boolean;
   /** Screen pixels per artboard unit and the page width. */
   scale: number;
   pageW: number;
-  /** Pager position (float) and this scene's index, for parallax. */
+  /** Pager position (float) and this scene's index: scenes start, pause and parallax from these on the UI thread. */
   progress: SharedValue<number>;
   index: number;
 }
@@ -31,5 +29,5 @@ export interface SceneCopy {
 }
 
 export interface SceneDef extends SceneCopy {
-  Scene: (p: SceneProps) => React.ReactElement;
+  Scene: React.ComponentType<SceneProps>;
 }

@@ -26,6 +26,8 @@ export interface MetroMateLogoProps {
 /** Corner radius as a share of the size: matches the rounded-square shape of the app icon. */
 export const LOGO_RADIUS = 0.24;
 
+const SWAY = { duration: 2200, easing: Easing.inOut(Easing.sin) };
+
 export function MetroMateLogo({ size, animate = 'none', shadow = true, dim = false, delayMs = 0, style }: MetroMateLogoProps) {
   const reduced = useReduceMotion();
   const enter = useSharedValue(animate === 'none' || reduced ? 1 : 0);
@@ -35,18 +37,19 @@ export function MetroMateLogo({ size, animate = 'none', shadow = true, dim = fal
     cancelAnimation(drift);
     if (animate === 'none' || reduced) {
       enter.set(1);
-      drift.set(0);
+      // settle softly instead of snapping back
+      drift.set(reduced ? 0 : withTiming(0, { duration: 260 }));
       return;
     }
     enter.set(0);
-    enter.set(withDelay(delayMs, withSpring(1, { damping: 11, stiffness: 150, mass: 0.9 })));
+    enter.set(withDelay(delayMs, withSpring(1, { damping: 16, stiffness: 170, mass: 0.8 })));
     if (animate === 'float') {
-      drift.set(withDelay(delayMs + 600, withRepeat(withSequence(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.sin) }), withTiming(0, { duration: 2200, easing: Easing.inOut(Easing.sin) })), -1, false)));
+      drift.set(withDelay(delayMs + 600, withRepeat(withSequence(withTiming(1, SWAY), withTiming(0, SWAY)), -1, false)));
     }
   }, [animate, reduced, delayMs, enter, drift]);
   const motion = useAnimatedStyle(() => ({
     opacity: Math.min(1, enter.get() * 2.2),
-    transform: [{ translateY: drift.get() * -size * 0.04 }, { scale: 0.45 + 0.55 * enter.get() }],
+    transform: [{ translateY: drift.get() * -size * 0.04 }, { scale: 0.7 + 0.3 * enter.get() }],
   }));
   return (
     <Animated.View

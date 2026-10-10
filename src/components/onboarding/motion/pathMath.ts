@@ -72,6 +72,39 @@ export function roundedPolyline(points: readonly Pt[], radius: number, steps = 8
   return out;
 }
 
+/**
+ * A smooth closed curve through the given points (uniform Catmull-Rom), sampled into short
+ * straight pieces. The curve passes through every point, so stops can sit exactly on it. The last point
+ * repeats the first, so a vehicle can loop it without a jump.
+ */
+export function smoothClosed(points: readonly Pt[], steps = 12, tension = 0.5): Pt[] {
+  const n = points.length;
+  if (n < 3) return points.map((p) => [p[0], p[1]] as Pt);
+  const out: Pt[] = [];
+  for (let i = 0; i < n; i++) {
+    const p0 = points[(i - 1 + n) % n];
+    const p1 = points[i];
+    const p2 = points[(i + 1) % n];
+    const p3 = points[(i + 2) % n];
+    const m1x = (p2[0] - p0[0]) * tension;
+    const m1y = (p2[1] - p0[1]) * tension;
+    const m2x = (p3[0] - p1[0]) * tension;
+    const m2y = (p3[1] - p1[1]) * tension;
+    for (let s = 0; s < steps; s++) {
+      const u = s / steps;
+      const u2 = u * u;
+      const u3 = u2 * u;
+      const h00 = 2 * u3 - 3 * u2 + 1;
+      const h10 = u3 - 2 * u2 + u;
+      const h01 = -2 * u3 + 3 * u2;
+      const h11 = u3 - u2;
+      out.push([h00 * p1[0] + h10 * m1x + h01 * p2[0] + h11 * m2x, h00 * p1[1] + h10 * m1y + h01 * p2[1] + h11 * m2y]);
+    }
+  }
+  out.push([points[0][0], points[0][1]]);
+  return out;
+}
+
 /** The part of a track between two distances, as points (for drawing a route only up to where it has got to). */
 export function sliceTrack(track: Track, from: number, to: number): Pt[] {
   const a = Math.max(0, Math.min(track.total, from));

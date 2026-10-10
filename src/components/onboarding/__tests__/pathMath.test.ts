@@ -1,4 +1,4 @@
-import { buildTrack, distanceOfNearest, pointAt, roundedPolyline, sliceTrack, stage, stageOut, toPathD, type Pt } from '../motion/pathMath';
+import { buildTrack, distanceOfNearest, pointAt, roundedPolyline, sliceTrack, smoothClosed, stage, stageOut, toPathD, type Pt } from '../motion/pathMath';
 
 const L: Pt[] = [[0, 0], [100, 0], [100, 50]];
 
@@ -47,6 +47,23 @@ describe('track geometry', () => {
     const t = buildTrack(L);
     expect(distanceOfNearest(t, 40, 10)).toBeCloseTo(40);
     expect(distanceOfNearest(t, 110, 30)).toBeCloseTo(130);
+  });
+  it('draws a smooth closed loop through every stop', () => {
+    const pts: Pt[] = [[0, 0], [100, 0], [100, 60], [0, 60]];
+    const c = smoothClosed(pts, 10);
+    expect(c).toHaveLength(41);
+    expect(c[0]).toEqual([0, 0]);
+    expect(c[c.length - 1]).toEqual([0, 0]);
+    for (let i = 0; i < pts.length; i++) expect(c[i * 10]).toEqual(pts[i]);
+    // no sharp corners: neighbouring samples never turn more than 30 degrees
+    for (let i = 1; i < c.length - 1; i++) {
+      const a = Math.atan2(c[i][1] - c[i - 1][1], c[i][0] - c[i - 1][0]);
+      const b = Math.atan2(c[i + 1][1] - c[i][1], c[i + 1][0] - c[i][0]);
+      let d = Math.abs(b - a);
+      if (d > Math.PI) d = 2 * Math.PI - d;
+      expect(d).toBeLessThan(Math.PI / 6);
+    }
+    expect(smoothClosed([[0, 0], [1, 1]])).toEqual([[0, 0], [1, 1]]);
   });
   it('stage ramps and clamps', () => {
     expect(stage(0.1, 0.2, 0.6)).toBe(0);

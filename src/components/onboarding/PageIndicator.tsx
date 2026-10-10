@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { interpolate, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, { interpolate, interpolateColor, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { ob } from './palette';
 
 function Dot({ i, progress }: { i: number; progress: SharedValue<number> }) {
   const style = useAnimatedStyle(() => {
     const d = Math.min(1, Math.abs(progress.value - i));
-    return { width: interpolate(d, [0, 1], [28, 8]), backgroundColor: d < 0.5 ? ob.violet : ob.lavenderDeep, opacity: interpolate(d, [0, 1], [1, 0.9]) };
+    return { width: interpolate(d, [0, 1], [28, 8]), backgroundColor: interpolateColor(d, [0, 1], [ob.violet, ob.lavenderDeep]) };
   });
   return <Animated.View style={[styles.dot, style]} />;
 }

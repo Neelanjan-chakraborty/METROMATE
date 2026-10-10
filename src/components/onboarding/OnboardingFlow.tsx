@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { BackHandler, Platform, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { Easing, cancelAnimation, runOnJS, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, cancelAnimation, runOnJS, useAnimatedReaction, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -26,9 +26,14 @@ interface Props {
 }
 
 const N = SCENES.length;
-const DURATION = 340;
-/** Height of the fixed control bar: indicator, gap, button (+ the quiet secondary action when a step has one). */
-const controlsHeight = (withSecondary: boolean) => 6 + 20 + 14 + 52 + (withSecondary ? 50 : 0);
+const DURATION = 380;
+/** Height of the fixed control bar: indicator, gap, button and the quiet secondary action. Every step has the same bar, so nothing jumps. */
+const CONTROLS_H = 6 + 20 + 14 + 52 + 50;
+/** Once the first scene has finished building, the other pages mount one at a time, so later swipes never wait on a mount. */
+const WARM_START_MS = 3000;
+const WARM_STEP_MS = 400;
+/** Longest the copy waits for Manrope before showing in the system font. */
+const FONT_WAIT_MS = 700;
 
 /**
  * The five-step welcome walkthrough: a horizontal pager (swipe, Next, Back, Skip), a fixed control bar and a top
@@ -46,7 +51,27 @@ export function OnboardingFlow({ onFinish }: Props) {
   const startPage = useSharedValue(0);
   const [index, setIndex] = useState(0);
   const [active, setActive] = useState(0);
+  const [mounted, setMounted] = useState(2);
   const indexRef = useRef(0);
+  const textIn = useSharedValue(reduced ? 1 : 0);
+  const [fontWaitOver, setFontWaitOver] = useState(false);
+  const textReady = fontsLoaded || lang !== 'en' || fontWaitOver;
+
+  useEffect(() => {
+    const id = setTimeout(() => setFontWaitOver(true), FONT_WAIT_MS);
+    return () => clearTimeout(id);
+  }, []);
+  useEffect(() => {
+    if (textReady) textIn.set(reduced ? 1 : withTiming(1, { duration: 260, easing: Easing.out(Easing.cubic) }));
+  }, [textReady, reduced, textIn]);
+
+  // Mount the remaining pages in the background once the first one is on screen; pages are never unmounted again,
+  // so a scene keeps its finished state when you swipe back to it.
+  useEffect(() => {
+    if (mounted >= N) return;
+    const id = setTimeout(() => setMounted((m) => Math.min(N, m + 1)), mounted === 2 ? WARM_START_MS : WARM_STEP_MS);
+    return () => clearTimeout(id);
+  }, [mounted]);
 
   const buzz = useCallback(() => {
     if (Platform.OS !== 'web') void Haptics.selectionAsync().catch(() => undefined);
@@ -123,7 +148,11 @@ export function OnboardingFlow({ onFinish }: Props) {
   const def = SCENES[index];
   const last = index === N - 1;
   const primary = () => (last ? onFinish('plan') : goTo(nextStep(index, N)));
+  // The quiet action under the button: the step's own (first and last steps), otherwise Skip.
+  const secondaryLabel = def.secondary ? t(def.secondary) : t('onboarding.skip');
   const secondary = () => onFinish(last ? 'map' : 'plan');
+  const controlsH = CONTROLS_H + Math.max(insets.bottom, 14);
+  const controlsIn = useAnimatedStyle(() => ({ opacity: 0.4 + 0.6 * textIn.value }));
 
   const bar = { paddingTop: insets.top + 8 };
 
@@ -133,9 +162,9 @@ export function OnboardingFlow({ onFinish }: Props) {
       <GestureDetector gesture={pan}>
         <View style={styles.pager} accessible={false} accessibilityLabel={t('onboarding.pager.a11y')}>
           {SCENES.map((s, i) =>
-            Math.abs(i - active) <= 1 ? (
+            i < mounted || Math.abs(i - active) <= 1 ? (
               <Page key={s.id} i={i} width={width} progress={progress}>
-                <OnboardingScreen def={s} index={i} active={i === active} reduced={reduced} pageW={width} progress={progress} controlsH={controlsHeight(s.secondary !== undefined) + Math.max(insets.bottom, 14)} fontsLoaded={fontsLoaded} lang={lang} t={t} />
+                <OnboardingScreen def={s} index={i} reduced={reduced} pageW={width} progress={progress} controlsH={controlsH} fontsLoaded={fontsLoaded} textIn={textIn} lang={lang} t={t} />
               </Page>
             ) : null,
           )}
@@ -151,45 +180,33 @@ export function OnboardingFlow({ onFinish }: Props) {
           ) : null}
           <LanguageButton size={44} tint={ob.violet} background={ob.white} />
         </View>
-        {!last ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={t('onboarding.skip')} onPress={() => onFinish('plan')} hitSlop={8} style={styles.skip}>
-            <Text style={[styles.skipText, fontFor('bold', lang, fontsLoaded)]}>{t('onboarding.skip')}</Text>
-          </Pressable>
-        ) : null}
       </View>
 
       <HeaderLogo show={active === N - 1} reduced={reduced} top={insets.top + 4} />
 
-      <View style={[styles.controls, { paddingBottom: Math.max(insets.bottom, 14) }]}>
+      <Animated.View style={[styles.controls, { paddingBottom: Math.max(insets.bottom, 14) }, controlsIn]}>
         <PageIndicator count={N} progress={progress} label={t('onboarding.step', { n: index + 1, total: N })} />
         <View style={styles.buttons}>
           <OnboardingButton label={def.primary ? t(def.primary) : t('onboarding.next')} onPress={primary} textStyle={fontFor('extrabold', lang, fontsLoaded)} />
-          {def.secondary ? (
-            <View style={styles.secondarySlot}>
-              <OnboardingButton variant="text" label={t(def.secondary)} onPress={secondary} textStyle={fontFor('bold', lang, fontsLoaded)} />
-            </View>
-          ) : null}
+          <View style={styles.secondarySlot}>
+            <OnboardingButton variant="text" label={secondaryLabel} onPress={secondary} textStyle={fontFor('bold', lang, fontsLoaded)} />
+          </View>
         </View>
-      </View>
+      </Animated.View>
     </GestureHandlerRootView>
   );
 }
 
-/** On the last step the MetroMate mark springs up from the middle and settles into the header. */
+/** On the last step the MetroMate mark eases down into the header. */
 function HeaderLogo({ show, reduced, top }: { show: boolean; reduced: boolean; top: number }) {
   const v = useSharedValue(0);
   useEffect(() => {
     cancelAnimation(v);
-    if (!show) {
-      v.set(withTiming(0, { duration: 160 }));
-    } else if (reduced) {
-      v.set(1);
-    } else {
-      v.set(0);
-      v.set(withDelay(260, withSpring(1, { damping: 11, stiffness: 140, mass: 0.9 })));
-    }
+    if (!show) v.set(withTiming(0, { duration: 180 }));
+    else if (reduced) v.set(1);
+    else v.set(withDelay(180, withTiming(1, { duration: 460, easing: Easing.out(Easing.cubic) })));
   }, [show, reduced, v]);
-  const style = useAnimatedStyle(() => ({ opacity: Math.min(1, v.value * 2.4), transform: [{ translateY: (1 - v.value) * 120 }, { scale: 1 + (1 - v.value) * 1.1 }] }));
+  const style = useAnimatedStyle(() => ({ opacity: v.value, transform: [{ translateY: (1 - v.value) * 14 }, { scale: 0.86 + 0.14 * v.value }] }));
   return (
     <View pointerEvents="none" style={[styles.logoWrap, { top }]}>
       <Animated.View style={style}>
@@ -202,7 +219,7 @@ function HeaderLogo({ show, reduced, top }: { show: boolean; reduced: boolean; t
 function Page({ i, width, progress, children }: { i: number; width: number; progress: ReturnType<typeof useSharedValue<number>>; children: React.ReactNode }) {
   const style = useAnimatedStyle(() => {
     const d = i - progress.value;
-    return { transform: [{ translateX: d * width }], opacity: 1 - Math.min(1, Math.abs(d)) * 0.25 };
+    return { transform: [{ translateX: d * width }] };
   });
   return <Animated.View style={[StyleSheet.absoluteFill, style]}>{children}</Animated.View>;
 }
@@ -213,8 +230,6 @@ const styles = StyleSheet.create({
   topBar: { position: 'absolute', left: 0, right: 0, top: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16 },
   topLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   round: { width: 44, height: 44, borderRadius: 22, backgroundColor: ob.white, alignItems: 'center', justifyContent: 'center', shadowColor: ob.violet, shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
-  skip: { minHeight: 44, minWidth: 64, paddingHorizontal: 18, borderRadius: 22, backgroundColor: ob.white, alignItems: 'center', justifyContent: 'center', shadowColor: ob.violet, shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
-  skipText: { fontSize: 15, color: ob.indigo },
   logoWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
   controls: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 24, paddingTop: 6, gap: 14, backgroundColor: 'transparent' },
   buttons: { gap: 2 },

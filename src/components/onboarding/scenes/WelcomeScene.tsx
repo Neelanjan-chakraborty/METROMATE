@@ -1,22 +1,30 @@
 import React from 'react';
 import { Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
-import { BirdArt, BusArt, Building, Cloud, DomeHall, Lamp, MetroTrainArt, Passenger, Road, SkyGradient, Sun, Temple, Tree, Viaduct } from '../art/shapes';
-import { Backdrop, Layer, LogoSprite, RouteStroke, Sprite, StationNode, Vehicle, useLoopProgress, useSceneClock, useSway } from '../motion/kit';
-import { buildTrack, toPathD } from '../motion/pathMath';
+import { useDerivedValue } from 'react-native-reanimated';
+import { BirdArt, BusArt, Building, Cloud, DomeHall, Lamp, MetroCarArt, Passenger, Road, SkyGradient, Sun, Temple, Tree, Viaduct } from '../art/shapes';
+import { Backdrop, Layer, LogoSprite, NodeDot, Sprite, Vehicle, WipeReveal, useFloat, useLoopProgress, useSceneClock, useSway } from '../motion/kit';
+import { buildTrack, stageOut } from '../motion/pathMath';
 import { ob } from '../palette';
 import type { SceneProps } from './types';
 
+/*
+ * Scene 1: the city at sunrise. The skyline settles in layer by layer, the violet line draws along the viaduct
+ * and its stations light in turn; then a metro and a bus keep crossing at an easy pace.
+ */
 
 const GROUND = 394;
 const DECK = 262;
-const DECK_TRACK = buildTrack([[-120, DECK - 18], [480, DECK - 18]]);
-const ROAD_TRACK = buildTrack([[480, 372], [-140, 372]]);
-const BIRD_A = buildTrack([[-30, 120], [120, 96], [260, 130], [400, 100]]);
-const BIRD_B = buildTrack([[-60, 150], [90, 128], [230, 150], [380, 120]]);
-const BIRD_C = buildTrack([[-90, 90], [60, 70], [200, 96], [350, 74]]);
-const ROUTE = [[-40, DECK - 2.6], [400, DECK - 2.6]] as const;
-const ROUTE_D = toPathD(ROUTE as unknown as [number, number][]);
-const NODES = [36, 128, 232, 324];
+const RAIL_Y = DECK - 2.6;
+// Tracks run well past the overscan, so vehicles enter and leave out of sight.
+const DECK_TRACK = buildTrack([[-200, DECK - 18], [560, DECK - 18]]);
+const ROAD_TRACK = buildTrack([[500, 372], [-160, 372]]);
+const BIRD_A = buildTrack([[-90, 118], [120, 98], [260, 126], [450, 100]]);
+const BIRD_B = buildTrack([[-110, 146], [90, 128], [230, 148], [440, 122]]);
+const NODES = [52, 132, 236, 312];
+const LINE_FROM = 0.42;
+const LINE_TO = 0.86;
+/** Build time at which the eased line reaches x, so each station lights exactly as the line arrives. */
+const reachAt = (x: number) => LINE_FROM + (LINE_TO - LINE_FROM) * (1 - Math.cbrt(1 - (x + 60) / 480));
 
 const FAR = [
   [-50, 56, 270], [-24, 40, 252], [4, 34, 262], [34, 60, 256], [86, 36, 248], [112, 52, 262], [146, 70, 270], [188, 38, 250], [216, 44, 256], [250, 66, 262], [278, 34, 248], [304, 56, 258], [336, 40, 268], [372, 52, 262],
@@ -28,79 +36,81 @@ const NEAR = [
   [-34, 46, 130, 21, 'slant'], [16, 56, 104, 22, 'flat'], [76, 42, 142, 23, 'tank'], [250, 50, 120, 24, 'flat'], [306, 60, 98, 25, 'slant'], [370, 46, 126, 26, 'spire'],
 ] as const;
 
-export function WelcomeScene({ active, reduced }: SceneProps) {
-  const { t, loop } = useSceneClock(active, reduced, 4200, 16000);
-  const trainP = useLoopProgress(loop, 2, 0.05);
+export function WelcomeScene({ reduced }: SceneProps) {
+  const { t, loop } = useSceneClock(reduced, 2600, 18000);
+  const trainP = useLoopProgress(loop, 2, 0.08);
   const busP = useLoopProgress(loop, 1, 0.1);
   const birdA = useLoopProgress(loop, 1, 0);
-  const birdB = useLoopProgress(loop, 1, 0.37);
-  const birdC = useLoopProgress(loop, 1, 0.71);
-  const pulse = useLoopProgress(loop, 2);
-  const swayA = useSway(loop, 2, 0, 2.6);
-  const swayB = useSway(loop, 2, 0.3, 2.2);
-  const swayC = useSway(loop, 3, 0.6, 2.8);
+  const birdB = useLoopProgress(loop, 1, 0.5);
+  const pulse = useLoopProgress(loop, 3);
+  const swayA = useSway(loop, 3, 0, 1.4);
+  const swayB = useSway(loop, 3, 0.3, 1.2);
+  const cloudA = useFloat(loop, 1, 0, 14, 'x');
+  const cloudB = useFloat(loop, 1, 0.4, 10, 'x');
+  // The line along the viaduct is revealed from the left as the scene builds.
+  const lineEdge = useDerivedValue<number>(() => -60 + 480 * stageOut(t.value, LINE_FROM, LINE_TO));
+  // Vehicles glide in only once the scene is built.
+  const traffic = useDerivedValue<number>(() => stageOut(t.value, 0.8, 1));
 
   return (
     <>
-      <Backdrop depth={0.34}>
-        <SkyGradient id="w-sky" top="#F6D3E8" bottom="#FFE9D6" h={330} />
+      <Backdrop>
+        <SkyGradient id="w-sky" top="#F6D3E8" bottom="#FFEBDD" h={340} />
         <Sun x={262} y={196} r={16} color={ob.sunriseGold} />
-        <Cloud x={-20} y={96} s={1.2} opacity={0.7} />
-        <Cloud x={228} y={74} s={0.9} opacity={0.8} />
-        <Cloud x={120} y={150} s={0.7} opacity={0.6} />
       </Backdrop>
+      <Sprite x={-30} y={84} w={60} h={28} animated={cloudA}>
+        <Cloud x={2} y={5} s={1.2} opacity={0.75} />
+      </Sprite>
+      <Sprite x={220} y={62} w={46} h={22} animated={cloudB}>
+        <Cloud x={2} y={4} s={0.9} opacity={0.85} />
+      </Sprite>
 
-      <Layer t={t} from={0.0} to={0.2} dy={26} depth={0.26}>
+      <Layer t={t} from={0.0} to={0.34} dy={8} depth={0.05}>
         {FAR.map(([x, w, top], i) => (
-          <Rect key={i} x={x} y={top} width={w} height={340 - top} rx={2} fill="#E3DBF6" />
+          <Rect key={i} x={x} y={top} width={w} height={340 - top} rx={2} fill="#E6DEF6" />
         ))}
-        <DomeHall x={20} y={300} w={74} h={34} fill="#D6CCF3" accent="#C7B8F0" />
-        <Temple x={290} y={304} fill="#D6CCF3" accent="#C7B8F0" />
+        <DomeHall x={20} y={300} w={74} h={34} fill="#D9D0F4" accent="#C9BBF1" />
+        <Temple x={290} y={304} fill="#D9D0F4" accent="#C9BBF1" />
       </Layer>
 
-      <Layer t={t} from={0.1} to={0.32} dy={30} depth={0.16}>
+      <Layer t={t} from={0.08} to={0.42} dy={10} depth={0.035}>
         {MID.map(([x, w, h, seed], i) => (
-          <Building key={i} x={x} y={340} w={w} h={h} fill={i % 3 === 0 ? '#CFC6F1' : i % 3 === 1 ? '#C3B9EE' : '#D8CFF5'} seed={seed} lit={0.22} />
+          <Building key={i} x={x} y={340} w={w} h={h} fill={i % 3 === 0 ? '#CFC6F1' : i % 3 === 1 ? '#C6BCEF' : '#D8CFF5'} seed={seed} lit={0.16} />
         ))}
       </Layer>
 
-      <Layer t={t} from={0.22} to={0.46} dy={34} depth={0.08}>
+      <Layer t={t} from={0.16} to={0.5} dy={12} depth={0.02}>
         {NEAR.map(([x, w, h, seed, roof], i) => (
-          <Building key={i} x={x} y={352} w={w} h={h} fill={i === 3 ? '#9FE0C8' : i % 2 ? '#A396E9' : '#B5ABEF'} seed={seed} roof={roof} lit={0.4} />
+          <Building key={i} x={x} y={352} w={w} h={h} fill={i === 3 ? '#9FE0C8' : i % 2 ? '#A396E9' : '#B5ABEF'} seed={seed} roof={roof} lit={0.3} />
         ))}
       </Layer>
 
-      {/* river and the arch bridge the metro crosses */}
-      <Layer t={t} from={0.3} to={0.52} dy={20} depth={0.04}>
+      {/* river with soft banks, and the arch bridge the metro crosses */}
+      <Layer t={t} from={0.24} to={0.56} dy={8}>
         <Defs>
           <LinearGradient id="w-water" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#CDE9F7" />
+            <Stop offset="0" stopColor="#D6EEFA" />
             <Stop offset="1" stopColor="#A9D8F0" />
           </LinearGradient>
         </Defs>
-        <Rect x={86} y={318} width={194} height={56} fill="url(#w-water)" />
-        {[0, 1, 2, 3].map((i) => (
-          <Path key={i} d={`M${104 + i * 44} ${332 + (i % 2) * 14} q8 -4 16 0 t16 0`} stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" fill="none" opacity={0.75} />
-        ))}
-        <Rect x={80} y={316} width={8} height={58} fill="#CFC8F2" />
-        <Rect x={278} y={316} width={8} height={58} fill="#CFC8F2" />
-        {/* tied arch above the viaduct */}
-        <Path d={`M100 ${DECK} Q183 ${DECK - 100} 266 ${DECK}`} stroke={ob.violet} strokeWidth={4.4} strokeLinecap="round" fill="none" opacity={0.95} />
+        <Path d="M70 374 C78 340 92 326 120 322 C150 318 214 318 246 322 C274 326 288 340 296 374 Z" fill="url(#w-water)" />
+        <Path d="M112 334 q10 -4 20 0 M196 330 q10 -4 20 0 M150 348 q12 -5 24 0 M232 352 q9 -4 18 0" stroke="#FFFFFF" strokeWidth={1.6} strokeLinecap="round" fill="none" opacity={0.7} />
+        <Path d={`M100 ${DECK} Q183 ${DECK - 100} 266 ${DECK}`} stroke={ob.violet} strokeWidth={4.4} strokeLinecap="round" fill="none" />
         {[118, 140, 162, 183, 204, 226, 248].map((hx) => {
           const f = (hx - 100) / 166;
-          const ay = DECK - 100 * 2 * f * (1 - f) * 1;
-          return <Path key={hx} d={`M${hx} ${ay} V${DECK}`} stroke={ob.violet} strokeWidth={1.4} opacity={0.7} />;
+          const ay = DECK - 100 * 2 * f * (1 - f);
+          return <Path key={hx} d={`M${hx} ${ay} V${DECK}`} stroke={ob.violet} strokeWidth={1.4} opacity={0.6} />;
         })}
       </Layer>
 
-      <Layer t={t} from={0.34} to={0.58} dy={14} depth={0.03}>
-        <Viaduct x1={-60} x2={420} y={DECK} ground={GROUND - 22} pier={72} deck="#E2DDFB" dark="#B9B0F7" rail={ob.violet} />
+      <Layer t={t} from={0.3} to={0.6} dy={6}>
+        <Viaduct x1={-60} x2={420} y={DECK} ground={GROUND - 22} pier={72} deck="#E6E2FC" dark="#BFB6F7" rail={ob.violetSoft} />
         <Road x1={-60} x2={420} y={372} h={22} />
         <Rect x={-60} y={394} width={480} height={46} fill="#CDEFDF" />
-        <Rect x={-60} y={394} width={480} height={4} fill="#B4E3CF" />
+        <Rect x={-60} y={394} width={480} height={3} fill="#B8E5D1" />
       </Layer>
 
-      <Layer t={t} from={0.48} to={0.7} dy={10}>
+      <Layer t={t} from={0.46} to={0.76} dy={6}>
         <Lamp x={52} y={394} h={34} />
         <Lamp x={196} y={394} h={30} />
         <Lamp x={318} y={394} h={34} />
@@ -109,18 +119,24 @@ export function WelcomeScene({ active, reduced }: SceneProps) {
         <Passenger x={262} y={420} s={1.15} color={ob.indigoSoft} bag={ob.red} step={1} />
       </Layer>
 
-      {/* route line along the viaduct, with station nodes that light in turn */}
-      <Layer t={t} from={0.0} to={0.01}>
-        <RouteStroke d={ROUTE_D} length={DECK_TRACK.total * 0.74} draw={t} from={0.4} to={0.82} color={ob.violet} width={3.6} opacity={0.95} />
-        {NODES.map((x, i) => (
-          <StationNode key={x} x={x} y={DECK - 2.6} size={5.4} color={i % 2 ? ob.mint : ob.violet} lit={t} at={0.52 + i * 0.1} span={0.05} pulse={pulse} />
-        ))}
-      </Layer>
+      {/* the violet line along the viaduct; its stations light as the line reaches them */}
+      <WipeReveal edgeX={lineEdge}>
+        <Rect x={-60} y={RAIL_Y - 1.8} width={480} height={3.6} rx={1.8} fill={ob.violet} />
+      </WipeReveal>
+      {NODES.map((x, i) => (
+        <NodeDot key={x} x={x} y={RAIL_Y} size={5.4} color={i % 2 ? ob.mint : ob.violet} lit={t} at={reachAt(x)} span={0.06} pulse={pulse} />
+      ))}
 
-      <Vehicle track={DECK_TRACK} p={trainP} w={150} h={34} level>
-        <MetroTrainArt glow="#FFE3A3" />
+      <Vehicle track={DECK_TRACK} p={trainP} w={50} h={34} visible={traffic} level>
+        <MetroCarArt front glow="#FFE3A3" />
       </Vehicle>
-      <Vehicle track={ROAD_TRACK} p={busP} w={68} h={34} level>
+      <Vehicle track={DECK_TRACK} p={trainP} w={50} h={34} visible={traffic} level lag={50}>
+        <MetroCarArt />
+      </Vehicle>
+      <Vehicle track={DECK_TRACK} p={trainP} w={50} h={34} visible={traffic} level lag={100}>
+        <MetroCarArt />
+      </Vehicle>
+      <Vehicle track={ROAD_TRACK} p={busP} w={68} h={34} visible={traffic} level>
         <BusArt />
       </Vehicle>
 
@@ -130,17 +146,15 @@ export function WelcomeScene({ active, reduced }: SceneProps) {
       <Sprite x={292} y={GROUND - 44} w={42} h={46} origin="bottom" animated={swayB}>
         <Tree x={21} y={44} r={11} a="#9ADDBE" b="#74C7A0" />
       </Sprite>
-      <Sprite x={170} y={GROUND - 28} w={26} h={30} origin="bottom" animated={swayC}>
-        <Tree x={13} y={28} r={8} a="#A5E3C7" b="#7DCDA9" />
-      </Sprite>
 
-      {[[BIRD_A, birdA], [BIRD_B, birdB], [BIRD_C, birdC]].map(([tr, p], i) => (
-        <Vehicle key={i} track={tr as ReturnType<typeof buildTrack>} p={p as never} w={16} h={8} level>
-          <BirdArt color={ob.indigoSoft} up={i === 1} />
-        </Vehicle>
-      ))}
+      <Vehicle track={BIRD_A} p={birdA} w={16} h={8} level>
+        <BirdArt color={ob.indigoSoft} />
+      </Vehicle>
+      <Vehicle track={BIRD_B} p={birdB} w={14} h={7} level>
+        <BirdArt color={ob.violetMid} up />
+      </Vehicle>
 
-      <LogoSprite x={150} y={28} size={60} animate={active ? 'float' : 'none'} />
+      <LogoSprite x={150} y={28} size={60} />
     </>
   );
 }
