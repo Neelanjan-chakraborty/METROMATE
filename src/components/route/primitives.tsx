@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { ChevronDown, type LucideIcon } from 'lucide-react-native';
+import { ChevronDown, Info, TriangleAlert, type LucideIcon } from 'lucide-react-native';
 import { colors } from '../../theme';
 import { useHomeScale } from '../home/scale';
 
@@ -59,6 +59,34 @@ export function Accordion({ icon: Icon, tint, tintBg, title, subtitle, children,
       </Pressable>
       {open ? <View style={{ paddingHorizontal: z(14), paddingBottom: z(16), gap: z(12) }}>{children}</View> : null}
     </View>
+  );
+}
+
+/** A one-line notice that opens to the full text. `tone` picks amber (warn) or violet (info). */
+export function ExpandAlert({ title, text, tone = 'warn' }: { title: string; text: string; tone?: 'warn' | 'info' }) {
+  const { z } = useHomeScale();
+  const [open, setOpen] = useState(false);
+  const warn = tone === 'warn';
+  const fg = warn ? '#7A3B06' : '#2E1FA8';
+  const Icon = warn ? TriangleAlert : Info;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${open ? text : 'Tap for details'}`}
+      accessibilityState={{ expanded: open }}
+      aria-expanded={open}
+      onPress={() => setOpen((o) => !o)}
+      style={{ padding: z(12), borderRadius: z(16), backgroundColor: warn ? '#FFF4E5' : '#F1EFFF', borderWidth: 1, borderColor: warn ? '#F9D9A8' : '#D9D3FF', gap: z(8) }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(10) }}>
+        <Icon size={z(18)} color={warn ? '#B54708' : VIOLET} />
+        <Text style={{ flex: 1, fontSize: z(13.5), fontWeight: '700', color: fg }}>{title}</Text>
+        <View style={open ? { transform: [{ rotate: '180deg' }] } : undefined}>
+          <ChevronDown size={z(18)} color={warn ? '#B54708' : VIOLET} />
+        </View>
+      </View>
+      {open ? <Text style={{ fontSize: z(12.5), color: fg }}>{text}</Text> : null}
+    </Pressable>
   );
 }
 

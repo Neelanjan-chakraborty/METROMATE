@@ -31,6 +31,11 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 - **Next train / platform: not available.** No live feed and no platform data, so the Route screen shows the schedule (every N min, first, last) and "Towards <terminal>", never a next-train time or platform number. First/last times are for the terminal the train leaves from; mid-line stations are later/earlier by an unpublished amount.
 - **Per-stop minutes** on the Route screen are estimates (published line time spread by distance between approximate pins) and exclude waiting and the time to change trains.
 
+- **Station opening hours: not published.** The station hero shows the line hours (first and last trains at each line's end stations), labelled as such.
+- **Gate illustration is generic.** Gate layout, which street a gate faces, stairs and escalator positions and platform numbers are not published; the scene shows only the gate number, the lifts GMRC lists near that gate and (dashed, unverified) the connection the unofficial map names at that gate.
+- **Amenities per station**: only lifts (with ramp) and gate counts are per-station. Everything else GMRC lists is network-wide and shown faded. Toilets, parking, ATM, Wi-Fi and shops have no data.
+- **Nearby places** have no photos, distances or walking times.
+
 ## Resolved by the newly supplied data
 
 - Station **type** (elevated / underground) for 53 stations: four underground (Kankaria East, Kalupur, Gheekanta, Shahpur), the rest elevated.

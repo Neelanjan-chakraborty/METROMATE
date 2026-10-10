@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeftRight, ChevronDown, ChevronLeft, LocateFixed, Map as MapIcon, Share2, Star, TriangleAlert } from 'lucide-react-native';
+import { ArrowLeftRight, ChevronLeft, LocateFixed, Map as MapIcon, Share2, Star } from 'lucide-react-native';
 import { Button, Notice, Screen } from '../components/ui';
 import { Hero } from '../components/home/Hero';
 import { useHeroState } from '../components/home/useHeroClock';
@@ -12,7 +12,7 @@ import { JourneyTimeline } from '../components/route/JourneyTimeline';
 import { RouteSummary } from '../components/route/RouteSummary';
 import { ServiceCard } from '../components/route/ServiceCard';
 import { GoodToKnowAccordion, ScheduleAccordion, TicketAccordion } from '../components/route/RouteDetails';
-import { CARD_LINE, NAVY, SLATE, VIOLET, cardShadow } from '../components/route/primitives';
+import { CARD_LINE, ExpandAlert, NAVY, SLATE, VIOLET, cardShadow } from '../components/route/primitives';
 import { useReady } from '../state/useReady';
 import { findRoute } from '../lib/routing';
 import { getFare } from '../lib/fareCalculator';
@@ -112,7 +112,9 @@ export default function RouteScreen() {
             <RouteSummary route={route} stations={network.stations} corridors={corridors} minutes={totalMin} fare={fareText} />
 
             {route.warnings.map((w) => (
-              <Alert key={w} z={z} title={warningTitle(w)} text={w} />
+              <View key={w} style={{ marginHorizontal: 16 }}>
+                <ExpandAlert title={warningTitle(w)} text={w} />
+              </View>
             ))}
 
             <ServiceCard lines={lines} corridors={corridors} nameOf={nameOf} onTrack={toTrack} />
@@ -186,30 +188,6 @@ function RoundButton({ z, label, onPress, children, size = 42 }: { z: (n: number
       style={({ pressed }) => [{ width: d, height: d, borderRadius: d / 2, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, alignItems: 'center', justifyContent: 'center', opacity: pressed ? 0.8 : 1 }, cardShadow]}
     >
       {children}
-    </Pressable>
-  );
-}
-
-/** A one-line warning that opens to the full text. */
-function Alert({ z, title, text }: { z: (n: number) => number; title: string; text: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}. ${open ? text : 'Tap for details'}`}
-      accessibilityState={{ expanded: open }}
-      aria-expanded={open}
-      onPress={() => setOpen((o) => !o)}
-      style={{ marginHorizontal: 16, padding: z(12), borderRadius: z(16), backgroundColor: '#FFF4E5', borderWidth: 1, borderColor: '#F9D9A8', gap: z(8) }}
-    >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(10) }}>
-        <TriangleAlert size={z(18)} color="#B54708" />
-        <Text style={{ flex: 1, fontSize: z(13.5), fontWeight: '700', color: '#7A3B06' }}>{title}</Text>
-        <View style={open ? { transform: [{ rotate: '180deg' }] } : undefined}>
-          <ChevronDown size={z(18)} color="#B54708" />
-        </View>
-      </View>
-      {open ? <Text style={{ fontSize: z(12.5), color: '#7A3B06' }}>{text}</Text> : null}
     </Pressable>
   );
 }

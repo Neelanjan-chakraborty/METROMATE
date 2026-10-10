@@ -110,7 +110,7 @@ export function GoodToKnowAccordion({ destination, towards, checkedOn, hasMinute
   );
 }
 
-function Mini({ z, label, value, sub }: { z: (n: number) => number; label: string; value: string; sub: string }) {
+export function Mini({ z, label, value, sub }: { z: (n: number) => number; label: string; value: string; sub: string }) {
   return (
     <View style={{ flex: 1, padding: z(10), borderRadius: z(12), backgroundColor: '#F8F8FD', borderWidth: 1, borderColor: CARD_LINE, gap: 1 }}>
       <Text style={{ fontSize: z(11), color: SLATE, fontWeight: '600' }}>{label}</Text>
@@ -139,7 +139,7 @@ function Chips({ z, title, items }: { z: (n: number) => number; title: string; i
   );
 }
 
-function Note({ z, Icon, tone, children }: { z: (n: number) => number; Icon: typeof Info; tone?: 'warn'; children: React.ReactNode }) {
+export function Note({ z, Icon, tone, children }: { z: (n: number) => number; Icon: typeof Info; tone?: 'warn'; children: React.ReactNode }) {
   const warn = tone === 'warn';
   return (
     <View style={{ flexDirection: 'row', gap: z(8), padding: z(10), borderRadius: z(12), backgroundColor: warn ? '#FFF4E5' : '#F8F8FD', borderWidth: 1, borderColor: warn ? '#F9D9A8' : CARD_LINE }}>
@@ -160,5 +160,50 @@ function Fact({ z, Icon, title, children }: { z: (n: number) => number; Icon: ty
         <Text style={{ fontSize: z(12.5), color: SLATE }}>{children}</Text>
       </View>
     </View>
+  );
+}
+
+/** Station page: both ends' first and last trains for each line through the station, and the frequency bands. */
+export function StationTimingsAccordion({ lines, timetable, corridors, nameOf }: { lines: TimetableLine[]; timetable: TimetableMetadata; corridors: Map<string, Corridor>; nameOf: (id: string) => string }) {
+  const { z } = useHomeScale();
+  const now = new Date();
+  return (
+    <Accordion icon={Clock} tint="#4F35E8" tintBg="#EFEDFF" title="Timings & frequency" subtitle="First & last train, how often trains run">
+      {lines.map((line) => {
+        const current = bandAt(line, now);
+        const color = corridors.get(line.corridorId)?.color ?? VIOLET;
+        return (
+          <View key={line.id} style={{ gap: z(8) }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: z(8) }}>
+              <View style={{ width: z(10), height: z(10), borderRadius: z(5), backgroundColor: color }} />
+              <Text style={{ flex: 1, fontSize: z(14.5), fontWeight: '800', color: NAVY }}>{line.label.replace(' — ', ' · ')}</Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: z(8) }}>
+              {line.firstTrain.slice(0, 2).map((t) => (
+                <Mini key={`f${t.stationId}`} z={z} label="First train" value={t.time} sub={`from ${nameOf(t.stationId)}`} />
+              ))}
+            </View>
+            <View style={{ flexDirection: 'row', gap: z(8) }}>
+              {line.lastTrain.slice(0, 2).map((t) => (
+                <Mini key={`l${t.stationId}`} z={z} label="Last train" value={t.time} sub={`from ${nameOf(t.stationId)}`} />
+              ))}
+            </View>
+            {line.frequency.map((f) => {
+              const active = f === current;
+              return (
+                <View key={f.label} style={{ flexDirection: 'row', alignItems: 'center', gap: z(10), padding: z(10), borderRadius: z(12), backgroundColor: active ? '#EFEDFF' : '#F8F8FD', borderWidth: 1, borderColor: active ? '#CFC8FF' : CARD_LINE }}>
+                  <Text style={{ flex: 1, fontSize: z(12.5), color: NAVY }}>{f.label}</Text>
+                  {active ? <Text style={{ fontSize: z(10.5), fontWeight: '800', color: VIOLET }}>NOW</Text> : null}
+                  <Text style={{ fontSize: z(13), fontWeight: '800', color: NAVY }}>{bandText(f)}</Text>
+                </View>
+              );
+            })}
+          </View>
+        );
+      })}
+      <Note z={z} Icon={Info}>
+        First and last trains are at each line’s end stations; at this station they are a little later or earlier. Static GMRC schedule effective {formatDate(timetable.validFrom)}, not live. {timetable.notes.join(' ')}
+      </Note>
+    </Accordion>
   );
 }
