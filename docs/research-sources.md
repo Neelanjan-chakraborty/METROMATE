@@ -75,3 +75,14 @@ Web-search summaries (Wikipedia list/line articles, news items, a GMRC press rel
 ## Station thumbnails (not yet fetched)
 
 `scripts/fetch-station-thumbs.mjs` is designed to use Wikimedia Commons (CC0, CC BY, CC BY-SA and public-domain files only) and to record title, page URL, licence and author for each photo in `data/source/station-photos.json`; the app credits the author on the station screen. The build container cannot reach Commons, so no photo has been fetched or checked, and the script has been tested only against a local fake of the API. Review each pick before release; photographers' attribution requirements (CC BY, CC BY-SA) are met by the on-screen credit and link.
+
+## Bus, BRTS and Gandhinagar bus data (GTFS)
+
+**Not scraped.** The build container has no internet access beyond npm, PyPI and GitHub, so nothing about buses was downloaded from the web. The only bus source is the pair of GTFS zips supplied by the project team (`gtfs.zip`, `gtfs_compat.zip`; sha256 recorded in `data/transit/transit.json` `meta.source.files`).
+
+- **Publisher:** the feed's `feed_info.txt` names *BLRTransit* (https://blrtransit.com). This is a third-party compilation, **not** an official publication of AMTS, AJL (Ahmedabad Janmarg Ltd, the BRTS) or GTSL (Gandhinagar Transport Services), and the licence is not stated. Confirm redistribution rights before releasing the app.
+- **Validity:** 2026-09-30 to 2027-03-29, one calendar service running every day (so no weekday/weekend difference). The app warns when the feed has expired.
+- **Used:** stops, routes, scheduled trips (converted to compact "patterns" with every distinct travel-time vector), BRTS fares (191 fare areas, adult and child), derived walking links. `scripts/build-transit.mjs` fails if the calendar has more than one service or exceptions.
+- **Not used:** `shapes.txt` (not linked to trips), luggage fares, the directional `gtfs.zip` routes (same trips as the compat feed).
+- **Cleaned:** 77 trips with impossible durations (1,500–3,000 minutes end to end) were dropped and are listed in the build output; 2 exact duplicate trips were removed. Nothing else was altered.
+- **Checked against the feed:** counts, fare matrix completeness and symmetry, stop coordinates, links (`src/lib/transit/__tests__`). **Not checked:** that the timetable matches what buses actually do.

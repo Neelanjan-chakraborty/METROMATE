@@ -36,6 +36,17 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 - **Amenities per station**: only lifts (with ramp) and gate counts are per-station. Everything else GMRC lists is network-wide and shown faded. Toilets, parking, ATM, Wi-Fi and shops have no data.
 - **Nearby places** have no photos, distances or walking times.
 
+## Bus, BRTS and Gandhinagar buses (GTFS)
+
+- **Not scraped:** no internet in the build environment; only the supplied GTFS is used. GSRTC intercity buses and any agency not in the feed are absent.
+- **Third-party, unofficial feed** (BLRTransit), licence unknown, valid 2026-09-30 to 2027-03-29; accuracy against real services is unverified.
+- **Fares:** only BRTS (AJL) fares exist (by fare area pair). AMTS and Gandhinagar bus fares are not in the feed and are shown as unavailable; so are metro fares, so multi-mode totals are partial.
+- **Scheduled, not live:** no vehicle positions or delays.
+- **Metro↔bus links are estimates:** station pins are estimated (±100–250 m), so "bus stop within N m" and walking times (straight line × 1.3 ÷ 5 km/h) are approximate. 11 metro stations (Gandhinagar side and GIFT City) have no bus stop within 600 m in the feed.
+- **BRTS coverage near the metro is thin:** a BRTS stop within 600 m for only 11 of 54 stations; most metro–bus connections are AMTS.
+- **No bus lines on the map:** the feed's route shapes are not linked to trips, so bus legs are listed, not drawn.
+- **Dropped data:** 77 trips with impossible durations.
+
 ## Resolved by the newly supplied data
 
 - Station **type** (elevated / underground) for 53 stations: four underground (Kankaria East, Kalupur, Gheekanta, Shahpur), the rest elevated.
