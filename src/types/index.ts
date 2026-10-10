@@ -168,8 +168,16 @@ export interface FareRules {
   phaseRestriction: { status: string; text: string; notes: string };
 }
 
+/** When a frequency band applies: on these days (0 = Sunday .. 6 = Saturday), within these minute-of-day ranges [start, end). */
+export interface FrequencyWindow {
+  days: number[];
+  ranges: [number, number][];
+}
+
 export interface FrequencyBand {
   label: string;
+  /** Structured form of `label`, so the app can tell which band applies now. Absent = unknown. */
+  when?: FrequencyWindow[];
   kind: 'every' | 'average' | 'bus-only';
   minutes: number | null;
   note?: string;

@@ -27,6 +27,10 @@ Updated after the project team supplied the GMRC gate table, a Google My Maps KM
 - **Per-station escalators, parking and facilities: not published.** GMRC's facility galleries are network-wide, so the Stations cards show only exits, lifts and (unverified) BRTS/rail/bus links.
 - **Station area names / street addresses: not in the data.** The card's place line uses a landmark named like the station, an alias, or the stop number, never an invented neighbourhood.
 
+- **Which frequency applies right now** is derived from GMRC's frequency labels via structured windows (`frequency[].when`). For Line 1, "non-peak" is read as the service hours that are neither peak (08:00–11:00, 17:00–20:00) nor in the 20-minute early/late band (06:20–07:00, 22:00–23:00); that is an interpretation of the published text. A test checks no minute matches two bands.
+- **Next train / platform: not available.** No live feed and no platform data, so the Route screen shows the schedule (every N min, first, last) and "Towards <terminal>", never a next-train time or platform number. First/last times are for the terminal the train leaves from; mid-line stations are later/earlier by an unpublished amount.
+- **Per-stop minutes** on the Route screen are estimates (published line time spread by distance between approximate pins) and exclude waiting and the time to change trains.
+
 ## Resolved by the newly supplied data
 
 - Station **type** (elevated / underground) for 53 stations: four underground (Kankaria East, Kalupur, Gheekanta, Shahpur), the rest elevated.

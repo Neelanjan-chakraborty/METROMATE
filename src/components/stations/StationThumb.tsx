@@ -26,6 +26,8 @@ interface Props {
   radius: number;
   /** Fill the parent's width at this width/height ratio instead of a fixed size. */
   fluid?: boolean;
+  /** Fill the parent (absolute), cropping to cover: for banner backgrounds. */
+  fill?: boolean;
 }
 
 function rng(seed: string) {
@@ -46,9 +48,9 @@ export function hasStationPhoto(id: string): boolean {
   return stationPhoto(id) !== null;
 }
 
-export const StationThumb = memo(function StationThumb({ station, color, width, height, radius, fluid }: Props) {
+export const StationThumb = memo(function StationThumb({ station, color, width, height, radius, fluid, fill }: Props) {
   const photo = stationPhoto(station.id);
-  const box = fluid ? { width: '100%' as const, aspectRatio: width / height } : { width, height };
+  const box = fill ? StyleSheet.absoluteFill : fluid ? { width: '100%' as const, aspectRatio: width / height } : { width, height };
   return (
     <View style={[styles.box, box, { borderRadius: radius }]} accessible={false} importantForAccessibility="no-hide-descendants">
       {photo ? (
