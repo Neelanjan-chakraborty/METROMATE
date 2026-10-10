@@ -1,20 +1,30 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Maximize, X, ZoomIn, ZoomOut } from 'lucide-react-native';
+import { Bus, Maximize, TrainFront, X, ZoomIn, ZoomOut } from 'lucide-react-native';
 import { Card, CorridorDot, IconButton, Muted, Notice, Screen } from '../../components/ui';
 import { MetroMap } from '../../components/MetroMap';
+import { BusMapPanel } from '../../components/map/BusMapPanel';
+import { isBusId } from '../../lib/transit/types';
 import { OfflineBadge } from '../../components/OfflineBadge';
 import { useReady } from '../../state/useReady';
 import { findRoute } from '../../lib/routing';
 import { buildSchematic } from '../../lib/schematic';
 import { colors, radius, space, type } from '../../theme';
+import { bus } from '../../theme/bus';
 
 const DEFAULT_SCALE = 0.9;
 
 export default function MapScreen() {
   const { dataset, network } = useReady();
-  const { from, to } = useLocalSearchParams<{ from?: string; to?: string }>();
+  const { from, to, mode, at, route: routeParam, view } = useLocalSearchParams<{ from?: string; to?: string; mode?: string; at?: string; route?: string; view?: string }>();
+  // A bus journey, a chosen bus route or ?view=bus opens the Bus & metro map; otherwise the metro schematic.
+  const wantsBus = view === 'bus' || mode === 'transit' || !!routeParam || isBusId(from) || isBusId(to);
+  const paramKey = `${view ?? ''}|${mode ?? ''}|${routeParam ?? ''}|${from ?? ''}|${to ?? ''}`;
+  // The toggle is the user's choice until the way they arrived here changes.
+  const [pick, setPick] = useState<{ key: string; bus: boolean } | null>(null);
+  const showBus = pick && pick.key === paramKey ? pick.bus : wantsBus && view !== 'metro';
+  const setShowBus = (b: boolean) => setPick({ key: paramKey, bus: b });
   const [scale, setScale] = useState(DEFAULT_SCALE);
   const [frame, setFrame] = useState<{ w: number; h: number } | null>(null);
   const hRef = useRef<ScrollView>(null);
@@ -52,10 +62,20 @@ export default function MapScreen() {
           <Text style={type.title} accessibilityRole="header">
             Network map
           </Text>
-          <Muted>Original schematic, stored on your device. Tap a station for details.</Muted>
+          <Muted>{showBus ? 'Bus routes and the metro on a map of the area. No internet needed.' : 'Original schematic, stored on your device. Tap a station for details.'}</Muted>
         </View>
         <OfflineBadge />
       </View>
+
+      <View style={styles.segment} accessibilityRole="tablist">
+        <Seg label="Metro schematic" Icon={TrainFront} active={!showBus} color={colors.primary} onPress={() => setShowBus(false)} />
+        <Seg label="Bus & metro" Icon={Bus} active={showBus} color={bus.red} onPress={() => setShowBus(true)} />
+      </View>
+
+      {showBus ? (
+        <BusMapPanel from={from} to={to} at={at} route={routeParam} />
+      ) : (
+        <>
 
       <View style={styles.legendWrap}>
         <Card style={styles.legend}>
@@ -117,11 +137,25 @@ export default function MapScreen() {
           <IconButton icon={Maximize} label="Reset zoom" onPress={() => setScale(DEFAULT_SCALE)} />
         </View>
       </View>
+        </>
+      )}
     </Screen>
   );
 }
 
+function Seg({ label, Icon, active, color, onPress }: { label: string; Icon: typeof Bus; active: boolean; color: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={label} onPress={onPress} style={[styles.seg, active && { backgroundColor: color }]}>
+      <Icon size={16} color={active ? '#FFFFFF' : colors.muted} strokeWidth={2} />
+      <Text style={[styles.segText, active && { color: '#FFFFFF', fontWeight: '800' }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  segment: { flexDirection: 'row', marginHorizontal: space.lg, marginBottom: space.sm, padding: 3, borderRadius: radius.pill, backgroundColor: '#ECEBF5', gap: 3 },
+  seg: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, height: 38, borderRadius: radius.pill },
+  segText: { fontSize: 13.5, fontWeight: '600', color: colors.muted },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, paddingBottom: space.sm },
   legendWrap: { paddingHorizontal: space.lg, paddingBottom: space.sm },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, paddingVertical: space.sm, paddingHorizontal: space.md },

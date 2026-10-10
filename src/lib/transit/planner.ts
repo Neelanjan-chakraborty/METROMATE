@@ -54,6 +54,10 @@ export interface BusLeg {
   from: PlaceRef;
   to: PlaceRef;
   stops: number;
+  /** The pattern (stop sequence) ridden and the positions boarded / alighted in it; used to draw the leg on the map. */
+  pattern: number;
+  boardPos: number;
+  alightPos: number;
   /** Names of the stops passed between boarding and alighting. */
   via: string[];
   depart: number;
@@ -423,6 +427,9 @@ function build(ctx: PlannerContext, found: ReturnType<typeof search>, dest: numb
         from,
         to,
         stops: r.alightPos! - r.boardPos!,
+        pattern: p,
+        boardPos: r.boardPos!,
+        alightPos: r.alightPos!,
         via: stops.slice(r.boardPos! + 1, r.alightPos!).map((s) => ix.data.stops.name[s]),
         depart: r.boardTime!,
         arrive: r.time,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { buildIndex, type TransitIndex } from './transitIndex';
-import type { TransitData } from './types';
+import type { ShapesData, TransitData } from './types';
 
 /*
  * Lazy loader for the bus timetable (data/transit/transit.json, ~1.1 MB). The JSON is bundled with the
@@ -53,4 +53,32 @@ export function useTransit(enabled = true): TransitState {
 /** True when the feed's last valid day is before `today` (YYYY-MM-DD). */
 export function feedExpired(t: TransitIndex, today: string): boolean {
   return today > t.data.meta.source.validTo;
+}
+
+// ------------------------------------------------------------------------------------------ road shapes
+
+let shapesCache: ShapesData | null | undefined;
+
+/** Road shapes (data/transit/shapes.json), parsed on first use. Null if the file cannot be read: the map then draws straight lines. */
+export function loadShapes(): ShapesData | null {
+  if (shapesCache !== undefined) return shapesCache;
+  try {
+    shapesCache = require('../../../data/transit/shapes.json') as ShapesData;
+  } catch {
+    shapesCache = null;
+  }
+  return shapesCache;
+}
+
+export type ShapesState = { status: 'loading' } | { status: 'ready'; shapes: ShapesData | null };
+
+/** Loads the road shapes shortly after the screen first paints (same timer approach as useTransit). */
+export function useBusShapes(enabled = true): ShapesState {
+  const [state, setState] = useState<ShapesState>(() => (shapesCache !== undefined ? { status: 'ready', shapes: shapesCache } : { status: 'loading' }));
+  useEffect(() => {
+    if (!enabled || state.status !== 'loading') return;
+    const id = setTimeout(() => setState({ status: 'ready', shapes: loadShapes() }), 60);
+    return () => clearTimeout(id);
+  }, [enabled, state.status]);
+  return state;
 }
