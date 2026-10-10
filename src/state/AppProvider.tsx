@@ -47,6 +47,9 @@ interface AppState {
   /** Interface language: saved on this phone; the first launch follows the phone's language. */
   language: Language;
   setLanguage: (l: Language) => Promise<void>;
+  /** First-run welcome guide: 'loading' until the saved setting is read, 'pending' until the user finishes or skips it. */
+  onboarding: 'loading' | 'pending' | 'done';
+  completeOnboarding: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -66,6 +69,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [recents, setRecents] = useState<SavedJourney[]>([]);
   const [stationCoords, setStationCoords] = useState<StationCoord[]>([]);
   const [quickRoutes, setQuickRoutes] = useState<QuickRoute[]>([]);
+  const [onboarding, setOnboarding] = useState<'loading' | 'pending' | 'done'>('loading');
   const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
   const dbRef = useRef<Db | null>(null);
   const memId = useRef(1);
@@ -93,6 +97,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dbRef.current = db;
         const savedLanguage = await repo.getSetting(db, 'language');
         if (!cancelled) setLanguageState(isLanguage(savedLanguage) ? savedLanguage : detectLanguage());
+        const seen = await repo.getSetting(db, 'onboarding');
+        if (!cancelled) setOnboarding(seen === 'done' ? 'done' : 'pending');
         const [f, r, c, q] = [await repo.listFavourites(db), await repo.listRecents(db), await repo.listStationCoords(db), await repo.listQuickRoutes(db)];
         if (cancelled) return;
         setFavourites(f);
@@ -106,6 +112,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.warn('MetroMate: SQLite unavailable, using in-memory storage.', e);
         dbRef.current = null;
         setLanguageState(detectLanguage());
+        setOnboarding('pending');
         setStorage('memory');
       }
       if (cancelled) return;
@@ -205,6 +212,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setLanguageState(l);
     const db = dbRef.current;
     if (db) await repo.setSetting(db, 'language', l).catch(() => undefined);
+  }, []);
+
+  const completeOnboarding = useCallback(async () => {
+    setOnboarding('done');
+    const db = dbRef.current;
+    if (db) await repo.setSetting(db, 'onboarding', 'done').catch(() => undefined);
   }, []);
 
   const isFavourite = useCallback(
@@ -315,8 +328,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       resetLocalData,
       language,
       setLanguage,
+      onboarding,
+      completeOnboarding,
     }),
-    [status, error, dataset, network, validation, storage, online, favourites, recents, quickRoutes, setQuickRoute, clearQuickRoute, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData, language, setLanguage],
+    [status, error, dataset, network, validation, storage, online, favourites, recents, quickRoutes, setQuickRoute, clearQuickRoute, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData, language, setLanguage, onboarding, completeOnboarding],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
