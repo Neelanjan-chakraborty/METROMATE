@@ -68,7 +68,11 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/dist/"
+      "/dist/",
+      "<rootDir>/website/"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/website/"
     ]
   }
 }

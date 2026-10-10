@@ -40,6 +40,10 @@ The web preview is a development convenience only: `expo-sqlite` has no web buil
 
 North–South corridor APMC ↔ Mahatma Mandir (35 stations incl. Motera Stadium, Koteshwar Road, GNLU, Infocity, Sachivalaya, Akshardham, Sector-16/24); GIFT City branch GNLU ↔ PDEU ↔ GIFT City; East–West corridor Thaltej Gam ↔ Vastral Gam (18 stations). Interchanges: **Old High Court** and **GNLU**.
 
+## Website (`website/`)
+
+A separate Next.js landing page that introduces MetroMate to the public: *a calmer way through the city*. It uses real screens captured from the app, original vector illustrations, and links to the Android preview build. Run it with `cd website && npm install && npm run dev`. Details, design system and content rules are in [`website/README.md`](website/README.md). The app's TypeScript, ESLint, Jest and Metro setups ignore that folder.
+
 ## Home screen design
 
 The Plan (Home) screen follows a supplied design reference: lavender-white background, electric-violet primary (`#4F35E8`), a living vector skyline-and-metro hero (below), a journey card with a swap button, soft-illustrated shortcut cards, Quick routes, Recent trips and a custom bottom tab bar. All artwork is original vector drawing (`src/components/home/art.tsx`, custom train icon in `icons.tsx`), no raster images, so it works offline and scales crisply. Sizes are drawn for a 430 dp phone and scale down proportionally on narrower screens (checked at 430, 390 and 360 dp).
