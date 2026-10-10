@@ -32,7 +32,7 @@ export const StationCard = memo(function StationCard({ station, info, matchNote 
       onPress={() => router.push({ pathname: '/station/[id]', params: { id: station.id } })}
       style={({ pressed }) => [st.card, pressed && { backgroundColor: '#F8F8FF' }]}
     >
-      <StationThumb station={station} color={info.lineColor} width={z(90)} height={z(78)} radius={z(14)} />
+      <StationThumb station={station} color={info.lineColor} width={z(108)} height={z(92)} radius={z(16)} />
       <View style={st.body}>
         <View style={st.titleRow}>
           <Text style={st.name} numberOfLines={1}>

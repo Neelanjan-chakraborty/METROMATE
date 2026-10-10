@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Map as MapIcon, Search, WifiOff, X } from 'lucide-react-native';
 import { StationCard } from '../../components/stations/StationCard';
-import { StationsBanner } from '../../components/stations/StationsBanner';
+import { StationsHero } from '../../components/stations/StationsHero';
+import { useHeroState } from '../../components/home/useHeroClock';
 import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
 import { searchStations, type SearchHit } from '../../lib/search';
@@ -27,6 +28,8 @@ export default function StationsScreen() {
   const { dataset } = useReady();
   const insets = useSafeAreaInsets();
   const { z } = useHomeScale();
+  const { sky } = useLocalSearchParams<{ sky?: string }>();
+  const { look, animate } = useHeroState(sky);
   const [query, setQuery] = useState('');
   const [corridor, setCorridor] = useState<string | null>(null);
   const corridorById = useMemo(() => new Map(dataset.corridors.map((c) => [c.id, c])), [dataset]);
@@ -43,6 +46,11 @@ export default function StationsScreen() {
 
   const st = useMemo(() => makeStyles(z), [z]);
   const chipCorridors = useMemo(() => [...dataset.corridors].sort((a, b) => CHIP_ORDER.indexOf(a.id) - CHIP_ORDER.indexOf(b.id)), [dataset]);
+  // Canopy name boards in the line colours: the chosen line, or all lines in turn.
+  const heroAccents = useMemo(() => {
+    const chosen = corridor ? corridorById.get(corridor) : null;
+    return chosen ? [chosen.color] : chipCorridors.map((c) => c.color);
+  }, [corridor, corridorById, chipCorridors]);
 
   const renderItem = useCallback(
     ({ item }: { item: SearchHit }) => (
@@ -57,14 +65,14 @@ export default function StationsScreen() {
 
   return (
     <View style={[st.screen]}>
-      <View style={{ height: insets.top + z(104) }}>
-        <StationsBanner />
+      <View style={{ height: insets.top + z(120) }}>
+        <StationsHero height={insets.top + z(120)} look={look} animate={animate} accents={heroAccents} />
         <View style={[st.header, { paddingTop: insets.top + z(12) }]}>
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={st.title} accessibilityRole="header" numberOfLines={1}>
+            <Text style={[st.title, { color: look.ink }]} accessibilityRole="header" numberOfLines={1}>
               Stations
             </Text>
-            <Text style={st.sub} numberOfLines={1}>
+            <Text style={[st.sub, { color: look.inkSoft }]} numberOfLines={1}>
               {dataset.stations.length} stations · Works offline
             </Text>
           </View>

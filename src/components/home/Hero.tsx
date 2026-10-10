@@ -328,7 +328,7 @@ const STARS = Array.from({ length: 30 }, (_, i) => ({
   group: i % 2,
 }));
 
-function Stars({ look, height, animate }: { look: HeroLook; height: number; animate: boolean }) {
+export function Stars({ look, height, animate }: { look: HeroLook; height: number; animate: boolean }) {
   const [a] = useState(() => new Animated.Value(1));
   const [b] = useState(() => new Animated.Value(0.7));
   useEffect(() => {
@@ -377,7 +377,7 @@ const CLOUDS = [
   { y: 40, w: 78, ms: 80_000, phase: 0.8 },
 ];
 
-function Clouds({ look, scale, animate }: { look: HeroLook; scale: number; animate: boolean }) {
+export function Clouds({ look, scale, animate }: { look: HeroLook; scale: number; animate: boolean }) {
   if (look.cloudOpacity <= 0.03) return null;
   return (
     <>
@@ -477,47 +477,58 @@ function TrainLayer({ look, height, scale, animate, mode }: { look: HeroLook; he
   const dx = progress.interpolate({ inputRange: input, outputRange: shifts.map((d) => d * scale) });
   const dy = progress.interpolate({ inputRange: input, outputRange: shifts.map((d) => d * geom.slope * scale) });
 
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: dx }, { translateY: dy }] }]}>
+      <Svg width="100%" height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMaxYMax slice">
+        <G transform={`translate(${originX} ${deckAt(geom, originX)}) rotate(${geom.angle})${arrive ? ' scale(-1 1)' : ''}`}>
+          <TrainArt look={look} />
+        </G>
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/**
+ * The three-car train with its cab, drawn on a deck line at y = 0 and facing right (x 0..243). Shared by
+ * the Home / Live hero and the Stations hero. `idPrefix` keeps gradient ids unique per SVG.
+ */
+export function TrainArt({ look, idPrefix = 'tr' }: { look: HeroLook; idPrefix?: string }) {
   const bodyTop = mixColor('#FFFFFF', '#D9D6F2', look.night);
   const bodyBottom = mixColor('#E6E3FA', '#9C98D0', look.night);
   const windowFill = mixColor('#243059', '#FFE9A8', look.trainLight);
   const light = look.trainLight;
-
   return (
-    <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX: dx }, { translateY: dy }] }]}>
-      <Svg width="100%" height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="xMaxYMax slice">
-        <Defs>
-          <LinearGradient id="tr-body" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={bodyTop} />
-            <Stop offset="1" stopColor={bodyBottom} />
-          </LinearGradient>
-          <LinearGradient id="tr-beam" x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0" stopColor="#FFE9A8" stopOpacity="0.7" />
-            <Stop offset="1" stopColor="#FFE9A8" stopOpacity="0" />
-          </LinearGradient>
-        </Defs>
-        <G transform={`translate(${originX} ${deckAt(geom, originX)}) rotate(${geom.angle})${arrive ? ' scale(-1 1)' : ''}`}>
-          {light > 0.05 ? <Polygon points="241,-7 330,-26 330,10" fill="url(#tr-beam)" opacity={light * 0.7} /> : null}
-          <Rect x={-3} y={-3.4} width={246} height={3.6} rx={1.6} fill={mixColor('#8F8AC0', '#2B2B6B', look.night * 0.8)} />
-          {[0, 56, 112].map((x) => (
-            <G key={x}>
-              <Rect x={x} y={-24} width={54} height={21} rx={3.4} fill="url(#tr-body)" stroke={mixColor('#D5D2F0', '#6C69B0', look.night)} strokeWidth={0.8} />
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <Rect key={i} x={x + 5 + i * 7.9} y={-20} width={6} height={8.5} rx={1.4} fill={windowFill} opacity={0.95} />
-              ))}
-              <Rect x={x} y={-9.5} width={54} height={2.6} fill="#6A55F0" />
-              <Rect x={x + 26.5} y={-23} width={1} height={19} fill={mixColor('#D5D2F0', '#6C69B0', look.night)} />
-            </G>
+    <>
+    <Defs>
+      <LinearGradient id={`${idPrefix}-body`} x1="0" y1="0" x2="0" y2="1">
+        <Stop offset="0" stopColor={bodyTop} />
+        <Stop offset="1" stopColor={bodyBottom} />
+      </LinearGradient>
+      <LinearGradient id={`${idPrefix}-beam`} x1="0" y1="0" x2="1" y2="0">
+        <Stop offset="0" stopColor="#FFE9A8" stopOpacity="0.7" />
+        <Stop offset="1" stopColor="#FFE9A8" stopOpacity="0" />
+      </LinearGradient>
+    </Defs>
+      {light > 0.05 ? <Polygon points="241,-7 330,-26 330,10" fill={`url(#${idPrefix}-beam)`} opacity={light * 0.7} /> : null}
+      <Rect x={-3} y={-3.4} width={246} height={3.6} rx={1.6} fill={mixColor('#8F8AC0', '#2B2B6B', look.night * 0.8)} />
+      {[0, 56, 112].map((x) => (
+        <G key={x}>
+          <Rect x={x} y={-24} width={54} height={21} rx={3.4} fill={`url(#${idPrefix}-body)`} stroke={mixColor('#D5D2F0', '#6C69B0', look.night)} strokeWidth={0.8} />
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Rect key={i} x={x + 5 + i * 7.9} y={-20} width={6} height={8.5} rx={1.4} fill={windowFill} opacity={0.95} />
           ))}
-          <Path d="M168 -24 H214 Q232 -22 240 -12 L242 -3.2 H168 Z" fill="url(#tr-body)" stroke={mixColor('#D5D2F0', '#6C69B0', look.night)} strokeWidth={0.8} />
-          <Path d="M211 -20.6 H224 Q232 -19 236.6 -12 H211 Z" fill="#243059" />
-          {[0, 1, 2, 3, 4].map((i) => (
-            <Rect key={i} x={173 + i * 7.9} y={-20} width={6} height={8.5} rx={1.4} fill={windowFill} opacity={0.95} />
-          ))}
-          <Rect x={168} y={-9.5} width={72} height={2.6} fill="#6A55F0" />
-          <Circle cx={239.4} cy={-6} r={1.7} fill="#FFD66B" />
-          {light > 0.05 ? <Circle cx={239.4} cy={-6} r={5} fill="#FFE9A8" opacity={light * 0.45} /> : null}
+          <Rect x={x} y={-9.5} width={54} height={2.6} fill="#6A55F0" />
+          <Rect x={x + 26.5} y={-23} width={1} height={19} fill={mixColor('#D5D2F0', '#6C69B0', look.night)} />
         </G>
-      </Svg>
-    </Animated.View>
+      ))}
+      <Path d="M168 -24 H214 Q232 -22 240 -12 L242 -3.2 H168 Z" fill={`url(#${idPrefix}-body)`} stroke={mixColor('#D5D2F0', '#6C69B0', look.night)} strokeWidth={0.8} />
+      <Path d="M211 -20.6 H224 Q232 -19 236.6 -12 H211 Z" fill="#243059" />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Rect key={i} x={173 + i * 7.9} y={-20} width={6} height={8.5} rx={1.4} fill={windowFill} opacity={0.95} />
+      ))}
+      <Rect x={168} y={-9.5} width={72} height={2.6} fill="#6A55F0" />
+      <Circle cx={239.4} cy={-6} r={1.7} fill="#FFD66B" />
+      {light > 0.05 ? <Circle cx={239.4} cy={-6} r={5} fill="#FFE9A8" opacity={light * 0.45} /> : null}
+    </>
   );
 }

@@ -7,7 +7,7 @@
 //
 // Needs internet access to commons.wikimedia.org (the MetroMate build container has none, so run this
 // on your own machine). Output:
-//   assets/stations/<ID>.webp                      300x250 WebP, quality 62 (about 8-15 KB each)
+//   assets/stations/<ID>.webp                      360x300 WebP, quality 62 (about 12-22 KB each)
 //   data/source/station-photos.json                provenance: title, page, licence, author per photo
 //   src/components/stations/thumbs.generated.ts    static requires the app imports
 // Review the picked files in data/source/station-photos.json. To correct a wrong pick, put the exact
@@ -29,8 +29,8 @@ const OUT_DIR = join(root, 'assets', 'stations');
 const MANIFEST = join(root, 'data', 'source', 'station-photos.json');
 const OVERRIDES = join(root, 'data', 'source', 'station-photo-overrides.json');
 const MODULE = join(root, 'src', 'components', 'stations', 'thumbs.generated.ts');
-const WIDTH = 300;
-const HEIGHT = 250;
+const WIDTH = 360;
+const HEIGHT = 300;
 
 const argv = process.argv.slice(2);
 const flag = (n) => argv.includes(`--${n}`);
