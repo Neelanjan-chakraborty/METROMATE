@@ -168,8 +168,16 @@ export interface FareRules {
   phaseRestriction: { status: string; text: string; notes: string };
 }
 
+/** When a frequency band applies: on these days (0 = Sunday .. 6 = Saturday), within these minute-of-day ranges [start, end). */
+export interface FrequencyWindow {
+  days: number[];
+  ranges: [number, number][];
+}
+
 export interface FrequencyBand {
   label: string;
+  /** Structured form of `label`, so the app can tell which band applies now. Absent = unknown. */
+  when?: FrequencyWindow[];
   kind: 'every' | 'average' | 'bus-only';
   minutes: number | null;
   note?: string;
@@ -326,4 +334,15 @@ export interface StationCoord {
   updatedAt: number;
   /** Estimated accuracy of the averaged position, in metres. */
   accuracyM: number;
+}
+
+export const QUICK_SLOTS = ['home', 'campus', 'work'] as const;
+export type QuickSlot = (typeof QUICK_SLOTS)[number];
+
+/** A one-tap shortcut to a saved journey (Home / Campus / Work). */
+export interface QuickRoute {
+  slot: QuickSlot;
+  fromId: string;
+  toId: string;
+  updatedAt: number;
 }

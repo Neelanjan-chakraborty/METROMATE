@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+/*
+ * MetroMate website design tokens. Every colour, font and radius used on the page comes from here, so the
+ * sections read as one system. Warm paper, desaturated pastels, and MetroMate violet as the one strong colour.
+ */
+@theme {
+  --color-paper: #fdfcf8;
+  --color-paper-deep: #f6f2ea;
+  --color-ink: #292524;
+  --color-ink-soft: #44403c;
+  --color-muted: #78716c;
+  --color-line: #e7e1d6;
+  --color-violet: #5140e8;
+  --color-violet-deep: #3b2fb8;
+  --color-violet-soft: #c9c2f6;
+  --color-lavender: #efedf4;
+  --color-sage: #e8efe8;
+  --color-sage-deep: #c9dcc9;
+  --color-leaf: #8fbf9f;
+  --color-coral: #ffb7b2;
+  --color-coral-deep: #e98a83;
+  --color-peach: #ffdcc6;
+  --color-sun: #ffc98f;
+  --color-metro-red: #d94343;
+  --color-bus-blue: #2783f5;
+
+  --font-display: 'Outfit Variable', 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-hand: 'Reenie Beanie', 'Bradley Hand', cursive;
+
+  --radius-card: 28px;
+  --radius-panel: 40px;
+
+  --shadow-soft: 0 1px 2px rgb(41 37 36 / 0.04), 0 12px 32px -12px rgb(41 37 36 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(41 37 36 / 0.05), 0 24px 48px -16px rgb(41 37 36 / 0.2);
+  --shadow-device: 0 40px 80px -32px rgb(41 37 36 / 0.35), 0 12px 24px -12px rgb(41 37 36 / 0.18);
+
+  --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 96px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+  ::selection {
+    background: var(--color-coral);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-violet);
+    outline-offset: 3px;
+    border-radius: 12px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Eyebrow label above a headline. */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  /* Oversized editorial headline. */
+  .display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  .headline {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+  .hand {
+    font-family: var(--font-hand);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+}
+
+/* Paper grain: one tiled SVG noise texture, drawn once by the browser and never animated. */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 0 0.13 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Horizontal card rail: native scrolling with snap, no visible scrollbar on touch. */
+.rail {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+  overscroll-behavior-x: contain;
+}
+.rail > * {
+  scroll-snap-align: start;
+}

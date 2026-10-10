@@ -1,20 +1,32 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Maximize, X, ZoomIn, ZoomOut } from 'lucide-react-native';
+import { Bus, Maximize, TrainFront, X, ZoomIn, ZoomOut } from 'lucide-react-native';
 import { Card, CorridorDot, IconButton, Muted, Notice, Screen } from '../../components/ui';
 import { MetroMap } from '../../components/MetroMap';
+import { BusMapPanel } from '../../components/map/BusMapPanel';
+import { isBusId } from '../../lib/transit/types';
 import { OfflineBadge } from '../../components/OfflineBadge';
 import { useReady } from '../../state/useReady';
 import { findRoute } from '../../lib/routing';
 import { buildSchematic } from '../../lib/schematic';
 import { colors, radius, space, type } from '../../theme';
+import { useT } from '../../i18n/useT';
+import { bus } from '../../theme/bus';
 
 const DEFAULT_SCALE = 0.9;
 
 export default function MapScreen() {
   const { dataset, network } = useReady();
-  const { from, to } = useLocalSearchParams<{ from?: string; to?: string }>();
+  const { t } = useT();
+  const { from, to, mode, at, route: routeParam, view } = useLocalSearchParams<{ from?: string; to?: string; mode?: string; at?: string; route?: string; view?: string }>();
+  // A bus journey, a chosen bus route or ?view=bus opens the Bus & metro map; otherwise the metro schematic.
+  const wantsBus = view === 'bus' || mode === 'transit' || !!routeParam || isBusId(from) || isBusId(to);
+  const paramKey = `${view ?? ''}|${mode ?? ''}|${routeParam ?? ''}|${from ?? ''}|${to ?? ''}`;
+  // The toggle is the user's choice until the way they arrived here changes.
+  const [pick, setPick] = useState<{ key: string; bus: boolean } | null>(null);
+  const showBus = pick && pick.key === paramKey ? pick.bus : wantsBus && view !== 'metro';
+  const setShowBus = (b: boolean) => setPick({ key: paramKey, bus: b });
   const [scale, setScale] = useState(DEFAULT_SCALE);
   const [frame, setFrame] = useState<{ w: number; h: number } | null>(null);
   const hRef = useRef<ScrollView>(null);
@@ -50,12 +62,22 @@ export default function MapScreen() {
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={type.title} accessibilityRole="header">
-            Network map
+            {t('map.title')}
           </Text>
-          <Muted>Original schematic, stored on your device. Tap a station for details.</Muted>
+          <Muted>{showBus ? t('map.sub.bus') : t('map.sub.metro')}</Muted>
         </View>
         <OfflineBadge />
       </View>
+
+      <View style={styles.segment} accessibilityRole="tablist">
+        <Seg label={t('map.seg.metro')} Icon={TrainFront} active={!showBus} color={colors.primary} onPress={() => setShowBus(false)} />
+        <Seg label={t('map.seg.bus')} Icon={Bus} active={showBus} color={bus.red} onPress={() => setShowBus(true)} />
+      </View>
+
+      {showBus ? (
+        <BusMapPanel from={from} to={to} at={at} route={routeParam} />
+      ) : (
+        <>
 
       <View style={styles.legendWrap}>
         <Card style={styles.legend}>
@@ -67,17 +89,17 @@ export default function MapScreen() {
           ))}
           <View style={styles.legendItem}>
             <View style={styles.interchangeKey} />
-            <Text style={type.tiny}>Interchange</Text>
+            <Text style={type.tiny}>{t('map.legend.interchange')}</Text>
           </View>
           {route ? (
             <>
               <View style={styles.legendItem}>
                 <CorridorDot color={colors.origin} />
-                <Text style={type.tiny}>A start</Text>
+                <Text style={type.tiny}>{t('map.legend.start')}</Text>
               </View>
               <View style={styles.legendItem}>
                 <CorridorDot color={colors.destination} />
-                <Text style={type.tiny}>B destination</Text>
+                <Text style={type.tiny}>{t('map.legend.destination')}</Text>
               </View>
             </>
           ) : null}
@@ -92,9 +114,9 @@ export default function MapScreen() {
       {route ? (
         <View style={styles.journeyBanner}>
           <Text style={[type.small, { flex: 1, color: colors.primaryDark, fontWeight: '700' }]} numberOfLines={2}>
-            Journey: {network.stations.get(route.originId)?.name} → {network.stations.get(route.destinationId)?.name}
+            {t('map.journey.banner', { from: network.stations.get(route.originId)?.name ?? route.originId, to: network.stations.get(route.destinationId)?.name ?? route.destinationId })}
           </Text>
-          <IconButton icon={X} label="Clear highlighted journey" color={colors.primaryDark} onPress={() => router.setParams({ from: undefined, to: undefined })} />
+          <IconButton icon={X} label={t('map.journey.clear')} color={colors.primaryDark} onPress={() => router.setParams({ from: undefined, to: undefined })} />
         </View>
       ) : null}
 
@@ -112,16 +134,30 @@ export default function MapScreen() {
           </ScrollView>
         </ScrollView>
         <View style={styles.zoom}>
-          <IconButton icon={ZoomIn} label="Zoom in" onPress={() => setScale((s) => Math.min(1.6, +(s + 0.15).toFixed(2)))} />
-          <IconButton icon={ZoomOut} label="Zoom out" onPress={() => setScale((s) => Math.max(0.45, +(s - 0.15).toFixed(2)))} />
-          <IconButton icon={Maximize} label="Reset zoom" onPress={() => setScale(DEFAULT_SCALE)} />
+          <IconButton icon={ZoomIn} label={t('map.zoomIn')} onPress={() => setScale((s) => Math.min(1.6, +(s + 0.15).toFixed(2)))} />
+          <IconButton icon={ZoomOut} label={t('map.zoomOut')} onPress={() => setScale((s) => Math.max(0.45, +(s - 0.15).toFixed(2)))} />
+          <IconButton icon={Maximize} label={t('map.zoomReset')} onPress={() => setScale(DEFAULT_SCALE)} />
         </View>
       </View>
+        </>
+      )}
     </Screen>
   );
 }
 
+function Seg({ label, Icon, active, color, onPress }: { label: string; Icon: typeof Bus; active: boolean; color: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="tab" accessibilityState={{ selected: active }} accessibilityLabel={label} onPress={onPress} style={[styles.seg, active && { backgroundColor: color }]}>
+      <Icon size={16} color={active ? '#FFFFFF' : colors.muted} strokeWidth={2} />
+      <Text style={[styles.segText, active && { color: '#FFFFFF', fontWeight: '800' }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  segment: { flexDirection: 'row', marginHorizontal: space.lg, marginBottom: space.sm, padding: 3, borderRadius: radius.pill, backgroundColor: '#ECEBF5', gap: 3 },
+  seg: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill },
+  segText: { flexShrink: 1, textAlign: 'center', fontSize: 13.5, fontWeight: '600', color: colors.muted },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, paddingBottom: space.sm },
   legendWrap: { paddingHorizontal: space.lg, paddingBottom: space.sm },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md, paddingVertical: space.sm, paddingHorizontal: space.md },

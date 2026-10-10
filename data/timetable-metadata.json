@@ -12,7 +12,8 @@
   },
   "notes": [
     "Ticket windows at all stations close five minutes before departure of the last revenue train.",
-    "Frequency of metro train services is subject to change due to inevitable reasons (GMRC)."
+    "Frequency of metro train services is subject to change due to inevitable reasons (GMRC).",
+    "Structured time windows (`when`) were derived from GMRC's frequency labels. For Line 1, \"non-peak\" is read as the service hours that are neither peak (08:00–11:00, 17:00–20:00) nor in the 20-minute early/late band; this is an interpretation of the published text."
   ],
   "lines": [
     {
@@ -47,22 +48,138 @@
         {
           "label": "Weekdays, peak hours (08:00–11:00 and 17:00–20:00)",
           "kind": "every",
-          "minutes": 7
+          "minutes": 7,
+          "when": [
+            {
+              "days": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "ranges": [
+                [
+                  480,
+                  660
+                ],
+                [
+                  1020,
+                  1200
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "Weekdays non-peak hours and Saturday peak hours",
           "kind": "every",
-          "minutes": 10
+          "minutes": 10,
+          "when": [
+            {
+              "days": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "ranges": [
+                [
+                  420,
+                  480
+                ],
+                [
+                  660,
+                  1020
+                ],
+                [
+                  1200,
+                  1320
+                ]
+              ]
+            },
+            {
+              "days": [
+                6
+              ],
+              "ranges": [
+                [
+                  480,
+                  660
+                ],
+                [
+                  1020,
+                  1200
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "Saturday non-peak hours and all day Sunday",
           "kind": "every",
-          "minutes": 12
+          "minutes": 12,
+          "when": [
+            {
+              "days": [
+                6
+              ],
+              "ranges": [
+                [
+                  420,
+                  480
+                ],
+                [
+                  660,
+                  1020
+                ],
+                [
+                  1200,
+                  1320
+                ]
+              ]
+            },
+            {
+              "days": [
+                0
+              ],
+              "ranges": [
+                [
+                  420,
+                  1320
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "All days 06:20–07:00 and 22:00–23:00",
           "kind": "every",
-          "minutes": 20
+          "minutes": 20,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  380,
+                  420
+                ],
+                [
+                  1320,
+                  1380
+                ]
+              ]
+            }
+          ]
         }
       ],
       "firstTrain": [
@@ -122,12 +239,50 @@
         {
           "label": "Monday–Sunday 06:16–22:00",
           "kind": "every",
-          "minutes": 12
+          "minutes": 12,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  376,
+                  1320
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "Monday–Sunday 22:00–23:00",
           "kind": "every",
-          "minutes": 20
+          "minutes": 20,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  1320,
+                  1380
+                ]
+              ]
+            }
+          ]
         }
       ],
       "firstTrain": [
@@ -191,12 +346,50 @@
         {
           "label": "Monday–Sunday 06:40–08:00",
           "kind": "average",
-          "minutes": 40
+          "minutes": 40,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  400,
+                  480
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "Monday–Sunday 08:00–21:00",
           "kind": "average",
-          "minutes": 24
+          "minutes": 24,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  480,
+                  1260
+                ]
+              ]
+            }
+          ]
         }
       ],
       "firstTrain": [
@@ -243,18 +436,75 @@
         {
           "label": "07:36–10:18",
           "kind": "average",
-          "minutes": 49
+          "minutes": 49,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  456,
+                  618
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "10:18–16:06",
           "kind": "bus-only",
           "minutes": null,
-          "note": "GMRC lists only bus services for GNLU–GIFT City in this window."
+          "note": "GMRC lists only bus services for GNLU–GIFT City in this window.",
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  618,
+                  966
+                ]
+              ]
+            }
+          ]
         },
         {
           "label": "16:06–19:13",
           "kind": "average",
-          "minutes": 57
+          "minutes": 57,
+          "when": [
+            {
+              "days": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "ranges": [
+                [
+                  966,
+                  1153
+                ]
+              ]
+            }
+          ]
         }
       ],
       "firstTrain": [

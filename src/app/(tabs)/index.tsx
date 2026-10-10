@@ -1,35 +1,68 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowUpDown, ChevronRight, Database, History, List, Map as MapIcon, Navigation, Star, TrainFront } from 'lucide-react-native';
-import { Button, Card, EmptyState, Muted, Notice, Screen, SectionTitle } from '../../components/ui';
-import { JourneyRow } from '../../components/JourneyRow';
-import { OfflineBadge } from '../../components/OfflineBadge';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Database } from 'lucide-react-native';
+import { Notice, Screen } from '../../components/ui';
 import { StationPicker } from '../../components/StationPicker';
+import { Hero } from '../../components/home/Hero';
+import { useHeroState } from '../../components/home/useHeroClock';
+import { HomeHeader, JourneyCard, QuickRoutes, RecentTrips, SectionHeader, ShortcutCards, type QuickItem, type TripItem } from '../../components/home/HomeSections';
+import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
-import { colors, radius, space, type } from '../../theme';
-import { formatDate } from '../../lib/format';
+import { findRoute } from '../../lib/routing';
+import { isBusId } from '../../lib/transit/types';
+import { placeName } from '../../lib/transit/places';
+import { useTransit } from '../../lib/transit/transitData';
+import { formatAtParam, minutesOfDay } from '../../lib/transit/format';
+import { getFare } from '../../lib/fareCalculator';
+import { getJourneyTime } from '../../lib/journeyTime';
+import { formatDate, relativeDay } from '../../lib/format';
+import { colors } from '../../theme';
+import { QUICK_SLOTS, type QuickSlot } from '../../types';
+import { useT } from '../../i18n/useT';
+import type { MessageKey } from '../../i18n';
 
 type Target = 'from' | 'to' | null;
+const QUICK_LABEL: Record<QuickSlot, MessageKey> = { home: 'home.quick.home', campus: 'home.quick.campus', work: 'home.quick.work' };
+/** The note under Quick routes. Kept as data (not text) so it follows a language change. */
+type QuickHint = { kind: 'choose'; slot: QuickSlot } | { kind: 'saved'; slot: QuickSlot; from: string; to: string } | { kind: 'removed'; slot: QuickSlot };
 
 export default function Home() {
-  const { dataset, network, favourites, recents, storage } = useReady();
-  const params = useLocalSearchParams<{ from?: string; to?: string }>();
+  const { dataset, network, recents, quickRoutes, setQuickRoute, clearQuickRoute, storage } = useReady();
+  const params = useLocalSearchParams<{ from?: string; to?: string; sky?: string }>();
+  const insets = useSafeAreaInsets();
+  const { z } = useHomeScale();
+  const { t, tn, lang } = useT();
+
   const [fromId, setFromId] = useState<string | null>(null);
   const [toId, setToId] = useState<string | null>(null);
   const [picker, setPicker] = useState<Target>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
+  const [quickHint, setQuickHint] = useState<QuickHint | null>(null);
+  /** Minutes since midnight to depart at, or null for "leave now". */
+  const [leaveMin, setLeaveMin] = useState<number | null>(null);
 
-  // Pre-fill from a station detail screen ("Start here" / "Go here"), applied once per set of params.
+  // Pre-fill from a station page ("Start here" / "Go here"), applied once per set of params.
   const paramKey = `${params.from ?? ''}|${params.to ?? ''}`;
   const [appliedKey, setAppliedKey] = useState('');
   if (paramKey !== appliedKey) {
     setAppliedKey(paramKey);
-    if (params.from && network.stations.has(params.from)) setFromId(params.from);
-    if (params.to && network.stations.has(params.to)) setToId(params.to);
+    if (params.from && (network.stations.has(params.from) || isBusId(params.from))) setFromId(params.from);
+    if (params.to && (network.stations.has(params.to) || isBusId(params.to))) setToId(params.to);
   }
 
-  const name = (id: string | null) => (id ? network.stations.get(id)?.name ?? id : null);
+  // The bus data is parsed only when something on screen needs a bus stop's name.
+  const needBus = isBusId(fromId) || isBusId(toId) || recents.slice(0, 3).some((r) => isBusId(r.fromId) || isBusId(r.toId)) || quickRoutes.some((q) => isBusId(q.fromId) || isBusId(q.toId));
+  const bus = useTransit(needBus);
+  const transit = bus.status === 'ready' ? bus.transit : null;
+  const name = (id: string | null) => (id ? placeName(id, network.stations, transit) ?? (isBusId(id) ? t('home.busStop') : id) : null);
+  /** Metro-to-metro "leave now" trips keep the metro route screen; anything with a bus stop or a chosen time uses the multimodal planner. */
+  const openRoute = (a: string, b: string, at: number | null = null) => {
+    if (isBusId(a) || isBusId(b) || at !== null) router.push({ pathname: '/route', params: { from: a, to: b, mode: 'transit', ...(at !== null ? { at: formatAtParam(at) } : {}) } });
+    else router.push({ pathname: '/route', params: { from: a, to: b } });
+  };
 
   const swap = () => {
     setFromId(toId);
@@ -38,107 +71,136 @@ export default function Home() {
   };
 
   const find = () => {
-    if (!fromId || !toId) {
-      setError('Choose both a starting station and a destination.');
-      return;
-    }
-    if (fromId === toId) {
-      setError('Your start and destination are the same station.');
-      return;
-    }
+    if (!fromId || !toId) return setError('home.error.chooseBoth');
+    if (fromId === toId) return setError('home.error.samePlace');
     setError(null);
-    router.push({ pathname: '/route', params: { from: fromId, to: toId } });
+    openRoute(fromId, toId, leaveMin);
   };
 
-  const open = (a: string, b: string) => router.push({ pathname: '/route', params: { from: a, to: b } });
+  // ---- quick routes: tap to open a saved one, or save the stations chosen above into an empty slot
+  const quickItems: QuickItem[] = QUICK_SLOTS.map((slot) => {
+    const q = quickRoutes.find((r) => r.slot === slot);
+    return { slot, label: t(QUICK_LABEL[slot]), summary: q ? `${name(q.fromId)} → ${name(q.toId)}` : null };
+  });
+  const onQuick = (slot: QuickSlot) => {
+    const q = quickRoutes.find((r) => r.slot === slot);
+    if (q) {
+      setQuickHint(null);
+      return openRoute(q.fromId, q.toId);
+    }
+    if (!fromId || !toId || fromId === toId) {
+      return setQuickHint({ kind: 'choose', slot });
+    }
+    void setQuickRoute(slot, fromId, toId).then(() => setQuickHint({ kind: 'saved', slot, from: name(fromId) ?? '', to: name(toId) ?? '' }));
+  };
+
+  // ---- recent trips: real journeys from the on-device database
+  const trips: TripItem[] = useMemo(() => {
+    const corridors = new Map(dataset.corridors.map((c) => [c.id, c]));
+    const out: TripItem[] = [];
+    for (const r of recents.slice(0, 3)) {
+      if (isBusId(r.fromId) || isBusId(r.toId)) {
+        out.push({
+          id: r.id,
+          fromName: placeName(r.fromId, network.stations, transit) ?? t('home.busStop'),
+          toName: placeName(r.toId, network.stations, transit) ?? t('home.busStop'),
+          chips: [{ color: '#0F6FC4', label: t('home.trip.busMetro') }],
+          day: relativeDay(r.createdAt, undefined, lang),
+          metric: t('common.tab.plan'),
+        });
+        continue;
+      }
+      const route = findRoute(network, r.fromId, r.toId);
+      if (!route.ok) continue;
+      const time = getJourneyTime(network, route, dataset.fares);
+      const fare = getFare(dataset.fares, r.fromId, r.toId);
+      const metric =
+        time.status === 'estimated'
+          ? t('lib.duration.min', { n: time.minutes })
+          : fare.status === 'available' && fare.travelMinutes !== null
+            ? t('lib.duration.min', { n: fare.travelMinutes })
+            : tn('lib.stops', route.stopCount);
+      out.push({
+        id: r.id,
+        fromName: network.stations.get(r.fromId)?.name ?? r.fromId,
+        toName: network.stations.get(r.toId)?.name ?? r.toId,
+        chips: route.segments.map((s) => ({ color: corridors.get(s.corridorId)?.color ?? colors.primary, label: corridors.get(s.corridorId)?.shortName ?? s.corridorId })),
+        day: relativeDay(r.createdAt, undefined, lang),
+        metric,
+      });
+    }
+    return out;
+  }, [recents, network, dataset, transit, t, tn, lang]);
+
+  const quickHintText = (h: QuickHint) => {
+    const label = t(QUICK_LABEL[h.slot]);
+    if (h.kind === 'choose') return t('home.quick.hint.choose', { label });
+    if (h.kind === 'saved') return t('home.quick.hint.saved', { from: h.from, to: h.to, label });
+    return t('home.quick.hint.removed', { label });
+  };
+
+  const openTrip = (id: number) => {
+    const r = recents.find((x) => x.id === id);
+    if (r) openRoute(r.fromId, r.toId);
+  };
+
+  // ---- living hero: sky, lights and train follow the real time (or ?sky=HH:MM for a preview)
+  const { look, focused, animate } = useHeroState(params.sky);
+
+  const heroHeight = z(176) + insets.top;
 
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <View style={styles.logo}>
-            <TrainFront size={24} color={colors.white} />
+    <Screen edges={[]}>
+      {focused ? <StatusBar style={look.statusBar} /> : null}
+      <ScrollView contentContainerStyle={{ paddingBottom: z(28) }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
+          <View>
+            <Hero height={heroHeight} look={look} animate={animate} />
+            <HomeHeader topInset={insets.top} ink={look.ink} inkSoft={look.inkSoft} />
+            <View style={{ height: z(76) }} />
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={type.title} accessibilityRole="header">
-              MetroMate
-            </Text>
-            <Muted>Your offline metro companion</Muted>
-          </View>
-          <OfflineBadge />
-        </View>
 
-        <Card style={{ gap: space.md }}>
-          <Text style={type.h2}>Where to?</Text>
-          <View style={styles.pickerGroup}>
-            <StationButton label="From" value={name(fromId)} placeholder="Choose starting station" dot={colors.origin} onPress={() => setPicker('from')} style={styles.stationTop} />
-            <StationButton label="To" value={name(toId)} placeholder="Choose destination" dot={colors.destination} onPress={() => setPicker('to')} style={styles.stationBottom} />
-            <Pressable accessibilityRole="button" accessibilityLabel="Swap start and destination" onPress={swap} style={styles.swap}>
-              <ArrowUpDown size={18} color={colors.primary} />
-            </Pressable>
-          </View>
-          {error ? <Notice tone="warn">{error}</Notice> : null}
-          <Button label="Find route" icon={Navigation} onPress={find} />
-        </Card>
+          <JourneyCard
+            fromName={name(fromId)}
+            toName={name(toId)}
+            onFrom={() => setPicker('from')}
+            onTo={() => setPicker('to')}
+            onSwap={swap}
+            onFind={find}
+            error={error ? t(error) : null}
+            leaveAt={leaveMin === null ? null : formatAtParam(leaveMin)}
+            onLeaveNow={() => setLeaveMin(null)}
+            onLeaveAt={() => setLeaveMin((m) => m ?? Math.ceil((minutesOfDay(new Date()) + 5) / 5) * 5)}
+            onLeaveStep={(d) => setLeaveMin((m) => (((m ?? minutesOfDay(new Date())) + d) % 1440 + 1440) % 1440)}
+          />
 
-        <View style={styles.quickRow}>
-          <QuickLink icon={MapIcon} label="Network map" onPress={() => router.push('/map')} />
-          <QuickLink icon={List} label="Station directory" onPress={() => router.push('/stations')} />
-        </View>
+          <ShortcutCards onMap={() => router.push('/map')} onStations={() => router.push('/stations')} />
 
-        <View>
-          <SectionTitle>Favourite routes</SectionTitle>
-          <Card style={{ paddingVertical: space.sm }}>
-            {favourites.length === 0 ? (
-              <EmptyState icon={Star} title="No favourites yet" body="Open a route and tap the star to keep it here, even without internet." />
-            ) : (
-              favourites.slice(0, 4).map((f, i) => (
-                <View key={f.id} style={i > 0 && styles.divider}>
-                  <JourneyRow fromName={name(f.fromId) ?? f.fromId} toName={name(f.toId) ?? f.toId} onOpen={() => open(f.fromId, f.toId)} onReverse={() => open(f.toId, f.fromId)} />
-                </View>
-              ))
-            )}
-          </Card>
-          {favourites.length > 4 ? (
-            <Pressable onPress={() => router.push('/saved')} style={styles.more} accessibilityRole="button">
-              <Text style={styles.moreText}>See all {favourites.length} favourites</Text>
-              <ChevronRight size={16} color={colors.primary} />
-            </Pressable>
+          <SectionHeader title={t('home.section.quick')} onSeeAll={() => router.push('/settings')} />
+          <QuickRoutes items={quickItems} onPress={onQuick} onClear={(slot) => void clearQuickRoute(slot).then(() => setQuickHint({ kind: 'removed', slot }))} />
+          {quickHint ? <Text style={[styles.hint, lang !== 'en' && styles.hintIndic]}>{quickHintText(quickHint)}</Text> : null}
+
+          <SectionHeader title={t('home.section.recent')} onSeeAll={() => router.push('/settings')} />
+          <RecentTrips trips={trips} onOpen={openTrip} />
+
+          {storage === 'memory' ? (
+            <View style={{ marginHorizontal: z(16), marginTop: z(16) }}>
+              <Notice tone="warn" title={t('home.memory.title')}>
+                {t('home.memory.body')}
+              </Notice>
+            </View>
           ) : null}
+
+          <Pressable onPress={() => router.push('/data')} style={styles.dataLink} accessibilityRole="button" accessibilityLabel={t('home.dataLink.a11y')}>
+            <Database size={15} color={colors.slate} />
+            <Text style={[styles.dataText, lang !== 'en' && styles.dataTextIndic]}>{t('home.dataLink', { date: formatDate(dataset.info.sourcePageLastUpdated, lang) })}</Text>
+          </Pressable>
         </View>
-
-        <View>
-          <SectionTitle>Recent journeys</SectionTitle>
-          <Card style={{ paddingVertical: space.sm }}>
-            {recents.length === 0 ? (
-              <EmptyState icon={History} title="No recent journeys" body="Routes you look up appear here." />
-            ) : (
-              recents.slice(0, 5).map((r, i) => (
-                <View key={r.id} style={i > 0 && styles.divider}>
-                  <JourneyRow fromName={name(r.fromId) ?? r.fromId} toName={name(r.toId) ?? r.toId} onOpen={() => open(r.fromId, r.toId)} onReverse={() => open(r.toId, r.fromId)} />
-                </View>
-              ))
-            )}
-          </Card>
-        </View>
-
-        {storage === 'memory' ? (
-          <Notice tone="warn" title="Saved routes won’t be kept">
-            The on-device database could not be opened, so favourites and recents last only until you close the app.
-          </Notice>
-        ) : null}
-
-        <Pressable onPress={() => router.push('/data')} style={styles.dataLink} accessibilityRole="button" accessibilityLabel="About the data and its sources">
-          <Database size={16} color={colors.muted} />
-          <Text style={type.small}>
-            Offline GMRC data · source page updated {formatDate(dataset.info.sourcePageLastUpdated)} · Data &amp; sources
-          </Text>
-        </Pressable>
       </ScrollView>
 
       <StationPicker
         visible={picker !== null}
-        title={picker === 'from' ? 'Starting station' : 'Destination'}
+        title={picker === 'from' ? t('home.picker.startFrom') : t('home.picker.goTo')}
         onClose={() => setPicker(null)}
         onSelect={(id) => {
           if (picker === 'from') setFromId(id);
@@ -150,83 +212,10 @@ export default function Home() {
   );
 }
 
-function StationButton({ label, value, placeholder, dot, onPress, style }: { label: string; value: string | null; placeholder: string; dot: string; onPress: () => void; style?: StyleProp<ViewStyle> }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${label} station: ${value ?? 'not chosen'}. Tap to change`}
-      onPress={onPress}
-      style={({ pressed }) => [styles.stationBtn, style, pressed && { backgroundColor: colors.primarySoft }]}
-    >
-      <View style={[styles.dot, { backgroundColor: dot }]} />
-      <View style={{ flex: 1 }}>
-        <Text style={type.tiny}>{label}</Text>
-        <Text style={value ? type.h3 : [type.body, { color: colors.faint }]} numberOfLines={1}>
-          {value ?? placeholder}
-        </Text>
-      </View>
-      <ChevronRight size={18} color={colors.faint} />
-    </Pressable>
-  );
-}
-
-function QuickLink({ icon: Icon, label, onPress }: { icon: typeof MapIcon; label: string; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.quick, pressed && { opacity: 0.8 }]}>
-      <Icon size={20} color={colors.primary} />
-      <Text style={[type.h3, { color: colors.primary }]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xl * 2, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  header: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  logo: { width: 46, height: 46, borderRadius: 14, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  pickerGroup: { gap: 0 },
-  stationBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingHorizontal: space.md,
-    paddingRight: 64,
-    minHeight: 64,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  stationTop: { borderTopLeftRadius: radius.md, borderTopRightRadius: radius.md },
-  stationBottom: { borderBottomLeftRadius: radius.md, borderBottomRightRadius: radius.md, borderTopWidth: 0 },
-  dot: { width: 12, height: 12, borderRadius: 6 },
-  swap: {
-    position: 'absolute',
-    right: space.md,
-    top: '50%',
-    marginTop: -20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickRow: { flexDirection: 'row', gap: space.md },
-  quick: {
-    flex: 1,
-    minHeight: 58,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: space.sm,
-    backgroundColor: colors.white,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  divider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-  more: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingTop: space.sm, minHeight: 40 },
-  moreText: { color: colors.primary, fontWeight: '700', fontSize: 14 },
-  dataLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, flexWrap: 'wrap' },
+  hint: { marginHorizontal: 20, marginTop: 10, fontSize: 13.5, color: colors.primaryDark, fontWeight: '600' },
+  hintIndic: { lineHeight: 20 },
+  dataLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 44, marginTop: 14, paddingHorizontal: 16, flexWrap: 'wrap' },
+  dataText: { fontSize: 12.5, color: colors.slate, textAlign: 'center' },
+  dataTextIndic: { lineHeight: 19 },
 });

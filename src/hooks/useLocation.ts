@@ -85,6 +85,7 @@ export function useLocation(active: boolean, precision: Precision): LocationStat
               lat: loc.coords.latitude,
               lon: loc.coords.longitude,
               accuracyM: loc.coords.accuracy,
+              speedMps: typeof loc.coords.speed === 'number' && loc.coords.speed >= 0 ? loc.coords.speed : null,
               timestamp: loc.timestamp,
               mocked: loc.mocked,
             };

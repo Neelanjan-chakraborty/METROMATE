@@ -1,256 +1,179 @@
-import React, { useMemo, useState } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ExternalLink, Flag, MapPin, Navigation } from 'lucide-react-native';
-import { Button, Card, CorridorDot, IconButton, Muted, Notice, Pill, Screen, SectionTitle, VerifyBadge } from '../../components/ui';
-import { OfflineBadge } from '../../components/OfflineBadge';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronRight, ExternalLink, Info, Map as MapIcon } from 'lucide-react-native';
+import { Button, Notice, Screen } from '../../components/ui';
+import { StationHero } from '../../components/station/StationHero';
+import { ActionButtons, AmenitiesSection, BusesSection, GatesSection, LineCards, NeighbourStrip, NearbySection, type LineCardData } from '../../components/station/StationSections';
+import { StationTimingsAccordion } from '../../components/route/RouteDetails';
+import { Accordion, CARD_LINE, ExpandAlert, NAVY, SLATE, VIOLET, cardShadow } from '../../components/route/primitives';
+import { useHeroState } from '../../components/home/useHeroClock';
+import { useHomeScale } from '../../components/home/scale';
 import { useReady } from '../../state/useReady';
 import { formatDate, mapsSearchUrl } from '../../lib/format';
-import { colors, radius, space, type } from '../../theme';
+import { nearbyBusStops } from '../../lib/transit/nearby';
+import { useTransit } from '../../lib/transit/transitData';
+import { useT } from '../../i18n/useT';
+import type { Language, MessageKey } from '../../i18n';
+import type { VerificationStatus } from '../../types';
+import { lineHeightFor, spacingFor } from '../../components/station/lineHeight';
+import { gateFeatures, hopEstimate, neighboursOn, stationAmenities, stationService } from '../../lib/stationView';
 
 export default function StationScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { dataset, network } = useReady();
-  const [facilitiesOpen, setFacilitiesOpen] = useState(false);
+  const { id, sky } = useLocalSearchParams<{ id: string; sky?: string }>();
+  const { dataset, network, stationPoints } = useReady();
+  const insets = useSafeAreaInsets();
+  const { z } = useHomeScale();
+  const { t, lang } = useT();
+  const { look, focused } = useHeroState(sky);
+  const bus = useTransit(true);
 
   const station = id ? network.stations.get(id) : undefined;
   const corridors = useMemo(() => new Map(dataset.corridors.map((c) => [c.id, c])), [dataset]);
-
-  const back = <IconButton icon={ChevronLeft} label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/stations'))} color={colors.text} />;
+  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/stations'));
 
   if (!station) {
     return (
       <Screen>
-        <View style={styles.topBar}>{back}</View>
-        <View style={{ padding: space.lg }}>
-          <Notice tone="warn" title="Station not found">
-            This station is not in the offline data.
+        <View style={{ padding: 16, gap: 16 }}>
+          <Notice tone="warn" title={t('station.notFound.title')}>
+            {t('station.notFound.body')}
           </Notice>
+          <Button label={t('station.notFound.back')} onPress={goBack} />
         </View>
       </Screen>
     );
   }
 
+  const nameOf = (sid: string) => network.stations.get(sid)?.name ?? sid;
   const gates = dataset.gates.filter((g) => g.stationId === station.id);
+  const own = station.corridorIds.map((cid) => corridors.get(cid)).filter((c): c is NonNullable<typeof c> => !!c);
+  const color = own[0]?.color ?? VIOLET;
+  const underground = station.stationType === 'underground';
+  const typeLabel = station.stationType === 'unknown' ? null : t(underground ? 'station.type.underground' : 'station.type.elevated');
+  const coordStatusLabel = (v: VerificationStatus) => t(`station.coord.${v}` as MessageKey);
+  const service = stationService(dataset.timetable, station.id, new Date());
+  const amenities = stationAmenities(station, gates, dataset.facilities, t);
+  const gateList = gateFeatures(station, gates);
+  const tabs = own.map((c) => neighboursOn(c, station.id));
+  const coord = (sid: string) => stationPoints.get(sid) ?? null;
   const landmarks = dataset.landmarks.filter((l) => l.nearestStationId === station.id);
-  const source = dataset.sources.find((s) => s.id === station.sourceMetadata.sourceId);
-
+  const links = station.nearbyConnections.filter((c) => c.gateNumber === null);
+  const lineCards: LineCardData[] = own.map((c) => ({
+    id: c.id,
+    name: /branch|line$/i.test(c.shortName) ? c.shortName : t('station.line.named', { name: c.shortName }),
+    color: c.color,
+    ends: `${nameOf(c.backwardTerminalId)} ⇄ ${nameOf(c.forwardTerminalId)}`,
+    phase: station.phase,
+    type: typeLabel,
+  }));
+  // Directions a train from this station can head, for the platform signs.
+  const towards = own.flatMap((c) => {
+    const n = neighboursOn(c, station.id);
+    return [n.prev, n.next].filter((x): x is NonNullable<typeof x> => !!x).map((x) => ({ name: nameOf(x.towardsId), color: c.color }));
+  });
   const openUrl = (url: string) => {
     Linking.openURL(url).catch(() => undefined);
   };
+  const source = dataset.sources.find((s) => s.id === station.sourceMetadata.sourceId);
 
   return (
-    <Screen>
-      <View style={styles.topBar}>
-        {back}
-        <Text style={[type.h2, { flex: 1 }]} numberOfLines={1} accessibilityRole="header">
-          {station.name}
-        </Text>
-        <OfflineBadge />
-      </View>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Card style={{ gap: space.md }}>
-          <View style={styles.pills}>
-            {station.corridorIds.map((cid) => {
-              const c = corridors.get(cid);
-              return c ? <Pill key={cid} label={c.shortName} color={colors.text} bg="#EEF0F5" /> : null;
-            })}
-            {station.isInterchange ? <Pill label="Interchange" color={colors.warn} bg={colors.interchangeSoft} /> : null}
-            <Pill label={`Phase ${station.phase}`} color={colors.muted} bg="#EEF0F5" />
-            {station.stationType !== 'unknown' ? (
-              <Pill label={station.stationType === 'underground' ? 'Underground' : 'Elevated'} color={colors.muted} bg="#EEF0F5" />
-            ) : null}
-          </View>
-          {station.aliases.length > 0 ? <Muted>Also known as: {station.aliases.join(', ')}</Muted> : null}
-          {station.interchangeNote ? <Notice>{station.interchangeNote}</Notice> : null}
-          {station.serviceNote ? <Notice tone="warn">{station.serviceNote}</Notice> : null}
-          {station.stationType === 'underground' ? <Notice>GPS does not work underground, so Live tracking will show “signal lost” here.</Notice> : null}
-          <View style={{ flexDirection: 'row', gap: space.sm }}>
-            <Button label="Start here" icon={Flag} variant="secondary" compact style={{ flex: 1 }} onPress={() => router.navigate({ pathname: '/', params: { from: station.id } })} />
-            <Button label="Go here" icon={Navigation} compact style={{ flex: 1 }} onPress={() => router.navigate({ pathname: '/', params: { to: station.id } })} />
-          </View>
-        </Card>
+    <Screen edges={[]}>
+      {focused ? <StatusBar style="light" /> : null}
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + z(32) }} showsVerticalScrollIndicator={false}>
+        <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
+          <StationHero station={station} color={color} service={service} typeLabel={typeLabel} onBack={goBack} onMaps={() => openUrl(mapsSearchUrl(station.name))} />
+          <View style={{ gap: z(14), marginTop: z(14) }}>
+            <ActionButtons onStart={() => router.navigate({ pathname: '/', params: { from: station.id } })} onGo={() => router.navigate({ pathname: '/', params: { to: station.id } })} />
+            <LineCards lines={lineCards} />
 
-        <View>
-          <SectionTitle>Neighbouring stations</SectionTitle>
-          <Card style={{ gap: space.md }}>
-            {station.corridorIds.map((cid) => {
-              const c = corridors.get(cid)!;
-              const edges = (network.edges.get(station.id) ?? []).filter((e) => e.corridorId === cid);
-              return (
-                <View key={cid} style={{ gap: space.sm }}>
-                  <View style={styles.corridorHead}>
-                    <CorridorDot color={c.color} />
-                    <Text style={type.h3}>{c.name}</Text>
-                  </View>
-                  {edges.map((e) => (
-                    <Pressable
-                      key={e.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${e.direction}: next station ${network.stations.get(e.toStationId)?.name}`}
-                      onPress={() => router.push({ pathname: '/station/[id]', params: { id: e.toStationId } })}
-                      style={styles.neighbour}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={type.tiny}>{e.direction}</Text>
-                        <Text style={type.h3}>{network.stations.get(e.toStationId)?.name}</Text>
-                      </View>
-                      <ChevronRight size={18} color={colors.faint} />
-                    </Pressable>
-                  ))}
-                  {edges.length === 1 ? <Muted>This is the end of the {c.shortName} line in one direction.</Muted> : null}
-                </View>
-              );
-            })}
-          </Card>
-        </View>
-
-        <View>
-          <SectionTitle>Gates &amp; platforms</SectionTitle>
-          <Card style={{ gap: space.sm }}>
-            {gates.length === 0 ? (
-              <Muted>
-                {station.serviceNote
-                  ? 'GMRC’s table of operational entry/exit gates does not list this station.'
-                  : 'Entry and exit gate information is not available for this station.'}
-              </Muted>
-            ) : (
-              <>
-                <Muted>
-                  GMRC lists {gates.length} operational entry/exit {gates.length === 1 ? 'gate' : 'gates'}. GMRC publishes gate numbers only: which street or landmark each gate faces is not verified, so check the signs inside the station.
-                </Muted>
-                {gates.map((g) => (
-                  <View key={g.id} style={styles.gateRow}>
-                    <View style={styles.gateNo}>
-                      <Text style={styles.gateNoText}>{g.gateNumber}</Text>
-                    </View>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={type.h3}>Gate {g.gateNumber}</Text>
-                      {g.accessibilityNotes ? <Text style={type.small}>{g.accessibilityNotes}</Text> : null}
-                      {(g.nearbyConnectionNotes ?? []).map((n) => (
-                        <Text key={n} style={type.small}>
-                          {n} <Text style={{ color: colors.warn }}>(unofficial map, unverified)</Text>
-                        </Text>
-                      ))}
-                      <Text style={type.tiny}>Direction: not verified yet</Text>
-                    </View>
-                  </View>
-                ))}
-                {gates.some((g) => g.notes) ? <Muted>{[...new Set(gates.map((g) => g.notes).filter(Boolean))].join(' ')}</Muted> : null}
-              </>
-            )}
-            <View style={styles.divider} />
-            {station.platforms.length === 0 ? (
-              <Muted>Platform numbers and boarding sides are not verified yet. Trains here are signed “Towards …” the terminal of each line.</Muted>
-            ) : (
-              station.platforms.map((p) => (
-                <Text key={p.id} style={type.small}>
-                  {p.label}
-                </Text>
-              ))
-            )}
-          </Card>
-        </View>
-
-        <View>
-          <SectionTitle>Lifts &amp; accessibility</SectionTitle>
-          <Card style={{ gap: space.sm }}>
-            {station.lifts.length > 0 ? (
-              <Muted>
-                GMRC lists {station.lifts.length} {station.lifts.length === 1 ? 'lift' : 'lifts'} with ramp for wheelchair users at the entrances:{' '}
-                {station.lifts.map((l) => `Lift ${String(l.lift).padStart(2, '0')} near Gate ${l.nearGate}`).join(', ')}. Whether a lift is working today, and step-free access inside the station, are not published, so MetroMate does not claim this station is step-free.
-              </Muted>
-            ) : (
-              <Muted>No lift information is published for {station.name}, so MetroMate does not claim it is step-free.</Muted>
-            )}
-            <Pressable onPress={() => setFacilitiesOpen((o) => !o)} accessibilityRole="button" accessibilityState={{ expanded: facilitiesOpen }} style={styles.toggle}>
-              <Text style={[type.small, { color: colors.primary, fontWeight: '700', flex: 1 }]}>Facilities GMRC lists across the network</Text>
-              {facilitiesOpen ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
-            </Pressable>
-            {facilitiesOpen ? (
-              <View style={{ gap: 4 }}>
-                <Muted>Network-wide, not confirmed for this station:</Muted>
-                <Text style={type.small}>{dataset.facilities.general.join(' · ')}</Text>
-                <Text style={[type.small, { fontWeight: '700', color: colors.text, marginTop: 4 }]}>For differently abled passengers</Text>
-                <Text style={type.small}>{dataset.facilities.accessibility.join(' · ')}</Text>
+            {station.interchangeNote ? (
+              <View style={{ marginHorizontal: 16 }}>
+                <ExpandAlert tone="info" title={t('station.interchange.title')} text={station.interchangeNote} />
               </View>
             ) : null}
-          </Card>
-        </View>
+            {station.serviceNote ? (
+              <View style={{ marginHorizontal: 16 }}>
+                <ExpandAlert title={t('station.serviceNote.title')} text={station.serviceNote} />
+              </View>
+            ) : null}
+            {underground ? (
+              <View style={{ marginHorizontal: 16 }}>
+                <ExpandAlert tone="info" title={t('station.gps.title')} text={t('station.gps.body')} />
+              </View>
+            ) : null}
 
-        <View>
-          <SectionTitle>Nearby places</SectionTitle>
-          <Card style={{ gap: space.md }}>
-            {landmarks.length === 0 ? (
-              <Muted>No nearby places are recorded for this station yet.</Muted>
-            ) : (
-              landmarks.map((l) => (
-                <View key={l.id} style={{ gap: 2 }}>
-                  <View style={styles.corridorHead}>
-                    <MapPin size={16} color={colors.muted} />
-                    <Text style={type.h3}>{l.name}</Text>
-                  </View>
-                  <Muted>
-                    {l.walkingDistanceMeters !== null ? `About ${l.walkingDistanceMeters} m on foot. ` : 'Walking distance and time not verified yet. '}
-                    {l.recommendedGateId ? '' : 'No verified exit gate.'}
-                  </Muted>
-                  <VerifyBadge status={l.verificationStatus} />
+            <NeighbourStrip
+              tabs={tabs}
+              nameOf={nameOf}
+              minutesOf={(a, b) => hopEstimate(a, b, coord, dataset.timetable.lines)}
+              here={{ id: station.id, name: station.name }}
+              onOpen={(sid) => router.push({ pathname: '/station/[id]', params: { id: sid } })}
+              onMap={() => router.push('/map')}
+            />
+
+            <GatesSection gates={gateList} underground={underground} lineColor={color} night={look.night} towards={towards} hasServiceNote={!!station.serviceNote} />
+
+            <AmenitiesSection data={amenities} />
+
+            <BusesSection stops={bus.status === 'ready' ? nearbyBusStops(bus.transit, station.id, 4) : []} loading={bus.status === 'loading'} onPlan={(stopId) => router.navigate({ pathname: '/', params: { from: stopId } })} />
+
+            <NearbySection places={landmarks} links={links} onMaps={() => openUrl(mapsSearchUrl(station.name))} />
+
+            <View style={{ gap: z(10), marginHorizontal: 16 }}>
+              <StationTimingsAccordion lines={service.lines} timetable={dataset.timetable} corridors={corridors} nameOf={nameOf} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('station.map.a11y')}
+                onPress={() => router.push('/map')}
+                style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: z(14), padding: z(14), borderRadius: z(20), backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: CARD_LINE, opacity: pressed ? 0.9 : 1 }, cardShadow, { shadowOpacity: 0.05 }]}
+              >
+                <View style={{ width: z(46), height: z(46), borderRadius: z(14), backgroundColor: '#E3F1FC', alignItems: 'center', justifyContent: 'center' }}>
+                  <MapIcon size={z(23)} color="#0F6FC4" strokeWidth={1.9} />
                 </View>
-              ))
-            )}
-            {station.nearbyConnections.filter((c) => c.gateNumber === null).map((c) => (
-              <Muted key={c.note}>
-                {c.note} (unofficial map, unverified)
-              </Muted>
-            ))}
-            <Notice>
-              {station.latitude !== null
-                ? `Station position: ${station.latitude.toFixed(5)}, ${station.longitude!.toFixed(5)} (${station.coordinateStatus}; from an unofficial map pin, so it may be off by a block).`
-                : 'Station coordinates are not available.'}{' '}
-              MetroMate does not provide turn-by-turn walking directions.
-            </Notice>
-            <Button label="Search in Maps (needs internet)" icon={ExternalLink} variant="secondary" compact onPress={() => openUrl(mapsSearchUrl(station.name))} />
-          </Card>
-        </View>
-
-        <Card style={{ gap: space.sm }}>
-          <View style={styles.rowBetween}>
-            <Text style={type.h3}>Source &amp; freshness</Text>
-            <VerifyBadge status={station.sourceMetadata.verificationStatus} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: z(16.5), fontWeight: '800', color: NAVY, lineHeight: lineHeightFor(lang, z(16.5), 1.3) }}>{t('station.map.title')}</Text>
+                  <Text style={{ fontSize: z(12.5), color: SLATE, lineHeight: lineHeightFor(lang, z(12.5)) }}>{t('station.map.sub')}</Text>
+                </View>
+                <ChevronRight size={z(22)} color="#5A5FA8" />
+              </Pressable>
+              <Accordion icon={Info} tint="#475569" tintBg="#EEF1F6" title={t('station.about.title')} subtitle={t('station.about.sub')}>
+                <Fact z={z} lang={lang} label={t('station.about.source')} value={source?.name ?? station.sourceMetadata.sourceId} />
+                <Fact z={z} lang={lang} label={t('station.about.checked')} value={t('station.about.checkedValue', { date: formatDate(station.sourceMetadata.verifiedAt, lang), pageDate: formatDate(dataset.info.sourcePageLastUpdated, lang) })} />
+                <Fact
+                  z={z}
+                  lang={lang}
+                  label={t('station.about.position')}
+                  value={
+                    station.latitude !== null
+                      ? t('station.about.positionValue', { coords: `${station.latitude.toFixed(5)}, ${station.longitude!.toFixed(5)}`, status: coordStatusLabel(station.coordinateStatus) })
+                      : t('station.about.na')
+                  }
+                />
+                {station.aliases.length > 0 ? <Fact z={z} lang={lang} label={t('station.about.alias')} value={station.aliases.join(', ')} /> : null}
+                <Fact z={z} lang={lang} label={t('station.about.notes')} value={station.sourceMetadata.notes} />
+                {station.sourceMetadata.sourceUrl ? (
+                  <Pressable onPress={() => openUrl(station.sourceMetadata.sourceUrl!)} accessibilityRole="link" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}>
+                    <ExternalLink size={z(14)} color={VIOLET} />
+                    <Text style={{ flexShrink: 1, color: VIOLET, fontWeight: '700', fontSize: z(13), lineHeight: lineHeightFor(lang, z(13)) }}>{t('station.about.website')}</Text>
+                  </Pressable>
+                ) : null}
+              </Accordion>
+            </View>
           </View>
-          <Muted>{source?.name ?? station.sourceMetadata.sourceId}</Muted>
-          <Muted>Checked {formatDate(station.sourceMetadata.verifiedAt)} · GMRC source page updated {formatDate(dataset.info.sourcePageLastUpdated)}</Muted>
-          <Muted>{station.sourceMetadata.notes}</Muted>
-          {station.sourceMetadata.sourceUrl ? (
-            <Pressable onPress={() => openUrl(station.sourceMetadata.sourceUrl!)} accessibilityRole="link" style={styles.link}>
-              <ExternalLink size={14} color={colors.primary} />
-              <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 13 }}>Open GMRC website (needs internet)</Text>
-            </Pressable>
-          ) : null}
-        </Card>
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  topBar: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.sm, paddingTop: space.xs },
-  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xl * 2, maxWidth: 720, width: '100%', alignSelf: 'center' },
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  corridorHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  neighbour: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 54,
-    paddingHorizontal: space.md,
-    backgroundColor: colors.bg,
-    borderRadius: radius.md,
-  },
-  gateRow: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start' },
-  gateNo: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-  gateNoText: { fontWeight: '800', color: colors.primaryDark },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: 4 },
-  toggle: { flexDirection: 'row', alignItems: 'center', minHeight: 40 },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  link: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 36 },
-});
+function Fact({ z, lang, label, value }: { z: (n: number) => number; lang: Language; label: string; value: string }) {
+  return (
+    <View style={{ gap: 1 }}>
+      <Text style={{ fontSize: z(11), fontWeight: '800', color: SLATE, letterSpacing: spacingFor(lang, 0.6), lineHeight: lineHeightFor(lang, z(11)) }}>{label.toUpperCase()}</Text>
+      <Text style={{ fontSize: z(13), color: NAVY, lineHeight: lineHeightFor(lang, z(13)) }}>{value}</Text>
+    </View>
+  );
+}

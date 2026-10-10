@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 import Svg, { Circle, G, Line, Text as SvgText } from 'react-native-svg';
 import { colors } from '../theme';
+import { useT } from '../i18n/useT';
 import type { Corridor, RouteResult, Station } from '../types';
 import type { Schematic } from '../lib/schematic';
 
@@ -18,6 +19,7 @@ const FONT = Platform.OS === 'web' ? 'system-ui, -apple-system, Segoe UI, Roboto
 
 /** Original, locally-rendered schematic of the network. No network access needed. */
 export function MetroMap({ schematic, corridors, stations, route, scale, onStationPress }: Props) {
+  const { t } = useT();
   const colorOf = useMemo(() => new Map(corridors.map((c) => [c.id, c.color])), [corridors]);
   const stationById = useMemo(() => new Map(stations.map((s) => [s.id, s])), [stations]);
 
@@ -40,7 +42,7 @@ export function MetroMap({ schematic, corridors, stations, route, scale, onStati
       width={schematic.width * scale}
       height={schematic.height * scale}
       viewBox={`0 0 ${schematic.width} ${schematic.height}`}
-      accessibilityLabel="Schematic map of the Ahmedabad–Gandhinagar metro network"
+      accessibilityLabel={t('map.metroMap.a11y')}
     >
       {/* journey halo under the lines */}
       {schematic.links.map((l) => {

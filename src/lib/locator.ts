@@ -1,5 +1,7 @@
 import type { Connection, Station } from '../types';
 import { haversineM, projectOnSegment } from './geo';
+import { enT, type T } from '../i18n/translate';
+import type { MessageKey } from '../i18n/messages';
 
 /**
  * On-device "where am I on the metro" engine. Pure functions only: it takes a GPS-style
@@ -18,6 +20,8 @@ export interface Fix {
   lon: number;
   /** Horizontal accuracy radius in metres, if the provider reports one. */
   accuracyM: number | null;
+  /** Ground speed in metres per second, when the provider reports one (null/absent otherwise). */
+  speedMps?: number | null;
   /** Milliseconds since epoch. */
   timestamp: number;
   mocked?: boolean;
@@ -73,6 +77,17 @@ export const ACCURACY_LABEL: Record<AccuracyClass, string> = {
   poor: 'Too inaccurate to use',
   unknown: 'Accuracy unknown',
 };
+
+const ACCURACY_KEY: Record<AccuracyClass, MessageKey> = {
+  precise: 'live.acc.precise',
+  good: 'live.acc.good',
+  coarse: 'live.acc.coarse',
+  poor: 'live.acc.poor',
+  unknown: 'live.acc.unknown',
+};
+
+/** The accuracy label in the active language (English by default, identical to ACCURACY_LABEL). */
+export const accuracyLabel = (c: AccuracyClass, t: T = enT): string => t(ACCURACY_KEY[c]);
 
 // ------------------------------------------------------------------ signal
 

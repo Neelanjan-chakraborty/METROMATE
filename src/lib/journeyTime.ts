@@ -1,6 +1,7 @@
 import type { FareTable, JourneyTimeOutcome, RouteResult, ServiceInfo, TimetableMetadata } from '../types';
 import { findFarePair } from './fareCalculator';
 import type { Network } from './routing';
+import { enT, type T } from '../i18n/translate';
 
 export const JOURNEY_TIME_UNAVAILABLE =
   'Journey time estimate unavailable: GMRC publishes line end-to-end times but no per-station travel times, so none is calculated.';
@@ -14,10 +15,10 @@ export const CALCULATOR_TIME_NOTE =
  *  2. the sum of verified per-connection times, only if EVERY connection has one;
  *  3. otherwise "unavailable" — no time is ever invented.
  */
-export function getJourneyTime(net: Network, route: RouteResult, fares?: FareTable): JourneyTimeOutcome {
+export function getJourneyTime(net: Network, route: RouteResult, fares?: FareTable, t: T = enT): JourneyTimeOutcome {
   const pair = fares ? findFarePair(fares, route.originId, route.destinationId) : undefined;
   if (pair && typeof pair.travelMinutes === 'number' && pair.travelMinutes >= 0) {
-    return { status: 'estimated', minutes: pair.travelMinutes, note: CALCULATOR_TIME_NOTE, source: 'gmrc-calculator' };
+    return { status: 'estimated', minutes: pair.travelMinutes, note: t('route.lib.time.calculator'), source: 'gmrc-calculator' };
   }
   let total = 0;
   for (let i = 0; i < route.stationIds.length - 1; i++) {
@@ -26,14 +27,14 @@ export function getJourneyTime(net: Network, route: RouteResult, fares?: FareTab
     const edge = (net.edges.get(from) ?? []).find((e) => e.toStationId === to);
     const minutes = edge?.estimatedTravelMinutes;
     if (typeof minutes !== 'number' || !Number.isFinite(minutes) || minutes < 0) {
-      return { status: 'unavailable', message: JOURNEY_TIME_UNAVAILABLE };
+      return { status: 'unavailable', message: t('route.lib.time.unavailable') };
     }
     total += minutes;
   }
   return {
     status: 'estimated',
     minutes: total,
-    note: 'Estimated in-train time from published per-station times. Excludes waiting, walking and interchange time. Not a live prediction.',
+    note: t('route.lib.time.perHop'),
     source: 'per-hop-sum',
   };
 }

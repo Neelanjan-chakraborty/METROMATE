@@ -5,10 +5,14 @@ import {
   RECENTS_LIMIT,
   addFavourite,
   clearRecents,
+  clearQuickRoute,
   clearStationCoord,
   clearStationCoords,
   getDatasetMeta,
+  getSetting,
+  setSetting,
   listFavourites,
+  listQuickRoutes,
   listRecents,
   listStationCoords,
   loadDataset,
@@ -19,6 +23,7 @@ import {
   removeFavouritePair,
   resetLocalData,
   seedIfNeeded,
+  setQuickRoute,
 } from '../repository';
 import { NodeSqliteDb } from './nodeSqliteDb';
 
@@ -191,5 +196,59 @@ describe('recorded station positions', () => {
     expect((await listStationCoords(second))[0]).toMatchObject({ stationId: 'PLDI', samples: 1 });
     second.close();
     fs.rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe('quick routes (Home / Campus / Work)', () => {
+  it('saves, replaces and clears a shortcut per slot', async () => {
+    const db = await freshDb();
+    expect(await listQuickRoutes(db)).toEqual([]);
+    await setQuickRoute(db, 'home', 'APMC', 'PLDI');
+    await setQuickRoute(db, 'work', 'MTRS', 'MAHM');
+    await setQuickRoute(db, 'home', 'JVRJ', 'GRMS'); // replaces
+    const list = await listQuickRoutes(db);
+    expect(list.map((q) => `${q.slot}:${q.fromId}>${q.toId}`).sort()).toEqual(['home:JVRJ>GRMS', 'work:MTRS>MAHM']);
+    await clearQuickRoute(db, 'work');
+    expect((await listQuickRoutes(db)).map((q) => q.slot)).toEqual(['home']);
+  });
+
+  it('rejects an unknown slot or identical stations', async () => {
+    const db = await freshDb();
+    await expect(setQuickRoute(db, 'gym' as never, 'A', 'B')).rejects.toThrow(/Unknown quick-route slot/);
+    await expect(setQuickRoute(db, 'home', 'A', 'A')).rejects.toThrow(/two different stations/);
+    expect(await listQuickRoutes(db)).toEqual([]);
+  });
+
+  it('ignores rows with a slot the app does not know, and is cleared by "reset local data"', async () => {
+    const db = await freshDb();
+    await db.runAsync("INSERT INTO quick_routes (slot, from_id, to_id, updated_at) VALUES ('gym', 'A', 'B', 1)");
+    await setQuickRoute(db, 'campus', 'APMC', 'PLDI');
+    expect((await listQuickRoutes(db)).map((q) => q.slot)).toEqual(['campus']);
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds);
+    expect(await listQuickRoutes(db)).toEqual([]);
+  });
+});
+
+describe('settings', () => {
+  it('stores the interface language, replaces it, and keeps it through a data reset', async () => {
+    const db = await freshDb();
+    expect(await getSetting(db, 'language')).toBeNull();
+    await setSetting(db, 'language', 'hi');
+    expect(await getSetting(db, 'language')).toBe('hi');
+    await setSetting(db, 'language', 'gu');
+    expect(await getSetting(db, 'language')).toBe('gu');
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds);
+    expect(await getSetting(db, 'language')).toBe('gu');
+  });
+
+  it('remembers that the welcome walkthrough was completed, and keeps that through a data reset', async () => {
+    const db = await freshDb();
+    expect(await getSetting(db, 'onboarding')).toBeNull();
+    await setSetting(db, 'onboarding', 'done');
+    await seedIfNeeded(db, ds);
+    await resetLocalData(db, ds);
+    expect(await getSetting(db, 'onboarding')).toBe('done');
   });
 });

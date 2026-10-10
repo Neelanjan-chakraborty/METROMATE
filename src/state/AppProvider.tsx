@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNetworkState } from 'expo-network';
-import type { Dataset, SavedJourney, StationCoord } from '../types';
+import type { Dataset, QuickRoute, QuickSlot, SavedJourney, StationCoord } from '../types';
 import { accumulatorAccuracyM, buildLinks, buildStationPoints, mergeStationFix, type Fix, type Link, type StationPoint } from '../lib/locator';
 import { loadBundledDataset } from '../lib/dataset';
 import { validateDataset, type ValidationReport } from '../lib/dataValidation';
@@ -8,6 +8,7 @@ import { buildNetwork, type Network } from '../lib/routing';
 import * as repo from '../db/repository';
 import type { Db } from '../db/types';
 import { openAppDatabase } from '../db';
+import { DEFAULT_LANGUAGE, detectLanguage, isLanguage, type Language } from '../i18n/languages';
 
 type Status = 'loading' | 'ready' | 'error';
 
@@ -23,6 +24,10 @@ interface AppState {
   online: boolean | null;
   favourites: SavedJourney[];
   recents: SavedJourney[];
+  /** Home / Campus / Work shortcuts saved on this phone. */
+  quickRoutes: QuickRoute[];
+  setQuickRoute: (slot: QuickSlot, fromId: string, toId: string) => Promise<void>;
+  clearQuickRoute: (slot: QuickSlot) => Promise<void>;
   /** Positions recorded on this phone from GPS fixes. */
   stationCoords: StationCoord[];
   /** Best known coordinates per station (dataset pins and recorded positions). */
@@ -39,6 +44,12 @@ interface AppState {
   recordRecent: (fromId: string, toId: string) => Promise<void>;
   clearRecents: () => Promise<void>;
   resetLocalData: () => Promise<void>;
+  /** Interface language: saved on this phone; the first launch follows the phone's language. */
+  language: Language;
+  setLanguage: (l: Language) => Promise<void>;
+  /** First-run welcome guide: 'loading' until the saved setting is read, 'pending' until the user finishes or skips it. */
+  onboarding: 'loading' | 'pending' | 'done';
+  completeOnboarding: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -57,6 +68,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [favourites, setFavourites] = useState<SavedJourney[]>([]);
   const [recents, setRecents] = useState<SavedJourney[]>([]);
   const [stationCoords, setStationCoords] = useState<StationCoord[]>([]);
+  const [quickRoutes, setQuickRoutes] = useState<QuickRoute[]>([]);
+  const [onboarding, setOnboarding] = useState<'loading' | 'pending' | 'done'>('loading');
+  const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
   const dbRef = useRef<Db | null>(null);
   const memId = useRef(1);
   const net = useNetworkState();
@@ -67,6 +81,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setFavourites(await repo.listFavourites(db));
     setRecents(await repo.listRecents(db));
     setStationCoords(await repo.listStationCoords(db));
+    setQuickRoutes(await repo.listQuickRoutes(db));
   }, []);
 
   useEffect(() => {
@@ -80,17 +95,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         await repo.seedIfNeeded(db, bundled);
         ds = (await repo.loadDataset(db)) ?? bundled;
         dbRef.current = db;
-        const [f, r, c] = [await repo.listFavourites(db), await repo.listRecents(db), await repo.listStationCoords(db)];
+        const savedLanguage = await repo.getSetting(db, 'language');
+        if (!cancelled) setLanguageState(isLanguage(savedLanguage) ? savedLanguage : detectLanguage());
+        const seen = await repo.getSetting(db, 'onboarding');
+        if (!cancelled) setOnboarding(seen === 'done' ? 'done' : 'pending');
+        const [f, r, c, q] = [await repo.listFavourites(db), await repo.listRecents(db), await repo.listStationCoords(db), await repo.listQuickRoutes(db)];
         if (cancelled) return;
         setFavourites(f);
         setRecents(r);
         setStationCoords(c);
+        setQuickRoutes(q);
         setStorage('sqlite');
       } catch (e) {
         // The app must keep working without the database: fall back to the bundled data.
         if (cancelled) return;
         console.warn('MetroMate: SQLite unavailable, using in-memory storage.', e);
         dbRef.current = null;
+        setLanguageState(detectLanguage());
+        setOnboarding('pending');
         setStorage('memory');
       }
       if (cancelled) return;
@@ -110,6 +132,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const network = useMemo(() => (dataset ? buildNetwork(dataset) : null), [dataset]);
   const validation = useMemo(() => (dataset ? validateDataset(dataset) : null), [dataset]);
+
+  const setQuickRoute = useCallback(
+    async (slot: QuickSlot, fromId: string, toId: string) => {
+      const db = dbRef.current;
+      if (db) {
+        await repo.setQuickRoute(db, slot, fromId, toId);
+        await refresh();
+      } else {
+        if (fromId === toId) return;
+        setQuickRoutes((cur) => [...cur.filter((q) => q.slot !== slot), { slot, fromId, toId, updatedAt: Date.now() }]);
+      }
+    },
+    [refresh],
+  );
+
+  const clearQuickRoute = useCallback(
+    async (slot: QuickSlot) => {
+      const db = dbRef.current;
+      if (db) {
+        await repo.clearQuickRoute(db, slot);
+        await refresh();
+      } else {
+        setQuickRoutes((cur) => cur.filter((q) => q.slot !== slot));
+      }
+    },
+    [refresh],
+  );
 
   const stationPoints = useMemo(
     () => buildStationPoints(dataset?.stations ?? [], stationCoords),
@@ -158,6 +207,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setStationCoords([]);
     }
   }, [refresh]);
+
+  const setLanguage = useCallback(async (l: Language) => {
+    setLanguageState(l);
+    const db = dbRef.current;
+    if (db) await repo.setSetting(db, 'language', l).catch(() => undefined);
+  }, []);
+
+  const completeOnboarding = useCallback(async () => {
+    setOnboarding('done');
+    const db = dbRef.current;
+    if (db) await repo.setSetting(db, 'onboarding', 'done').catch(() => undefined);
+  }, []);
 
   const isFavourite = useCallback(
     (fromId: string, toId: string) => favourites.some((f) => f.fromId === fromId && f.toId === toId),
@@ -232,6 +293,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else {
       setFavourites([]);
       setRecents([]);
+      setQuickRoutes([]);
       setDataset(bundled);
     }
   }, [refresh]);
@@ -249,6 +311,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       online,
       favourites,
       recents,
+      quickRoutes,
+      setQuickRoute,
+      clearQuickRoute,
       stationCoords,
       stationPoints,
       links,
@@ -261,8 +326,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       recordRecent,
       clearRecents,
       resetLocalData,
+      language,
+      setLanguage,
+      onboarding,
+      completeOnboarding,
     }),
-    [status, error, dataset, network, validation, storage, online, favourites, recents, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData],
+    [status, error, dataset, network, validation, storage, online, favourites, recents, quickRoutes, setQuickRoute, clearQuickRoute, stationCoords, stationPoints, links, recordStationFix, clearStationCoord, clearStationCoords, isFavourite, toggleFavourite, removeFavourite, recordRecent, clearRecents, resetLocalData, language, setLanguage, onboarding, completeOnboarding],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ArrowRight, ArrowLeftRight, Trash2 } from 'lucide-react-native';
 import { colors, space, type } from '../theme';
 import { IconButton } from './ui';
+import { useT } from '../i18n/useT';
 
 interface Props {
   fromName: string;
@@ -10,15 +11,17 @@ interface Props {
   onOpen: () => void;
   onReverse?: () => void;
   onRemove?: () => void;
+  /** The verb for the remove button's accessibility label; defaults to "Remove". */
   removeLabel?: string;
 }
 
-export function JourneyRow({ fromName, toName, onOpen, onReverse, onRemove, removeLabel = 'Remove' }: Props) {
+export function JourneyRow({ fromName, toName, onOpen, onReverse, onRemove, removeLabel }: Props) {
+  const { t } = useT();
   return (
     <View style={styles.row}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Open journey from ${fromName} to ${toName}`}
+        accessibilityLabel={t('saved.row.open.a11y', { from: fromName, to: toName })}
         onPress={onOpen}
         style={({ pressed }) => [styles.main, pressed && { opacity: 0.7 }]}
       >
@@ -32,8 +35,8 @@ export function JourneyRow({ fromName, toName, onOpen, onReverse, onRemove, remo
           </Text>
         </View>
       </Pressable>
-      {onReverse ? <IconButton icon={ArrowLeftRight} label={`Reverse: ${toName} to ${fromName}`} onPress={onReverse} /> : null}
-      {onRemove ? <IconButton icon={Trash2} label={`${removeLabel} ${fromName} to ${toName}`} onPress={onRemove} color={colors.destination} /> : null}
+      {onReverse ? <IconButton icon={ArrowLeftRight} label={t('saved.row.reverse.a11y', { from: fromName, to: toName })} onPress={onReverse} /> : null}
+      {onRemove ? <IconButton icon={Trash2} label={t('saved.row.remove.a11y', { label: removeLabel ?? t('saved.row.remove'), from: fromName, to: toName })} onPress={onRemove} color={colors.destination} /> : null}
     </View>
   );
 }
